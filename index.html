@@ -5218,17 +5218,15 @@ const mena = Object.keys(stats).filter(meno =>
 modal.classList.remove('hidden');
 }
 
-  </script>
-  self.addEventListener('install', event => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim());
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(fetch(event.request));
-});
+</script>
+  
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+</script>
+  
 </body>
 </html>
