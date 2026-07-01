@@ -1,0 +1,5222 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f6f2a">
+<link rel="icon" type="image/png" href="icons/icon-512.png">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RS app HTML – pokračovanie</title>
+  <style>
+    :root {
+      --zelena: #2e7d32;
+      --zelena-tmava: #1f5b23;
+      --pozadie: #f4f7f4;
+      --karta: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d9e2d9;
+      --cervena: #c62828;
+      --oranzova: #ef6c00;
+      --modra: #1565c0;
+      --siva: #607d8b;
+      --shadow: 0 10px 25px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--pozadie);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--zelena), var(--zelena-tmava));
+      color: white;
+      padding: 18px 24px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-logos {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-logo {
+      background: rgba(255,255,255,0.96);
+      border-radius: 18px;
+      padding: 6px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+      object-fit: contain;
+    }
+
+    .main-logo {
+      width: 74px;
+      height: 74px;
+    }
+
+    .side-logo {
+      width: 58px;
+      height: 74px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .title-wrap p {
+      margin: 4px 0 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .login-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 24px auto;
+      padding: 0 18px 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--karta);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+.card-rybari {
+  background: #eef5ff;
+  border-color: #bfdbfe;
+}
+
+.card-kontroly {
+  background: #eefaf1;
+  border-color: #bbf7d0;
+}
+
+.card-statistiky {
+  background: #fff9e8;
+  border-color: #fde68a;
+}
+
+.card-reviry {
+  background: #f5efff;
+  border-color: #ddd6fe;
+}
+
+.card-reporty {
+  background: #f5f7f9;
+  border-color: #dbe3ea;
+}
+
+.main-menu-cards {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.main-menu-cards .card {
+    flex: 0 0 220px;
+    min-height: 120px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.cards .card {
+  text-align: center;
+  cursor: pointer;
+}
+
+.card-icon {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.cards .card h3 {
+  margin: 0;
+}
+
+    .card h2,
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-5 { grid-column: span 5; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+
+    @media (max-width: 820px) {
+      .brand-wrap {
+        align-items: flex-start;
+      }
+
+      .brand-logos {
+        width: 100%;
+      }
+
+      .title-wrap h1 {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .span-8, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cfd8cf;
+      font-size: 14px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+   @media (max-width: 700px) {
+  .row { grid-template-columns: 1fr; }
+
+  .mobile-checks-summary {
+    display: block;
+    margin: 12px 0 18px 0;
+  }
+
+  #historiaKontrolCard #checksSummary {
+    display: none;
+  }
+}
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: var(--zelena); color: white; }
+    .btn-secondary { background: #e8f2e8; color: var(--zelena-tmava); }
+    .btn-danger { background: #ffebee; color: var(--cervena); }
+    .btn-warning { background: #fff3e0; color: var(--oranzova); }
+    .btn-info { background: #e3f2fd; color: var(--modra); }
+    .btn-muted { background: #eceff1; color: #37474f; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 540px) {
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat {
+      background: #f9fbf9;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fcfdfc;
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .badge-green { background: #e8f5e9; color: var(--zelena); }
+    .badge-red { background: #ffebee; color: var(--cervena); }
+    .badge-orange { background: #fff3e0; color: var(--oranzova); }
+    .badge-yellow { background: #fef9c3; color: #a16207; }
+    .badge-blue { background: #e3f2fd; color: var(--modra); }
+    .badge-gray { background: #eceff1; color: var(--siva); }
+
+    .hidden { display: none !important; }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: white;
+    width: min(900px, 95%);
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .photo-grid img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f1f5f1;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+      background: white;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #edf1ed;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f3f8f3;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-box input,
+    .search-box select {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .note {
+      background: #f0f7f0;
+      border: 1px dashed #b7cfb8;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      color: #37543a;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab-btn.active {
+      background: var(--zelena);
+      color: white;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+
+.mobile-checks-summary {
+  display: none;
+}
+
+    .small {
+      font-size: 12px;
+    }
+
+    .dashboard {
+      margin: 20px 0;
+    }
+
+    .cards {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+.cards .card {
+    flex: 1;
+    min-width: 180px;
+    text-align: center;
+}
+
+    .cards .card h3 {
+      margin-bottom: 10px;
+      color: #2e7d32;
+    }
+
+    .cards .card p {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .danger-text { color: var(--cervena); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand-wrap">
+        <div class="brand-logos">
+          <img src="logo-mso-sered.png" alt="Logo MsO Sereď" class="brand-logo main-logo" onerror="this.style.display='none'" />
+          <img src="logo-rybarska-straz.png" alt="Logo Rybárska stráž" class="brand-logo side-logo" onerror="this.style.display='none'" />
+        </div>
+        <div class="title-wrap">
+          <h1>Rybárska stráž – MsO Sereď</h1>
+          <p>Evidencia a vyhodnocovanie kontrol, priestupkov a činnosti rybárskej stráže</p>
+        </div>
+      </div>
+      <div class="login-info">
+        <span id="loggedUserText" class="badge badge-green">Neprihlásený</span>
+        <button id="logoutBtn" class="btn-secondary hidden" onclick="logoutRS()">Odhlásiť</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="loginSection" class="card span-12">
+      <h2>Prihlásenie člena RS</h2>
+      <div class="row">
+        <div class="field">
+          <label for="loginCisloOdznaku">Číslo odznaku alebo prístupový kód</label>
+          <input id="loginCisloOdznaku" type="text" placeholder="Zadaj odznak alebo prístupový kód" autocomplete="off" />
+        </div>
+        <div class="field" style="display:none;">
+          <label for="loginCode">Služobný kód / heslo</label>
+          <input id="loginCode" type="password" placeholder="Zadaj kód" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="loginRS()">Prihlásiť</button>
+        <button class="btn-secondary" onclick="resetDemoDataConfirm()">Obnoviť ukážkové dáta</button>
+      </div>
+      <div class="note" style="margin-top: 12px;">
+        Pri prototypovaní sú dáta ukladané lokálne do prehliadača cez localStorage.
+      </div>
+    </section>
+
+    <div id="filterSection" class="card hidden" style="margin:20px 0;">
+      <h3>Filter</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div>
+          <label>Dátum od</label><br>
+          <input type="date" id="filterDatumOd">
+        </div>
+
+        <div>
+          <label>Dátum do</label><br>
+          <input type="date" id="filterDatumDo">
+        </div>
+
+        <div>
+          <label>Člen RS</label><br>
+          <select id="filterClenRS">
+            <option value="">Všetci</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Revír</label><br>
+          <select id="filterRevir">
+            <option value="">Všetky</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+          <button onclick="updateDashboard()">Použiť filter</button>
+          <button onclick="resetFilter()">Vymazať filter</button>
+        </div>
+      </div>
+    </div>
+
+<div id="mainMenuSection" class="dashboard hidden">
+  <h2>Hlavné menu</h2>
+
+<div class="main-menu-cards">
+
+  <div class="card card-rybari" onclick="openRybariModule()">
+    <div class="card-icon">👥</div>
+    <h3>Evidencia rybára</h3>
+</div>
+
+   <div class="card card-kontroly" onclick="openKontrolyModule()">
+    <div class="card-icon">✅</div>
+    <h3>Evidencia kontroly</h3>
+</div>
+
+    <div class="card card-statistiky" onclick="openStatistikyModule()">
+    <div class="card-icon">📊</div>
+    <h3>Štatistiky</h3>
+</div>
+
+    <div class="card card-reviry" onclick="showReviryInfo()">
+    <div class="card-icon">📍</div>
+    <h3>Revíry</h3>
+</div>
+
+<div class="card card-reporty" onclick="openReportyModule()">
+    <div class="card-icon">📈</div>
+    <h3>Reporty</h3>
+</div>
+  </div>
+</div>
+
+<div id="backToMenuSection" class="hidden" style="margin-bottom:15px;">
+    <button class="btn-secondary" onclick="showMainMenu()">
+        ← Späť do hlavného menu
+    </button>
+</div>
+
+    <div id="dashboardSection" class="dashboard hidden">
+
+<div id="statsLoading" class="note hidden" style="margin-bottom:15px;">
+  ⏳ Načítavam štatistiky...
+</div>
+
+ <div class="toolbar">
+    <div>
+        <h2 style="margin:0;">Prehľad MsO Sereď</h2>
+        <div class="muted small">Dashboard, exporty a reporty</div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-info" onclick="exportData()">Export údajov</button>
+    </div>
+</div>
+
+      <div id="dashboardCardsSection" class="cards">
+        <div class="card" id="kontrolyCard" onclick="showAllChecks()">
+    <h3>Kontroly</h3>
+    <p id="totalKontroly">0</p>
+</div>
+
+<div class="card" id="poruseniaCard" onclick="showPoruseniaDetail()">
+  <h3>Porušenia</h3>
+  <p id="totalPriestupky">0</p>
+</div>
+
+<div class="card" id="sluzbyRevirovCard" onclick="showSluzbyReviry()">
+  <h3>Záznamy služieb</h3>
+  <p id="totalSluzbyReviry">0</p>
+</div>
+
+<div class="card" id="hodinyRsCard" onclick="showHodinyRsDetail()">
+  <h3>Hodiny RS</h3>
+  <p id="hodinyRS">0 h</p>
+</div>
+
+        <div class="card" id="reviryCard" onclick="showRevirStats()">
+          <h3>Kontroly podľa revírov</h3>
+          <p id="topRevir" class="hidden">-</p>
+        </div>
+
+<div class="card" id="reviryInfoCard" onclick="showReviryInfo()">
+  <h3>Informácie o revíroch</h3>
+  <p class="hidden">10 revírov MsO Sereď</p>
+</div>
+
+<div class="card" id="clenoviaCard" onclick="showMemberStats()">
+    <h3>Aktivita RS</h3>
+    <p id="topClen" class="hidden">-</p>
+</div>
+</div>
+
+<div id="graphsOnlySection" class="cards hidden">
+<div class="card">
+  <h3>Graf kontrol podľa revírov</h3>
+
+  <div id="grafKontrolyReviry">
+    Graf bude doplnený v ďalšom kroku.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Graf aktivity členov RS</h3>
+
+  <div id="grafAktivitaClenov">
+    Graf bude doplnený v ďalšom kroku.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Graf odslúžených hodín podľa členov RS</h3>
+
+  <div id="grafHodinyClenov">
+    Graf bude doplnený v ďalšom kroku.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Graf odslúžených hodín podľa revírov</h3>
+
+  <div id="grafHodinyReviry">
+    Graf bude doplnený v ďalšom kroku.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Graf výsledkov kontrol</h3>
+
+  <div id="grafVysledkyKontrol">
+    Graf bude doplnený v ďalšom kroku.
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    <section id="appSection" class="hidden">
+      <div class="grid">
+        <div id="appOverviewSection" class="card span-12">
+          <div class="toolbar">
+            <div>
+              <h2 style="margin:0;">Prehľad aplikácie</h2>
+              <div class="muted small">Všetky hlavné funkcie v jednom jednoduchom rozhraní</div>
+            </div>
+            <div class="actions">
+              <button class="btn-info" onclick="exportData()">Export údajov</button>
+              <button class="btn-secondary" onclick="saveData()">Uložiť dáta</button>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="label">Rybári</div>
+              <div class="value" id="statFishers">0</div>
+            </div>
+            <div class="stat">
+              <div class="label">Členovia RS</div>
+              <div class="value" id="statMembers">0</div>
+            </div>
+            <div class="stat">
+              <div class="label">Kontroly</div>
+              <div class="value" id="statChecks">0</div>
+            </div>
+        <div class="stat">
+  <div class="label">Porušenia</div>
+  <div class="value" id="statOffences">0</div>
+</div>
+<div class="stat">
+  <div class="label">Služby revírov</div>
+  <div class="value" id="statSluzbyReviry">0</div>
+</div>
+          </div>
+        </div>
+
+        <div class="card span-12">
+          <div class="tabs" id="legacyTabs">
+            <button class="tab-btn btn-secondary active" data-tab="rybari" onclick="switchTab('rybari', this)">Rybári</button>
+            <button class="tab-btn btn-secondary" data-tab="clenovia" onclick="switchTab('clenovia', this)">Členovia RS</button>
+            <button class="tab-btn btn-secondary" data-tab="kontroly" onclick="switchTab('kontroly', this)">Kontroly</button>
+            <button class="tab-btn btn-secondary" data-tab="zmeny" onclick="switchTab('zmeny', this)">História zmien</button>
+          </div>
+
+          <div id="tab-rybari" class="tab-panel">
+            <div class="grid">
+              <div class="card span-6">
+            <div class="row">
+  <div class="field">
+    <label for="fisherName">Meno a priezvisko</label>
+    <input id="fisherName" type="text" />
+  </div>
+  <div class="field">
+    <label for="fisherMemberId">Členské ID</label>
+    <input id="fisherMemberId" type="text" />
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="fisherNumber">Číslo povolenia</label>
+    <input id="fisherNumber" type="text" />
+  </div>
+  <div class="field">
+    <label for="fisherDistrict">Organizácia / MO</label>
+    <input id="fisherDistrict" type="text" />
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="fisherValidFrom">Platnosť od</label>
+    <input id="fisherValidFrom" type="date" />
+  </div>
+  <div class="field">
+    <label for="fisherValidTo">Platnosť do</label>
+    <input id="fisherValidTo" type="date" />
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label>
+      <input id="fisherLocalPermit" type="checkbox" />
+      Miestna povolenka
+    </label>
+  </div>
+  <div class="field">
+    <label>
+      <input id="fisherUnionPermit" type="checkbox" />
+      Zväzová povolenka
+    </label>
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="fisherStatus">Stav</label>
+    <select id="fisherStatus">
+      <option value="Aktívny">Aktívny</option>
+      <option value="Pozastavený">Pozastavený</option>
+      <option value="Neplatné povolenie">Neplatné povolenie</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="fisherNote">Poznámka</label>
+    <input id="fisherNote" type="text" />
+  </div>
+</div>
+                <input type="hidden" id="fisherEditId" />
+                <div class="actions">
+                  <button class="btn-primary" onclick="saveFisher()">Uložiť rybára</button>
+                  <button class="btn-muted" onclick="resetFisherForm()">Vyčistiť formulár</button>
+                </div>
+              </div>
+
+              <div class="card span-6">
+                <div class="toolbar">
+                  <div>
+                    <h3 style="margin:0;">Správa rybárov</h3>
+                    <div class="muted small">Vyhľadanie, profil, úprava, zmazanie</div>
+                  </div>
+                </div>
+                <div class="search-box" style="margin-bottom: 12px;">
+                  <input id="fisherSearch" type="text" placeholder="Meno, členské ID alebo povolenie" oninput="renderFishers()" />
+                  <select id="fisherFilterStatus" onchange="renderFishers()">
+                    <option value="">Všetky stavy</option>
+                    <option value="Aktívny">Aktívny</option>
+                    <option value="Pozastavený">Pozastavený</option>
+                    <option value="Neplatné povolenie">Neplatné povolenie</option>
+                  </select>
+                </div>
+                <div id="fishersList" class="list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-clenovia" class="tab-panel hidden">
+            <div class="grid">
+              <div class="card span-6">
+                <h3 id="memberFormTitle">Pridať člena RS</h3>
+                <div class="row">
+                  <div class="field">
+                    <label for="memberName">Meno a priezvisko</label>
+                    <input id="memberName" type="text" placeholder="Napr. Peter Horváth" />
+                  </div>
+                  <div class="field">
+                    <label for="memberBadge">Číslo odznaku</label>
+                    <input id="memberBadge" type="text" placeholder="Napr. RS-014" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="field">
+                    <label for="memberArea">Revír / oblasť</label>
+                    <input id="memberArea" type="text" placeholder="Napr. Váh 1" />
+                  </div>
+                  <div class="field">
+                    <label for="memberRole">Rola</label>
+                    <select id="memberRole">
+                      <option value="Člen RS">Člen RS</option>
+                      <option value="Vedúci RS">Vedúci RS</option>
+                      <option value="Administrátor">Administrátor</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="field">
+                    <label for="memberCode">Služobný kód</label>
+                    <input id="memberCode" type="text" placeholder="Kód pre prihlásenie" />
+                  </div>
+                  <div class="field">
+                    <label for="memberActive">Stav</label>
+                    <select id="memberActive">
+                      <option value="Aktívny">Aktívny</option>
+                      <option value="Neaktívny">Neaktívny</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="memberNote">Poznámka</label>
+                  <input id="memberNote" type="text" placeholder="Krátka poznámka" />
+                </div>
+                <input type="hidden" id="memberEditId" />
+                <div class="actions">
+                  <button class="btn-primary" onclick="saveMember()">Uložiť člena RS</button>
+                  <button class="btn-muted" onclick="resetMemberForm()">Vyčistiť formulár</button>
+                </div>
+              </div>
+
+              <div class="card span-6">
+                <div class="search-box" style="margin-bottom: 12px;">
+                  <input id="memberSearch" type="text" placeholder="Hľadať podľa mena" oninput="renderMembers()" />
+                  <select id="memberFilterStatus" onchange="renderMembers()">
+                    <option value="">Všetky stavy</option>
+                    <option value="Aktívny">Aktívny</option>
+                    <option value="Neaktívny">Neaktívny</option>
+                  </select>
+                </div>
+                <div id="membersList" class="list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-kontroly" class="tab-panel hidden">
+            <div class="grid">
+              <div class="card span-5">
+                <h3>Zapísať kontrolu</h3>
+
+                <div class="row">
+                 <div class="field">
+  <label for="checkFisherName">Meno rybára</label>
+  <input id="checkFisherName" type="text" placeholder="Zadaj meno rybára" oninput="suggestFishers(); renderChecks()" autocomplete="off" />
+  <div id="checkFisherSuggestions" class="list" style="margin-top:8px;"></div>
+</div>
+                  <div class="field">
+                    <label for="checkFisherIdNo">Členské ID / číslo povolenia</label>
+                    <input id="checkFisherIdNo" type="text" placeholder="Zadaj členské ID alebo povolenie" oninput="autoFillFisherFromId(); renderChecks()" />
+                    <input id="checkFisherDbId" type="hidden" />
+                  </div>
+               </div>
+
+<div id="mobileChecksSummary" class="empty mobile-checks-summary">
+  Sumár sa zobrazí po zadaní rybára.
+</div>
+
+<div class="row">
+    <div class="field">
+        <label for="checkMember1">Člen RS 1</label>
+        <select id="checkMember1"></select>
+    </div>
+
+    <div class="field">
+        <label for="checkMember2">Člen RS 2</label>
+        <select id="checkMember2"></select>
+    </div>
+</div>
+
+<div class="field" style="margin-top:4px; margin-bottom:14px;">
+  <label style="display:flex; gap:10px; align-items:center; font-weight:700;">
+    <input
+      type="checkbox"
+      id="isGroupCheck"
+      style="width:auto;"
+    >
+    <span>Spoločná akcia viacerých členov RS</span>
+  </label>
+</div>
+
+<div class="row">
+    <div class="field">
+        <label for="checkDate">Dátum</label>
+        <input id="checkDate" type="date" />
+    </div>
+
+    <div class="field">
+        <label for="checkTimeFrom">Čas kontroly</label>
+        <input id="checkTimeFrom" type="time" />
+    </div>
+</div>
+
+<input id="checkTimeTo" type="hidden" />
+
+<div class="row">
+    <div class="field">
+        <label for="checkPlace">Miesto kontroly</label>
+        <select id="checkPlace" onchange="setActiveRevirFromSelect()">
+            <option value="">Vyber revír</option>
+        </select>
+    </div>
+
+    <div class="field"></div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="checkResult">Výsledok</label>
+    <select id="checkResult" onchange="toggleOffenceType()">
+      <option value="Bez porušenia">Bez porušenia</option>
+      <option value="Podozrenie">Podozrenie</option>
+      <option value="Priestupok">Priestupok</option>
+      <option value="Pytliactvo">Pytliactvo</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="checkOffenceType">Typ priestupku</label>
+    <select id="checkOffenceType">
+      <option value="">Vyber typ priestupku</option>
+      <option>Bez zapísania úlovku</option>
+      <option>Iné</option>
+      <option>Lov bez meradla</option>
+      <option>Lov bez peánu / uvoľňovača háčikov</option>
+      <option>Lov bez platného povolenia</option>
+      <option>Lov bez podložky pod rybu</option>
+      <option>Lov bez povolenia</option>
+      <option>Lov bez rybárskeho lístka</option>
+      <option>Lov na viac udíc ako je povolené</option>
+      <option>Lov v čase hájenia</option>
+      <option>Nadlimitný úlovok</option>
+      <option>Nedodržaná lovná miera</option>
+      <option>Neúplne vyplnený záznam o úlovku</option>
+      <option>Neudržiavanie poriadku na lovnom mieste</option>
+      <option>Nezapísaná nástrahová ryba</option>
+      <option>Nezapísaná privlastnená ryba</option>
+      <option>Nepovolený spôsob lovu</option>
+      <option>Nepredloženie dokladov ku kontrole</option>
+      <option>Nesprávne zapísaný úlovok</option>
+      <option>Po privlastnení nezapísaná dĺžka ryby</option>
+      <option>Po privlastnení nezapísaná hmotnosť ryby</option>
+      <option>Po privlastnení nezapísaný druh ryby</option>
+      <option>Po privlastnení nezapísaný počet rýb</option>
+      <option>Porušenie denného času lovu</option>
+      <option>Porušenie denného limitu úlovkov</option>
+      <option>Použitie zakázanej nástrahy</option>
+      <option>Privlastnenie ryby mimo lovnej miery</option>
+      <option>Privlastnenie ryby v čase ochrany</option>
+    </select>
+  </div>
+</div>
+                <div class="row">
+                  <div class="field">
+                    <label for="checkNote">Poznámka ku kontrole</label>
+                    <textarea id="checkNote" placeholder="Stručný opis kontroly"></textarea>
+                  </div>
+
+                  <div class="field">
+                    <label for="checkPhotos">Fotky</label>
+                    <input id="checkPhotos" type="file" accept="image/*" multiple />
+                  </div>
+                </div>
+
+               <div class="actions">
+    <button id="saveCheckBtn" class="btn-primary" onclick="saveCheck()">Uložiť kontrolu</button>
+    <div id="saveCheckStatus" class="muted small" style="margin-top:8px; min-height:20px;"></div>
+    <button class="btn-muted" onclick="resetCheckForm()">Vyčistiť formulár</button>
+    <button class="btn-muted" onclick="leaveRevir()">Opúšťam revír</button>
+</div>
+              </div>
+
+              <div class="card span-6" id="historiaKontrolCard">
+                <div class="toolbar">
+                  <div>
+                    <h3 style="margin:0;">História kontrol a priestupkov</h3>
+                    <div class="muted small">Všetky záznamy kontroly na jednom mieste</div>
+
+                <div id="checksSummary" class="empty" style="margin-top:8px;margin-bottom:12px;">
+                   Sumár sa zobrazí po zadaní rybára.
+                </div>
+
+                </div>
+              <div class="actions" style="margin:10px 0;">
+               <button class="btn-secondary" onclick="refreshKontrolyData()">Obnoviť údaje</button>
+             </div>
+
+             <div id="refreshKontrolyStatus" class="muted small" style="min-height:20px;"></div>
+
+                <div class="search-box" style="margin-bottom: 12px;">
+                  <select id="checkFilterResult" onchange="renderChecks()">
+                    <option value="">Všetky výsledky</option>
+                    <option value="Bez porušenia">Bez porušenia</option>
+                    <option value="Podozrenie">Podozrenie</option>
+                    <option value="Priestupok">Priestupok</option>
+                    <option value="Pytliactvo">Pytliactvo</option>
+                  </select>
+                </div>
+                <div id="checksList" class="list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-zmeny" class="tab-panel hidden">
+            <div class="grid">
+              <div class="card span-12">
+                <div class="toolbar">
+                  <div>
+                    <h3 style="margin:0;">História zmien</h3>
+                    <div class="muted small">Zachytáva pridanie, úpravy, zmazanie a deaktiváciu údajov</div>
+                  </div>
+                  <div class="actions">
+                    <button class="btn-muted" onclick="clearChangeLog()">Vymazať históriu zmien</button>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Dátum a čas</th>
+                        <th>Používateľ</th>
+                        <th>Oblasť</th>
+                        <th>Akcia</th>
+                        <th>Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody id="changeLogTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+<div id="checksModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="toolbar">
+            <div>
+                <h3 style="margin:0;">Zoznam kontrolovaných rybárov</h3>
+                <div class="muted small">Prehľad všetkých kontrol</div>
+            </div>
+
+            <button class="btn-muted" onclick="closeChecksModal()">
+                Zavrieť
+            </button>
+        </div>
+
+        <div id="checksModalList" class="list"></div>
+    </div>
+</div>
+
+<div id="checkDetailModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Detail kontroly</h3>
+        <div class="muted small">Detail záznamu kontroly</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeCheckDetailModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="checkDetailBody" class="list"></div>
+
+  </div>
+</div>
+
+<div id="editCheckModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Úprava kontroly</h3>
+        <div class="muted small">Úprava výsledku a poznámky</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeEditCheckModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <input type="hidden" id="editCheckId">
+
+    <label>Výsledok kontroly</label>
+    <select id="editCheckResult">
+      <option>Bez porušenia</option>
+      <option>Podozrenie</option>
+      <option>Priestupok</option>
+      <option>Pytliactvo</option>
+    </select>
+
+    <label style="margin-top:12px;">Typ priestupku</label>
+    <input
+      id="editCheckOffence"
+      type="text"
+      placeholder="Voliteľné"
+    >
+
+    <label style="margin-top:12px;">Poznámka</label>
+    <textarea
+      id="editCheckNote"
+      rows="4"
+      placeholder="Doplň poznámku..."
+    ></textarea>
+
+<label style="margin-top:12px;">Existujúce fotky</label>
+
+<div
+  id="editCheckExistingPhotos"
+  style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+</div>
+
+<label style="margin-top:12px;">Doplniť fotku</label>
+<input
+  id="editCheckPhotos"
+  type="file"
+  accept="image/*"
+  multiple
+>
+    <button
+      class="btn-primary"
+      style="margin-top:12px;"
+      onclick="saveEditedCheck()">
+      Uložiť zmeny
+    </button>
+
+  </div>
+</div>
+
+<div id="serviceWithoutCheckModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Služba bez kontroly</h3>
+        <div class="muted small">
+          Evidencia služby revíru bez kontroly rybára
+        </div>
+      </div>
+
+      <button class="btn-muted"
+              onclick="closeServiceWithoutCheckModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div class="item">
+
+      <label>Typ služby</label>
+
+      <select id="serviceType">
+        <option value="">
+          Vyber typ služby
+        </option>
+
+        <option>
+          Bežná kontrola rybárov
+        </option>
+
+        <option>
+          Kontrola revíru počas zákazu lovu
+        </option>
+
+        <option>
+          Nočná obchôdzka revíru
+        </option>
+
+        <option>
+          Protipytliacka služba
+        </option>
+
+        <option>
+          Obhliadka revíru
+        </option>
+
+        <option>
+          Na revíri nebol zistený žiadny rybár
+        </option>
+
+        <option>
+          Iné
+        </option>
+      </select>
+
+      <label style="margin-top:12px;">
+        Poznámka
+      </label>
+
+      <textarea
+        id="serviceNote"
+        rows="3"
+        placeholder="Voliteľná poznámka..."
+      ></textarea>
+
+<label style="margin-top:12px; display:flex; gap:10px; align-items:center; justify-content:flex-start;">
+ <input
+  type="checkbox"
+  id="isGroupService"
+  style="width:auto;"
+  onchange="toggleGroupMembersBox()"
+>
+  <span>Spoločná akcia viacerých členov RS</span>
+</label>
+
+<div
+  id="groupMembersBox"
+  class="hidden"
+  style="margin-top:12px;"
+>
+  <div class="muted small" style="margin-bottom:6px;">
+    Vyber ďalších členov akcie:
+  </div>
+
+  <div id="groupMembersList"></div>
+</div>
+
+     <button
+  id="saveServiceWithoutCheckBtn"
+  style="margin-top:12px;"
+  class="btn-primary"
+  onclick="saveServiceWithoutCheck()">
+
+        Uložiť službu
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<div id="groupActionModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Spoločná akcia RS</h3>
+        <div class="muted small">
+          Výber účastníkov spoločnej akcie
+        </div>
+      </div>
+
+      <button
+        class="btn-muted"
+        onclick="closeGroupActionModal()">
+        Zavrieť
+      </button>
+    </div>
+
+   <div id="groupActionBody" class="item">
+  <div class="muted small" style="margin-bottom:8px;">
+    Prihlásený člen bude pridaný automaticky.
+  </div>
+
+  <div id="groupActionMembersList"></div>
+
+  <button
+    style="margin-top:12px;"
+    class="btn-primary"
+    onclick="saveGroupActionService()">
+    Uložiť službu
+  </button>
+</div>
+
+  </div>
+</div>
+
+<div id="fisherProfileModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Profil rybára</h3>
+        <div class="muted small">Detail rybára a platnosť povolení</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeFisherProfileModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="fisherProfileModalBody" class="list"></div>
+  </div>
+</div>
+<div id="memberStatsModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="toolbar">
+            <div>
+                <h3 style="margin:0;">Aktivita hliadok RS</h3>
+                <div class="muted small">Prehľad aktivít a kontrol podľa členov RS</div>
+            </div>
+
+            <button class="btn-muted" onclick="closeMemberStatsModal()">
+                Zavrieť
+            </button>
+        </div>
+
+        <div id="memberStatsList" class="list"></div>
+    </div>
+</div>
+
+<div id="revirStatsModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="toolbar">
+            <div>
+                <h3 style="margin:0;">Kontrolovaní podľa revírov</h3>
+                <div class="muted small">Počet kontrolovaných rybárov na jednotlivých revíroch</div>
+            </div>
+
+            <button class="btn-muted" onclick="closeRevirStatsModal()">
+                Zavrieť
+            </button>
+        </div>
+
+        <div id="revirStatsList" class="list"></div>
+    </div>
+</div>
+
+<div id="reviryInfoModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+
+        <h3 style="margin:0;">Informácie o revíroch</h3>
+        <div class="muted small">Prehľad revírov MsO Sereď</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeReviryInfoModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="reviryInfoList" class="list"></div>
+
+  </div>
+</div>
+
+<div id="revirDetailModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 id="revirDetailTitle" style="margin:0;">Detail revíru</h3>
+        <div class="muted small">Informácie o vybranom revíri</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeRevirDetailModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="revirDetailContent" class="list"></div>
+
+  </div>
+</div>
+
+<div id="sluzbyReviryModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">Služby revírov RS</h3>
+        <div class="muted small">Prehľad ukončených služieb na revíroch</div>
+      </div>
+
+      <button class="btn-muted" onclick="closeSluzbyReviryModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="sluzbyReviryList" class="list"></div>
+  </div>
+</div>
+
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'rs_app_data_v2';
+    const ACTIVE_REVIR_KEY = 'rs_active_revir';
+
+const REVIRS = [
+  "Vodná nádrž Báb (2-4460-1-1)",
+  "Bágrovisko Šintava (2-4020-1-1)",
+  "Váh č.3 (2-4380-1-1)",
+  "VN Kráľová (2-4930-1-1)",
+  "Rameno Horný Čepeň (2-1590-1-1)",
+  "VN Pusté Sady (2-5190-1-1)",
+  "VN Hlohovník (2-4750-1-2)",
+  "Nová Voda - Účko (2-2770-1-1)",
+  "Koleno (2-2771-1-1)",
+  "Čepenské štrkoviská (2-2772-1-1)",
+  "Jarčie č.2 (2-0820-1-1)"
+];
+
+const reviryInfo = {
+"Vodná nádrž Báb (2-4460-1-1)": {
+  cislo: "2-4460-1-1",
+  rozloha: "27 ha",
+  okres: "Nitra",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha nádrže pri obci Báb.",
+  poznamka: "Všeobecný zákaz lovu rýb od 15. marca do 31. mája; neplatí od 1. mája do 31. mája, ak užívateľ uskutočňuje rybárske preteky alebo športové rybárske preteky.",
+  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  ustanovenia: ""
+},
+
+"Bágrovisko Šintava (2-4020-1-1)": {
+  cislo: "2-4020-1-1",
+  rozloha: "8,8 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha štrkoviska pri obci Šintava.",
+  poznamka: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany.",
+  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  ustanovenia: ""
+},
+
+"Váh č.3 (2-4380-1-1)": {
+  cislo: "2-4380-1-1",
+  rozloha: "neznáma",
+  okres: "Trnava",
+  charakter: "kaprové vody",
+  popis: "Čiastkové povodie Váhu od cestného mosta v obci Váhovce po kanál Dudváh pri obci Siladice. Tri ostrovy nad diaľničným mostom pri obci Váhovce sú vyhlásené za prírodnú rezerváciu – vstup zakázaný.",
+  poznamka: "Čiastkové povodie Váhu od cestného mosta v obci Váhovce po kanál Dudváh pri obci Siladice. Tri ostrovy nad diaľničným mostom pri obci Váhovce sú vyhlásené za prírodnú rezerváciu – vstup zakázaný.",
+  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+},
+
+"VN Kráľová (2-4930-1-1)": {
+  cislo: "2-4930-1-1",
+  rozloha: "1082 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha nádrže pri obci Kráľová nad Váhom.",
+  poznamka: "Tento rybársky revír je vyhlásený vyhláškou č. 21/2008 Ministerstva životného prostredia SR za chránené vtáčie územie Kráľová.",
+  lovnaMiera: "-",
+  ustanovenia: "Zakázané činnosti: lov rýb z ostrovov, stáť posedmi, móla alebo stany na náveternej strane hrádze po celej vodnej ploche zdrže VD ako aj ostrovov, kempovanie a parkovanie kempingových prívesov a stanov po celej návodnej strane hrádze zdrže VD, lov rýb v celom objekte ZKŠ Štrkopiesky."
+},
+
+ "Rameno Horný Čepeň (2-1590-1-1)": {
+  cislo: "2-1590-1-1",
+  rozloha: "7 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha odstaveného ramena rieky Váh pri obci Horný Čepeň.",
+  poznamka: "Vodná plocha odstaveného ramena rieky Váh pri obci Horný Čepeň.",
+  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  ustanovenia: "Všeobecný zákaz lovu rýb – od 15. marca sa zakazuje lov všetkých rýb do 31. mája; to neplatí od 1." 
+},
+
+ "VN Pusté Sady (2-5190-1-1)": {
+  cislo: "2-5190-1-1",
+  rozloha: "3 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná nádrž pri obci Pusté Sady určená na výkon rybárskeho práva.",
+  poznamka: "Vodná plocha bočnej vodnej nádrže pri obci Pusté Sady.",
+  lovnaMiera: "",
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+},
+
+ "VN Hlohovník (2-4750-1-2)": {
+  cislo: "2-4750-1-2",
+  rozloha: "5 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná nádrž Hlohovník pri obci Hlohovec určená na športový rybolov.",
+  poznamka: "Vodná plocha nádrže pri obci Vinohrady nad Váhom.",
+  lovnaMiera: "",
+  ustanovenia: ""
+},
+
+ "Nová Voda - Účko (2-2770-1-1)": {
+  cislo: "2-2770-1-1",
+  rozloha: "14 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha Nová Voda (Účko) pri Seredi využívaná na športový rybolov.",
+  poznamka: "Štrkovisko na rozhraní katastrálnych území Horný a Stredný Čepeň /Bývalé Účko/.",
+  lovnaMiera: "Minimálna lovná miera: lieň sliznatý 40 cm, amur biely 70 cm. Maximálna lovná miera: kapor rybničný 70 cm.",
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+},
+
+ "Koleno (2-2771-1-1)": {
+  cislo: "2-2771-1-1",
+  rozloha: "6 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná plocha Koleno pri Seredi využívaná na športový rybolov.",
+  poznamka: "Vodná plocha sústavy 2. štrkovísk pri záhradkárskej osade v katastrálnom území Dolný Čepeň. Sem patrí aj 'Kačičáreň'.",
+  lovnaMiera: "Minimálna lovná miera: lieň sliznatý 40 cm, amur biely 70 cm. Maximálna lovná miera: kapor rybničný 70 cm.",
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+},
+
+ "Čepenské štrkoviská (2-2772-1-1)": {
+  cislo: "2-2772-1-1",
+  rozloha: "44 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Sústava štrkovísk pri mestskej časti Horný Čepeň. Významný revír MsO Sereď využívaný na športový rybolov.",
+  poznamka: "Vodná plocha sústavy 6. štrkovísk v katastrálnom území Horný Čepeň. Sem patria všetky štrkoviská za Novou vodou /Účkom/.",
+  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+},
+
+"Jarčie č.2 (2-0820-1-1)": {
+  cislo: "2-0820-1-1",
+  rozloha: "3 ha",
+  okres: "Galanta",
+  charakter: "kaprové vody",
+  popis: "Vodná nádrž Jarčie č.2 určená na výkon rybárskeho práva a športový rybolov.",
+  poznamka: "Jarčie /potok Jác/ od diaľničného mosta pri obci Pata po pramene.",
+  lovnaMiera: "",
+  ustanovenia: ""
+}
+};
+
+const appState = {
+  currentUserId: null,
+  activeRevir: '',
+  activeRevirStart: '',
+  kontrolyLoaded: false,
+  data: {
+    fishers: [],
+    members: [],
+    checks: [],
+    changeLog: []
+  }
+};
+
+    function uid(prefix) {
+      return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function nowText() {
+      return new Date().toLocaleString('sk-SK');
+    }
+
+function saveActiveRevir() {
+  localStorage.setItem(ACTIVE_REVIR_KEY, JSON.stringify({
+    revir: appState.activeRevir,
+    start: appState.activeRevirStart
+  }));
+}
+
+function localDateKey(value) {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function loadActiveRevir() {
+  const raw = localStorage.getItem(ACTIVE_REVIR_KEY);
+  if (!raw) return;
+
+  try {
+    const data = JSON.parse(raw);
+    appState.activeRevir = data.revir || '';
+    appState.activeRevirStart = data.start || '';
+  } catch (error) {
+    appState.activeRevir = '';
+    appState.activeRevirStart = '';
+  }
+}
+
+function setActiveRevirFromSelect() {
+  const revir = document.getElementById('checkPlace').value;
+
+  if (!revir) return;
+
+  appState.activeRevir = revir;
+
+  if (!appState.activeRevirStart) {
+    appState.activeRevirStart = new Date().toISOString();
+  }
+
+  saveActiveRevir();
+}
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function safeText(value) {
+      return String(value ?? '').trim();
+    }
+
+    function normalize(value) {
+      return safeText(value).toLowerCase();
+    }
+
+    function getCurrentUser() {
+      return appState.data.members.find(item => item.id === appState.currentUserId) || null;
+    }
+
+   function getMemberName(id) {
+    if (!id) return '-';
+    const member = appState.data.members.find(item => String(item.id) === String(id));
+    return member ? member.name : '-';
+}
+
+    function getFisherName(id) {
+      const fisher = appState.data.fishers.find(item => item.id === id);
+      return fisher ? fisher.name : '-';
+    }
+function getFisherHistory(fisherName) {
+    return appState.data.checks.filter(item => {
+        const name =
+            item.fisher_name ||
+            item.fisherName ||
+            getFisherName(item.fisherId);
+
+        return normalize(name).includes(normalize(fisherName));
+    });
+}
+
+function showFisherHistory(fisherName) {
+    const history = getFisherHistory(fisherName);
+
+    console.log('História rybára:', fisherName, history.length);
+
+}
+
+    function statusBadge(status) {
+      if (status === 'Aktívny') return '<span class="badge badge-green">Aktívny</span>';
+      if (status === 'Neaktívny') return '<span class="badge badge-gray">Neaktívny</span>';
+      if (status === 'Pozastavený') return '<span class="badge badge-orange">Pozastavený</span>';
+      if (status === 'Neplatné povolenie') return '<span class="badge badge-red">Neplatné povolenie</span>';
+      if (status === 'Bez porušenia') return '<span class="badge badge-green">Bez porušenia</span>';
+      if (status === 'Podozrenie') return '<span class="badge badge-yellow">Podozrenie</span>';
+      if (status === 'Priestupok') return '<span class="badge badge-orange">Priestupok</span>';
+      if (status === 'Pytliactvo') return '<span class="badge badge-red">Pytliactvo</span>';
+      return '<span class="badge badge-blue">' + escapeHtml(status) + '</span>';
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      renderAll();
+      alert('Dáta boli uložené lokálne.');
+    }
+
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+     if (!raw) {
+  appState.data = {
+    fishers: [],
+    members: [],
+    checks: [],
+    changeLog: []
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+  return;
+}
+
+      try {
+        const parsed = JSON.parse(raw);
+        const data = parsed.data || parsed;
+
+        appState.data = {
+          fishers: Array.isArray(data.fishers) ? data.fishers : [],
+          members: Array.isArray(data.members) ? data.members : [],
+          checks: Array.isArray(data.checks) ? data.checks : [],
+          changeLog: Array.isArray(data.changeLog) ? data.changeLog : []
+        };
+
+      } catch (error) {
+        appState.data = createDemoData();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      }
+    }
+
+    function createDemoData() {
+      const members = [
+        { id: uid('member'), name: 'Alexander Greman', badge: 'RS-001', area: 'Čepenské štrkoviská', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Andrej Fraňo', badge: 'RS-002', area: 'Bágrovisko Šintava', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Daniel Tulala', badge: 'RS-003', area: 'Váh č.3', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Dušan Brezík', badge: 'RS-004', area: 'Rameno Horný Čepeň', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Ján Forro', badge: 'RS-005', area: 'Nová Voda (Účko)', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Jaroslav Antal', badge: 'RS-006', area: 'Koleno', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Lukáš Bíro', badge: 'RS-007', area: 'VN Báb', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Lukáš Bojnanský', badge: 'RS-008', area: 'VN Pusté Sady', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Lukáš Eördögh', badge: 'RS-009', area: 'VN Hlohovník', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Marek Cicák', badge: 'RS-010', area: 'Jarčie č.2', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Marián Kohút', badge: 'RS-011', area: 'Čepenské štrkoviská', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Marián Kuracina', badge: 'RS-012', area: 'Bágrovisko Šintava', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Marián Šujdák', badge: 'RS-013', area: 'Váh č.3', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Milan Tóth', badge: 'RS-014', area: 'Rameno Horný Čepeň', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Peter Pikna', badge: 'RS-015', area: 'Nová Voda (Účko)', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Peter Strapáč', badge: 'RS-016', area: 'Koleno', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Peter Zbojek', badge: 'RS-017', area: 'VN Báb', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Stanislav Rojka', badge: 'RS-018', area: 'VN Pusté Sady', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() },
+        { id: uid('member'), name: 'Tomáš Svrbický', badge: 'RS-019', area: 'VN Hlohovník', role: 'Člen RS', code: '', status: 'Aktívny', note: '', createdAt: nowText(), updatedAt: nowText() }
+      ];
+
+      const fisher1 = {
+        id: uid('fisher'),
+        name: 'Ján Novák',
+        permitNumber: 'SRZ-2026-001',
+        district: 'SRZ Sereď',
+        status: 'Aktívny',
+        phone: '0901 111 222',
+        note: 'Bez záznamu',
+        createdAt: nowText(),
+        updatedAt: nowText()
+      };
+
+      const fisher2 = {
+        id: uid('fisher'),
+        name: 'Milan Baláž',
+        permitNumber: 'SRZ-2026-002',
+        district: 'SRZ Galanta',
+        status: 'Pozastavený',
+        phone: '',
+        note: 'Predchádzajúci priestupok',
+        createdAt: nowText(),
+        updatedAt: nowText()
+      };
+
+      const check1 = {
+        id: uid('check'),
+        fisherId: fisher1.id,
+        fisherName: fisher1.name,
+        fisherIdNo: fisher1.permitNumber,
+        memberId: members[0].id,
+        date: todayISO(),
+        place: 'Čepenské štrkoviská',
+        result: 'Bez porušenia',
+        offenceType: '',
+        note: 'Doklady a úlovok v poriadku.',
+        photos: [],
+        createdAt: nowText(),
+        createdBy: members[0].id
+      };
+
+      const check2 = {
+        id: uid('check'),
+        fisherId: fisher2.id,
+        fisherName: fisher2.name,
+        fisherIdNo: fisher2.permitNumber,
+        memberId: members[1].id,
+        date: todayISO(),
+        place: 'Bágrovisko Šintava',
+        result: 'Priestupok',
+        offenceType: 'Lov bez povolenia',
+        note: 'Zdokumentované a zapísané.',
+        photos: [],
+        createdAt: nowText(),
+        createdBy: members[1].id
+      };
+
+      return {
+        fishers: [fisher1, fisher2],
+        members,
+        checks: [check1, check2],
+        changeLog: [
+          {
+            id: uid('log'),
+            time: nowText(),
+            user: 'Systém',
+            area: 'Inicializácia',
+            action: 'Vytvorenie',
+            detail: 'Boli vytvorené ukážkové dáta.'
+          }
+        ]
+      };
+    }
+
+  function logChange(area, action, detail) {
+  const user = getCurrentUser();
+
+  appState.data.changeLog.unshift({
+    id: uid('log'),
+    time: nowText(),
+    user: user ? user.name : 'Systém',
+    area,
+    action,
+    detail
+  });
+
+  if (appState.data.changeLog.length > 50) {
+    appState.data.changeLog = appState.data.changeLog.slice(0, 50);
+  }
+}
+
+    function populateLoginMembers() {
+  // Login cez zoznam členov je vypnutý.
+  // Prihlásenie teraz prebieha cez číslo odznaku.
+}
+
+  function loginRS() {
+  const cisloOdznakuInput = document.getElementById('loginCisloOdznaku').value.trim().toUpperCase().replace('-', '');
+
+  if (!cisloOdznakuInput) {
+    alert('Zadaj číslo odznaku alebo prístupový kód.');
+    return;
+  }
+
+const member = appState.data.members.find(item => {
+  const badge =
+    String(item.cislo_odznaku || '')
+      .trim()
+      .toUpperCase()
+      .replace('-', '');
+
+  const accessCode =
+    String(item.access_code || '')
+      .trim()
+      .toUpperCase()
+      .replace('-', '');
+
+  return (
+    badge === cisloOdznakuInput ||
+    accessCode === cisloOdznakuInput
+  );
+});
+
+  if (!cisloOdznakuInput) {
+    alert('Zadaj číslo odznaku alebo prístupový kód.');
+    return;
+  }
+
+  if (!member) {
+    alert('Používateľ s týmto odznakom alebo prístupovým kódom nebol nájdený.');
+    return;
+  }
+
+  if (normalize(member.status) !== normalize('Aktívny')) {
+    alert('Tento člen RS nie je aktívny.');
+    return;
+  }
+
+  appState.currentUserId = member.id;
+  document.getElementById('loginSection').classList.add('hidden');
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+  document.getElementById('mainMenuSection').classList.remove('hidden');
+  document.getElementById('filterSection').classList.remove('hidden');
+  document.getElementById('logoutBtn').classList.remove('hidden');
+  document.getElementById('loggedUserText').textContent = 'Prihlásený: ' + member.name;
+  logChange('Prihlásenie', 'Prihlásenie', 'Prihlásený člen RS: ' + member.name);
+
+const teraz = aktualnyCas();
+document.getElementById('checkTimeFrom').value = teraz;
+document.getElementById('checkTimeTo').value = teraz;
+
+renderAll();
+}
+
+    function logoutRS() {
+      appState.currentUserId = null;
+      document.getElementById('appSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById('mainMenuSection').classList.add('hidden');
+      document.getElementById('filterSection').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
+      document.getElementById('loggedUserText').textContent = 'Neprihlásený';
+      document.getElementById('loginCisloOdznaku').value = '';
+    }
+
+async function leaveRevir() {
+
+    if (!appState.activeRevir) {
+        alert('Nie je zvolený žiadny aktívny revír.');
+        return;
+    }
+
+    const koniec = nowText();
+
+
+let pocetKontrol = 0;
+
+const zaciatokDate = new Date(appState.activeRevirStart);
+const koniecDate = new Date();
+const koniecIso = koniecDate.toISOString();
+
+const { count, error: countError } = await db
+  .from('checks')
+  .select('id', { count: 'exact', head: true })
+  .eq('location', appState.activeRevir)
+  .gte('created_at', appState.activeRevirStart)
+  .lte('created_at', koniecIso);
+
+if (countError) {
+  console.error('Chyba pri počítaní kontrol:', countError);
+  alert('Nepodarilo sa načítať počet kontrol zo Supabase.');
+  return;
+}
+
+pocetKontrol = count || 0;
+
+let trvanieText = '';
+let trvanieMin = 0;
+
+if (!isNaN(zaciatokDate.getTime())) {
+  const rozdielMs = koniecDate - zaciatokDate;
+  trvanieMin = Math.floor(rozdielMs / 60000);
+  const hodiny = Math.floor(trvanieMin / 60);
+  const minuty = trvanieMin % 60;
+
+  trvanieText = hodiny + ' h ' + minuty + ' min';
+}
+
+if (pocetKontrol === 0) {
+  openServiceWithoutCheckModal();
+  return;
+}
+
+const isGroupAction = document.getElementById('isGroupCheck')?.checked;
+
+if (isGroupAction) {
+    openGroupActionModal();
+    return;
+}
+
+const sprava =
+        'Revír: ' + appState.activeRevir + '\n\n' +
+        'Začiatok: ' + new Date(appState.activeRevirStart).toLocaleString('sk-SK') + '\n' +
+        'Koniec: ' + koniec + '\n' +
+        'Trvanie: ' + trvanieText + '\n\n' +
+        'Počet kontrol: ' + pocetKontrol + '\n\n' +
+        'Naozaj chceš ukončiť službu na tomto revíri?';
+
+if (!confirm(sprava)) return;
+
+const currentMember = getCurrentUser();
+
+const { error: sluzbaError } = await db
+  .from('sluzby_reviry')
+  .insert([{
+    revir: appState.activeRevir,
+    zaciatok: appState.activeRevirStart,
+    koniec: koniecIso,
+    trvanie_min: trvanieMin,
+    pocet_kontrol: pocetKontrol,
+    clen_rs: currentMember ? currentMember.name : '',
+    clen_rs_id: appState.currentUserId || ''
+  }]);
+
+if (sluzbaError) {
+  console.error('Chyba pri uložení služby revíru:', sluzbaError);
+  alert('Služba revíru sa neuložila do Supabase.');
+  return;
+}
+
+await loadSluzbyReviry();
+renderStats();
+updateDashboard();
+
+    appState.activeRevir = '';
+    appState.activeRevirStart = '';
+
+    localStorage.removeItem(ACTIVE_REVIR_KEY);
+
+    document.getElementById('checkPlace').value = '';
+
+    alert('Revír bol ukončený.');
+}
+
+    function ensureLogged() {
+      if (!appState.currentUserId) {
+        alert('Najprv sa prihlás ako člen RS.');
+        return false;
+      }
+      return true;
+    }
+
+    function resetFisherForm() {
+      document.getElementById('fisherEditId').value = '';
+      document.getElementById('fisherName').value = '';
+      document.getElementById('fisherMemberId').value = '';
+      document.getElementById('fisherValidFrom').value = '';
+      document.getElementById('fisherValidTo').value = '';
+      document.getElementById('fisherLocalPermit').checked = false;
+      document.getElementById('fisherUnionPermit').checked = false;
+      document.getElementById('fisherNumber').value = '';
+      document.getElementById('fisherDistrict').value = '';
+      document.getElementById('fisherStatus').value = 'Aktívny';
+      document.getElementById('fisherNote').value = '';
+      const fisherFormTitle = document.getElementById('fisherFormTitle');
+      if (fisherFormTitle) fisherFormTitle.textContent = 'Pridať rybára';
+    }
+
+    function saveFisher() {
+      if (!ensureLogged()) return;
+
+      const editId = document.getElementById('fisherEditId').value;
+      const name = safeText(document.getElementById('fisherName').value);
+      const memberId = safeText(document.getElementById('fisherMemberId').value);
+      const validFrom = document.getElementById('fisherValidFrom').value;
+      const validTo = document.getElementById('fisherValidTo').value;
+      const localPermit = document.getElementById('fisherLocalPermit').checked;
+      const unionPermit = document.getElementById('fisherUnionPermit').checked;
+      const permitNumber = safeText(document.getElementById('fisherNumber').value);
+      const district = safeText(document.getElementById('fisherDistrict').value);
+      const status = document.getElementById('fisherStatus').value;
+      const note = safeText(document.getElementById('fisherNote').value);
+
+    if (!name) {
+  alert('Vyplň meno rybára.');
+  return;
+}
+
+      const duplicate = permitNumber && appState.data.fishers.find(item => item.permitNumber === permitNumber && item.id !== editId);
+      if (duplicate) {
+        alert('Rybár s týmto číslom povolenia už existuje.');
+        return;
+      }
+
+const duplicateMemberId = memberId && appState.data.fishers.find(item =>
+    normalize(item.memberId) === normalize(memberId) && item.id !== editId
+);
+
+if (duplicateMemberId) {
+    alert('Rybár s týmto členským ID už existuje.');
+    return;
+}
+
+      if (editId) {
+        const fisher = appState.data.fishers.find(item => item.id === editId);
+        if (!fisher) return;
+
+        const before = fisher.name + ', ' + fisher.permitNumber + ', ' + fisher.status;
+        fisher.name = name;
+        fisher.memberId = memberId;
+        fisher.permitNumber = permitNumber;
+        fisher.district = district;
+        fisher.status = status;
+        fisher.note = note;
+        fisher.updatedAt = nowText();
+
+        logChange('Rybár', 'Úprava', 'Upravený rybár: ' + before + ' -> ' + name + ', ' + permitNumber + ', ' + status);
+      } else {
+       const fisher = {
+    id: uid('fisher'),
+    name,
+    memberId,
+    permitNumber,
+    validFrom,
+    validTo,
+    localPermit,
+    unionPermit,
+    district,
+    status,
+    note,
+    createdAt: nowText(),
+    updatedAt: nowText()
+};
+        appState.data.fishers.unshift(fisher);
+db.from('fishers').insert([{
+    name: name,
+    member_id: memberId,
+    permit_number: permitNumber,
+    permit_valid_from: validFrom || null,
+    permit_valid_to: validTo || null,
+    local_permit: localPermit,
+    union_permit: unionPermit,
+    organizacia: district,
+    stav: status,
+    poznamka: note
+}])
+.then(response => {
+    console.log('Rybár uložený do Supabase:', response);
+})
+.catch(error => {
+    console.error('Chyba pri ukladaní rybára do Supabase:', error);
+});
+
+        logChange('Rybár', 'Pridanie', 'Pridaný rybár: ' + name + ', povolenie ' + permitNumber);
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      resetFisherForm();
+      renderAll();
+    }
+
+    function editFisher(id) {
+      const fisher = appState.data.fishers.find(item => String(item.id) === String(id));
+      if (!fisher) return;
+
+      document.getElementById('fisherEditId').value = fisher.id;
+      document.getElementById('fisherName').value = fisher.name;
+      document.getElementById('fisherMemberId').value = fisher.memberId || '';
+      document.getElementById('fisherNumber').value = fisher.permitNumber;
+      document.getElementById('fisherValidFrom').value = fisher.validFrom || '';
+      document.getElementById('fisherValidTo').value = fisher.validTo || '';
+      document.getElementById('fisherLocalPermit').checked = !!fisher.localPermit;
+      document.getElementById('fisherUnionPermit').checked = !!fisher.unionPermit;
+      document.getElementById('fisherDistrict').value = fisher.district;
+      document.getElementById('fisherStatus').value = fisher.status;
+      document.getElementById('fisherNote').value = fisher.note || '';
+      document.getElementById('fisherFormTitle').textContent = 'Upraviť rybára';
+      switchTab('rybari');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteFisher(id) {
+      if (!ensureLogged()) return;
+
+      const fisher = appState.data.fishers.find(item => item.id === id);
+      if (!fisher) return;
+
+    const hasChecks = appState.data.checks.some(item => {
+  return item.fisherId === id;
+});
+
+      if (hasChecks) {
+        alert('Rybára nie je možné zmazať, pretože má históriu kontrol.');
+        return;
+      }
+
+      if (!confirm('Naozaj chceš zmazať rybára ' + fisher.name + '?')) return;
+
+      appState.data.fishers = appState.data.fishers.filter(item => item.id !== id);
+      logChange('Rybár', 'Zmazanie', 'Zmazaný rybár: ' + fisher.name + ', povolenie ' + fisher.permitNumber);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      renderAll();
+    }
+
+    function resetMemberForm() {
+      document.getElementById('memberEditId').value = '';
+      document.getElementById('memberName').value = '';
+      document.getElementById('memberBadge').value = '';
+      document.getElementById('memberArea').value = '';
+      document.getElementById('memberRole').value = 'Člen RS';
+      document.getElementById('memberCode').value = '';
+      document.getElementById('memberActive').value = 'Aktívny';
+      document.getElementById('memberNote').value = '';
+      document.getElementById('memberFormTitle').textContent = 'Pridať člena RS';
+    }
+
+    function saveMember() {
+      if (!ensureLogged()) return;
+
+      const editId = document.getElementById('memberEditId').value;
+      const name = safeText(document.getElementById('memberName').value);
+      const badge = safeText(document.getElementById('memberBadge').value);
+      const area = safeText(document.getElementById('memberArea').value);
+      const role = document.getElementById('memberRole').value;
+      const code = safeText(document.getElementById('memberCode').value);
+      const status = document.getElementById('memberActive').value;
+      const note = safeText(document.getElementById('memberNote').value);
+
+      if (!name || !badge) {
+        alert('Vyplň meno a číslo odznaku.');
+        return;
+      }
+
+      const duplicate = appState.data.members.find(item => item.badge === badge && item.id !== editId);
+      if (duplicate) {
+        alert('Člen RS s týmto číslom odznaku už existuje.');
+        return;
+      }
+
+      if (editId) {
+        const member = appState.data.members.find(item => item.id === editId);
+        if (!member) return;
+
+        const before = member.name + ', ' + member.badge + ', ' + member.status;
+        member.name = name;
+        member.badge = badge;
+        member.area = area;
+        member.role = role;
+        member.code = code;
+        member.status = status;
+        member.note = note;
+        member.updatedAt = nowText();
+
+        logChange('Člen RS', 'Úprava', 'Upravený člen RS: ' + before + ' -> ' + name + ', ' + badge + ', ' + status);
+      } else {
+        const member = {
+          id: uid('member'),
+          name,
+          badge,
+          area,
+          role,
+          code,
+          status,
+          note,
+          createdAt: nowText(),
+          updatedAt: nowText()
+        };
+        appState.data.members.unshift(member);
+        logChange('Člen RS', 'Pridanie', 'Pridaný člen RS: ' + name + ', odznak ' + badge);
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      resetMemberForm();
+      renderAll();
+    }
+
+    function editMember(id) {
+      const member = appState.data.members.find(item => item.id === id);
+      if (!member) return;
+
+      document.getElementById('memberEditId').value = member.id;
+      document.getElementById('memberName').value = member.name;
+      document.getElementById('memberBadge').value = member.badge;
+      document.getElementById('memberArea').value = member.area || '';
+      document.getElementById('memberRole').value = member.role || 'Člen RS';
+      document.getElementById('memberCode').value = member.code || '';
+      document.getElementById('memberActive').value = member.status;
+      document.getElementById('memberNote').value = member.note || '';
+      document.getElementById('memberFormTitle').textContent = 'Upraviť člena RS';
+      switchTab('clenovia');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleMemberStatus(id) {
+      if (!ensureLogged()) return;
+
+      const member = appState.data.members.find(item => item.id === id);
+      if (!member) return;
+
+      if (appState.currentUserId === id) {
+        alert('Prihláseného člena RS nie je možné deaktivovať.');
+        return;
+      }
+
+      member.status = member.status === 'Aktívny' ? 'Neaktívny' : 'Aktívny';
+      member.updatedAt = nowText();
+
+      const action = member.status === 'Aktívny' ? 'Aktivácia' : 'Deaktivácia';
+      logChange('Člen RS', action, action + ' člena RS: ' + member.name + ', odznak ' + member.badge);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      renderAll();
+      updateDashboard();
+    }
+
+    function deleteMember(id) {
+      if (!ensureLogged()) return;
+
+      const member = appState.data.members.find(item => item.id === id);
+      if (!member) return;
+
+      if (appState.currentUserId === id) {
+        alert('Prihláseného člena RS nie je možné zmazať.');
+        return;
+      }
+
+      const hasChecks = appState.data.checks.some(item => item.memberId === id);
+      if (hasChecks) {
+        alert('Člena RS nie je možné zmazať, pretože má zapísané kontroly. Použi deaktiváciu.');
+        return;
+      }
+
+      if (!confirm('Naozaj chceš zmazať člena RS ' + member.name + '?')) return;
+
+      appState.data.members = appState.data.members.filter(item => item.id !== id);
+      logChange('Člen RS', 'Zmazanie', 'Zmazaný člen RS: ' + member.name + ', odznak ' + member.badge);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      renderAll();
+      updateDashboard();
+    }
+
+    function resetFilter() {
+      document.getElementById("filterDatumOd").value = "";
+      document.getElementById("filterDatumDo").value = "";
+      document.getElementById("filterClenRS").value = "";
+      document.getElementById("filterRevir").value = "";
+      updateDashboard();
+    }
+
+    function resetCheckForm() {
+      document.getElementById('checkFisherName').value = '';
+      document.getElementById('checkFisherIdNo').value = '';
+
+      document.getElementById('checkFisherName').readOnly = false;
+      document.getElementById('checkFisherIdNo').readOnly = false;
+
+      document.getElementById('checkFisherDbId').value = '';
+
+      const permitInfo = document.getElementById('checkPermitInfo');
+if (permitInfo) permitInfo.innerHTML = '';
+
+const profile = document.getElementById('checkFisherProfile');
+if (profile) {
+  profile.innerHTML = '';
+  profile.style.display = 'none';
+}
+
+      document.getElementById('checkDate').value = todayISO();
+
+const teraz = aktualnyCas();
+document.getElementById('checkTimeFrom').value = teraz;
+document.getElementById('checkTimeTo').value = teraz;
+
+      // document.getElementById('checkPlace').value = '';
+      document.getElementById('checkResult').value = 'Bez porušenia';
+      document.getElementById('checkOffenceType').value = '';
+      document.getElementById('checkNote').value = '';
+      document.getElementById('checkPhotos').value = '';
+      populateCheckSelectors();
+      toggleOffenceType();
+    }
+
+    function toggleOffenceType() {
+      const result = document.getElementById('checkResult').value;
+      const offence = document.getElementById('checkOffenceType');
+
+      if (result === 'Bez porušenia') {
+        offence.value = '';
+        offence.disabled = true;
+      } else {
+        offence.disabled = false;
+      }
+    }
+
+   function findLinkedFisher(fisherName, fisherIdNo) {
+  const searchName = normalize(fisherName);
+  const searchId = normalize(fisherIdNo);
+
+  return appState.data.fishers.find(f =>
+    (searchId && normalize(f.memberId) === searchId) ||
+    (searchId && normalize(f.permitNumber) === searchId) ||
+    (searchName && normalize(f.name) === searchName)
+  ) || null;
+}
+
+    function saveCheck() {
+      if (!ensureLogged()) return;
+
+      const fisherName = safeText(document.getElementById('checkFisherName').value);
+      const fisherIdNo = safeText(document.getElementById('checkFisherIdNo').value);
+      const fisherDbId = document.getElementById('checkFisherDbId').value;
+      const memberId1 = document.getElementById('checkMember1').value;
+      const memberId2 = document.getElementById('checkMember2').value;
+      const date = document.getElementById('checkDate').value;
+      const timeFrom = document.getElementById('checkTimeFrom').value;
+      const timeTo = document.getElementById('checkTimeTo').value;
+      const place = safeText(document.getElementById('checkPlace').value);
+      const result = document.getElementById('checkResult').value;
+      const offenceType = safeText(document.getElementById('checkOffenceType').value);
+      const note = safeText(document.getElementById('checkNote').value);
+      const files = Array.from(document.getElementById('checkPhotos').files || []);
+
+     if ((!fisherName && !fisherIdNo) || !memberId1 || !date || !place) {
+        alert('Vyplň meno alebo identifikačné číslo rybára, člena RS, dátum a miesto kontroly.');
+        return;
+      }
+
+      const linkedFisher =
+  appState.data.fishers.find(f => f.id === fisherDbId) ||
+  findLinkedFisher(fisherName, fisherIdNo);
+
+      const check = {
+        id: uid('check'),
+        fisherId: linkedFisher ? linkedFisher.id : null,
+        fisherName: fisherName || (linkedFisher ? linkedFisher.name : ''),
+        fisherIdNo: fisherIdNo || (linkedFisher ? linkedFisher.permitNumber : ''),
+        memberId1,
+        memberId2,
+        date,
+        timeFrom,
+        timeTo,
+        place,
+        result,
+        offenceType,
+        note,
+        photos: [],
+        createdAt: nowText(),
+        createdBy: appState.currentUserId
+      };
+
+      if (files.length === 0) {
+        finalizeCheckSave(check);
+        return;
+      }
+
+      uploadCheckPhotos(check, files);
+    }
+async function uploadCheckPhotos(check, files) {
+  try {
+    for (const file of files) {
+      const ext = file.name.split('.').pop();
+      const fileName = Date.now() + '_' + Math.random().toString(36).substring(2) + '.' + ext;
+      const filePath = 'checks/' + check.id + '/' + fileName;
+
+      const { error } = await db.storage
+        .from('check-photos')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Chyba pri nahrávaní fotky:', error);
+        alert('Chyba pri nahrávaní fotky.');
+        return;
+      }
+
+      const { data } = db.storage
+        .from('check-photos')
+        .getPublicUrl(filePath);
+
+      check.photos.push({
+        id: uid('photo'),
+        name: file.name,
+        dataUrl: data.publicUrl,
+        path: filePath
+      });
+    }
+
+    finalizeCheckSave(check);
+  } catch (error) {
+    console.error('Chyba pri fotkách:', error);
+    alert('Chyba pri spracovaní fotiek.');
+  }
+}
+ async function finalizeCheckSave(check) {
+  const saveBtn = document.getElementById('saveCheckBtn');
+  const saveStatus = document.getElementById('saveCheckStatus');
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Ukladám...';
+  }
+
+  if (saveStatus) {
+    saveStatus.textContent = 'Ukladám...';
+  }
+
+  const { data, error } = await db
+    .from('checks')
+    .insert([{
+      fisher_name: check.fisherName,
+      fisher_id_no: check.fisherIdNo,
+      member_name: getMemberName(check.memberId1),
+      clen_rs_1: getMemberName(check.memberId1),
+      clen_rs_2: getMemberName(check.memberId2),
+      location: check.place,
+      time_from: check.timeFrom,
+      time_to: check.timeTo,
+      result: check.result,
+      poznamka: check.note,
+      typ_priestupku: check.offenceType,
+      photos: check.photos || []
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Chyba pri uložení kontroly:', error);
+
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Uložiť kontrolu';
+    }
+
+    if (saveStatus) {
+      saveStatus.textContent = 'Nepodarilo sa uložiť – slabý signál / skúste znova';
+    }
+
+    return;
+  }
+
+  console.log('Kontrola uložená do Supabase:', data);
+
+  appState.data.checks.unshift(data);
+
+  const fisherDisplay =
+    data.fisher_name ||
+    data.fisher_id_no ||
+    '-';
+
+  const memberName =
+    (data.clen_rs_1 || '-') +
+    (data.clen_rs_2 ? ' / ' + data.clen_rs_2 : '');
+
+  logChange(
+    'Kontrola',
+    'Pridanie',
+    'Zapísaná kontrola: ' + fisherDisplay + ' / ' + memberName + ' / ' + data.result
+  );
+
+  resetCheckForm();
+  populateCheckSelectors();
+  renderStats();
+  renderChecks();
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť kontrolu';
+  }
+
+  if (saveStatus) {
+    saveStatus.textContent = '✓ Uložené v databáze';
+
+    setTimeout(() => {
+      saveStatus.textContent = '';
+    }, 3000);
+  }
+}
+
+    function renderStats(kontroly = appState.data.checks || []) {
+      document.getElementById('statFishers').textContent = String(appState.data.fishers.length);
+      document.getElementById('statMembers').textContent = String(appState.data.members.length);
+      document.getElementById('statChecks').textContent = String(kontroly.length);
+
+   const porusenia = kontroly.filter(item =>
+  item.result === 'Priestupok' || item.result === 'Pytliactvo'
+).length;
+
+const sluzbyReviry = appState.data.sluzbyReviry || [];
+
+document.getElementById('statOffences').textContent = String(porusenia);
+document.getElementById('statSluzbyReviry').textContent = String(sluzbyReviry.length);
+}
+
+    function renderFishers() {
+      const query = normalize(document.getElementById('fisherSearch').value);
+      const statusFilter = document.getElementById('fisherFilterStatus').value;
+      const wrap = document.getElementById('fishersList');
+
+if (query && query.length < 2) {
+    wrap.innerHTML = '<div class="empty">Zadaj aspoň 2 znaky pre vyhľadávanie rybára.</div>';
+    return;
+}
+
+if (!query && !statusFilter) {
+    wrap.innerHTML = '<div class="empty">Zadaj meno alebo vyber stav pre zobrazenie rybárov.</div>';
+    return;
+  }
+      const filtered = appState.data.fishers.filter(item => {
+        const matchQuery = !query ||
+  normalize(item.name).includes(query) ||
+  normalize(item.memberId || '').includes(query) ||
+  normalize(item.permitNumber || '').includes(query);
+        const matchStatus = !statusFilter || item.status === statusFilter;
+        return matchQuery && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = '<div class="empty">Nenašli sa žiadni rybári.</div>';
+        return;
+      }
+
+      wrap.innerHTML = filtered.map(item => {
+        const checks = appState.data.checks.filter(check => {
+          return check.fisherId === item.id ||
+            normalize(check.fisherName) === normalize(item.name) ||
+            normalize(check.fisherIdNo) === normalize(item.permitNumber);
+        });
+
+        const offences = checks.filter(check => check.result === 'Priestupok');
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const validToDate = item.validTo ? new Date(item.validTo) : null;
+if (validToDate) validToDate.setHours(0, 0, 0, 0);
+
+const displayStatus = validToDate && today > validToDate
+  ? 'Neplatné povolenie'
+  : item.status;
+
+        return [
+          '<div class="item">',
+            '<div class="item-head">',
+              '<div>',
+                '<strong>' + escapeHtml(item.name) + '</strong> ' + statusBadge(displayStatus),
+                '<div class="muted small">Členské ID: ' + escapeHtml(item.memberId || '-') + ' | Povolenie: ' + escapeHtml(item.permitNumber || '-') + ' | MO: ' + escapeHtml(item.district || '-') + '</div>',
+'<div class="muted small">Platnosť: ' + escapeHtml(item.validFrom || '-') + ' – ' + escapeHtml(item.validTo || '-') + ' | Miestna: ' + (item.localPermit ? 'áno' : 'nie') + ' | Zväzová: ' + (item.unionPermit ? 'áno' : 'nie') + '</div>',
+              '</div>',
+              '<div class="actions">',
+                '<button class="btn-info" onclick="showFisherProfile(\'' + escapeHtml(item.id) + '\')">Profil</button>',
+                '<button class="btn-secondary" onclick="editFisher(\'' + escapeHtml(item.id) + '\')">Upraviť</button>',
+                '<button class="btn-danger" onclick="deleteFisher(\'' + escapeHtml(item.id) + '\')">Zmazať</button>',
+              '</div>',
+            '</div>',
+            '<div class="row">',
+              '<div><strong>Poznámka:</strong> ' + escapeHtml(item.note || '-') + '</div>',
+            '</div>',
+            '<div class="row" style="margin-top:8px;">',
+              '<div><strong>Počet kontrol:</strong> ' + escapeHtml(checks.length) + '</div>',
+              '<div><strong>Počet priestupkov:</strong> ' + escapeHtml(offences.length) + '</div>',
+            '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+    }
+
+    function showFisherProfile(id) {
+      const fisher = appState.data.fishers.find(item => String(item.id) === String(id));
+      if (!fisher) return;
+
+      const checks = appState.data.checks.filter(item => {
+        return item.fisherId === id ||
+          normalize(item.fisherName) === normalize(fisher.name) ||
+          normalize(item.fisherIdNo) === normalize(fisher.permitNumber);
+      });
+
+      const offences = checks.filter(item => item.result === 'Priestupok');
+
+const profileLines = [
+    'Profil rybára',
+    '--------------------------',
+    'Meno: ' + fisher.name,
+    'Členské ID: ' + (fisher.memberId || '-'),
+    'Povolenie: ' + fisher.permitNumber,
+    'Platnosť od: ' + (fisher.validFrom || '-'),
+    'Platnosť do: ' + (fisher.validTo || '-'),
+    'Miestna povolenka: ' + (fisher.localPermit ? 'ÁNO' : 'NIE'),
+    'Zväzová povolenka: ' + (fisher.unionPermit ? 'ÁNO' : 'NIE'),
+    'MO: ' + (fisher.district || '-'),
+    'Stav: ' + fisher.status,
+    'Poznámka: ' + (fisher.note || '-'),
+    'Počet kontrol: ' + checks.length,
+    'Počet priestupkov: ' + offences.length
+];
+
+document.getElementById('fisherProfileModalBody').innerHTML =
+  '<div class="item">' +
+    '<div class="item-head">' +
+      '<div><strong>' + escapeHtml(fisher.name || '-') + '</strong> ' + statusBadge(fisher.status) + '</div>' +
+    '</div>' +
+    '<div class="row" style="margin-top:10px;">' +
+      '<div><strong>Členské ID:</strong> ' + escapeHtml(fisher.memberId || '-') + '</div>' +
+      '<div><strong>Povolenie:</strong> ' + escapeHtml(fisher.permitNumber || '-') + '</div>' +
+    '</div>' +
+    '<div class="row" style="margin-top:10px;">' +
+      '<div><strong>MO:</strong> ' + escapeHtml(fisher.district || '-') + '</div>' +
+      '<div><strong>Platnosť:</strong> ' + escapeHtml(fisher.validFrom || '-') + ' – ' + escapeHtml(fisher.validTo || '-') + '</div>' +
+    '</div>' +
+    '<div class="row" style="margin-top:10px;">' +
+      '<div><strong>Miestna povolenka:</strong> ' + (fisher.localPermit ? 'ÁNO' : 'NIE') + '</div>' +
+      '<div><strong>Zväzová povolenka:</strong> ' + (fisher.unionPermit ? 'ÁNO' : 'NIE') + '</div>' +
+    '</div>' +
+    '<div style="margin-top:12px;"><strong>Poznámka:</strong> ' + escapeHtml(fisher.note || '-') + '</div>' +
+    '<div class="row" style="margin-top:12px;">' +
+      '<div><strong>Počet kontrol:</strong> ' + checks.length + '</div>' +
+      '<div><strong>Počet priestupkov:</strong> ' + offences.length + '</div>' +
+    '</div>' +
+  '</div>';
+
+document.getElementById('fisherProfileModal').classList.remove('hidden');
+}
+
+    function renderMembers() {
+      const query = normalize(document.getElementById('memberSearch').value);
+      const statusFilter = document.getElementById('memberFilterStatus').value;
+      const wrap = document.getElementById('membersList');
+      if (!query && !statusFilter) {
+  wrap.innerHTML = '<div class="empty">Zadaj meno alebo vyber stav pre zobrazenie členov RS.</div>';
+  return;
+}
+
+      const filtered = appState.data.members.filter(item => {
+        const matchQuery = !query || normalize(item.name).includes(query);
+        const matchStatus = !statusFilter || item.status === statusFilter;
+        return matchQuery && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = '<div class="empty">Nenašli sa žiadni členovia RS.</div>';
+        return;
+      }
+
+      wrap.innerHTML = filtered.map(item => {
+        const checks = appState.data.checks.filter(check =>
+    check.clen_rs_1 === item.name ||
+    check.clen_rs_2 === item.name ||
+    check.member_name === item.name
+).length;
+
+        return [
+          '<div class="item">',
+            '<div class="item-head">',
+              '<div>',
+                '<strong>' + escapeHtml(item.name) + '</strong> ' + statusBadge(item.status),
+                '<div class="muted small">Odznak: ' + escapeHtml(item.badge || '-') + ' | Revír: ' + escapeHtml(item.area || '-') + ' | Rola: ' + escapeHtml(item.role || '-') + '</div>',
+              '</div>',
+              '<div class="actions">',
+                '<button class="btn-secondary" onclick="editMember(\'' + escapeHtml(item.id) + '\')">Upraviť</button>',
+                '<button class="btn-warning" onclick="toggleMemberStatus(\'' + escapeHtml(item.id) + '\')">Aktivovať / deaktivovať</button>',
+                '<button class="btn-danger" onclick="deleteMember(\'' + escapeHtml(item.id) + '\')">Zmazať</button>',
+              '</div>',
+            '</div>',
+            '<div class="row">',
+              '<div><strong>Poznámka:</strong> ' + escapeHtml(item.note || '-') + '</div>',
+              '<div><strong>Počet kontrol:</strong> ' + escapeHtml(checks) + '</div>',
+            '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+
+      // populateLoginMembers();
+    }
+
+    function populateCheckSelectors() {
+      const memberSelect1 = document.getElementById('checkMember1');
+      const memberSelect2 = document.getElementById('checkMember2');
+
+const activeMembers = (appState.data.members || []).filter(item =>
+  normalize(item.role || '').includes(normalize('Clen RS'))
+);
+
+   const memberOptions =
+  '<option value="">Vyber člena RS</option>' +
+  activeMembers.map(item => {
+    const badgeText = item.badge ? (' (' + item.badge + ')') : '';
+    return '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.name + badgeText) + '</option>';
+  }).join('');
+
+memberSelect1.innerHTML = memberOptions;
+memberSelect2.innerHTML = memberOptions;
+
+if (appState.currentUserId) {
+  memberSelect1.value = appState.currentUserId;
+}
+
+      const checkPlaceSelect = document.getElementById("checkPlace");
+      if (checkPlaceSelect) {
+        const currentValue = checkPlaceSelect.value;
+        checkPlaceSelect.innerHTML = '<option value="">Vyber revír</option>';
+        REVIRS.forEach(r => {
+          const option = document.createElement("option");
+          option.value = r;
+          option.textContent = r;
+          checkPlaceSelect.appendChild(option);
+        });
+if (appState.activeRevir && REVIRS.includes(appState.activeRevir)) {
+  checkPlaceSelect.value = appState.activeRevir;
+} else if (REVIRS.includes(currentValue)) {
+  checkPlaceSelect.value = currentValue;
+}
+      }
+    }
+
+function syncMobileChecksSummary() {
+  const desktopSummary = document.getElementById('checksSummary');
+  const mobileSummary = document.getElementById('mobileChecksSummary');
+
+  if (!desktopSummary || !mobileSummary) return;
+
+  mobileSummary.innerHTML = desktopSummary.innerHTML;
+  mobileSummary.className = desktopSummary.className + ' mobile-checks-summary';
+}
+
+    function renderChecks() {
+      const searchInput = document.getElementById('checkSearch');
+      const manualQuery = searchInput ? searchInput.value : '';
+      const autoName = document.getElementById('checkFisherName') ? document.getElementById('checkFisherName').value : '';
+      const autoIdNo = document.getElementById('checkFisherIdNo') ? document.getElementById('checkFisherIdNo').value : '';
+      let query = normalize(autoName || autoIdNo || manualQuery);
+if (autoName && autoName.length < 4 && !manualQuery) {
+    query = '';
+}
+      const resultFilter = document.getElementById('checkFilterResult').value;
+      const wrap = document.getElementById('checksList');
+if (!query && !resultFilter) {
+  wrap.innerHTML = '<div class="empty">Pre zobrazenie kontrol zadaj meno, miesto alebo vyber výsledok.</div>';
+
+  const summaryBox = document.getElementById('checksSummary');
+  if (summaryBox) {
+    summaryBox.innerHTML = 'Sumár sa zobrazí po zadaní rybára.';
+  }
+
+  syncMobileChecksSummary();
+  return;
+}
+
+const summaryBox = document.getElementById('checksSummary');
+
+if (summaryBox && query) {
+    const offenceCount = appState.data.checks.filter(item =>
+        normalize(
+            item.fisher_name ||
+            item.fisherName ||
+            getFisherName(item.fisherId)
+        ).includes(query)
+    ).length;
+
+const problemCount = appState.data.checks.filter(item => {
+    const name =
+        item.fisher_name ||
+        item.fisherName ||
+        getFisherName(item.fisherId);
+
+    const result = item.result || '';
+
+    return normalize(name).includes(query) &&
+        (result === 'Podozrenie' || result === 'Priestupok' || result === 'Pytliactvo');
+}).length;
+
+const lastCheck = appState.data.checks
+    .filter(item => {
+        const name =
+            item.fisher_name ||
+            item.fisherName ||
+            getFisherName(item.fisherId);
+
+        return normalize(name).includes(query);
+    })
+    .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date))[0];
+
+const lastCheckDate = lastCheck
+    ? new Date(lastCheck.created_at || lastCheck.date).toLocaleDateString('sk-SK')
+    : '-';
+
+const selectedFisher = appState.data.fishers.find(f =>
+  normalize(f.name) === query ||
+  normalize(f.memberId) === query ||
+  normalize(f.permitNumber) === query
+);
+
+  summaryBox.innerHTML =
+  (selectedFisher
+    ? '<strong>' + escapeHtml(selectedFisher.name) + '</strong>' +
+      '<br>Členské ID: ' + escapeHtml(selectedFisher.memberId || '-') +
+      '<br>Povolenie: ' + escapeHtml(selectedFisher.permitNumber || '-') +
+      '<br>Platnosť do: ' + escapeHtml(selectedFisher.validTo || '-') +
+      '<br><br>'
+    : '') +
+  '<strong>Počet kontrol:</strong> ' + offenceCount +
+    '<br><strong>Podozrenia / priestupky:</strong> ' + problemCount +
+    '<br><strong>Posledná kontrola:</strong> ' + lastCheckDate +
+   (problemCount === 0
+    ? '<br>🟢 Bez evidovaných podozrení / priestupkov'
+    : '<br>🟠 Evidované podozrenie / priestupok');
+} else if (summaryBox) {
+
+    summaryBox.innerHTML = 'Sumár sa zobrazí po zadaní rybára.';
+}
+
+syncMobileChecksSummary();
+
+      const filtered = appState.data.checks.filter(item => {
+const fisherName = item.fisher_name || item.fisherName || item.fisherIdNo || getFisherName(item.fisherId) || '-';
+const memberName = item.clen_rs_1 ? item.clen_rs_1 + (item.clen_rs_2 ? ' / ' + item.clen_rs_2 : '') : (item.member_name || getMemberName(item.memberId) || '-');
+ 
+        const miesto = item.location || item.place || '-';
+        const datum = item.created_at || item.date || '-';
+        const typPriestupku = item.typ_priestupku || item.offence_type || item.offenceType || '-';
+        const matchQuery = !query || [fisherName, item.place, item.note, item.offenceType].some(v => normalize(v).includes(query));
+        const matchResult = !resultFilter || item.result === resultFilter;
+        return matchQuery && matchResult;
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = '<div class="empty">Nenašli sa žiadne kontroly.</div>';
+        return;
+      }
+
+      wrap.innerHTML = filtered.map(item => {
+const fisherName = item.fisher_name || item.fisherName || item.fisherIdNo || getFisherName(item.fisherId) || '-';
+const memberName = item.clen_rs_1 ? item.clen_rs_1 + (item.clen_rs_2 ? ' / ' + item.clen_rs_2 : '') : (item.member_name || getMemberName(item.memberId) || '-');
+const miesto = item.location || item.place || '-';
+const datum = item.created_at || item.date || '-';
+const casOd = item.time_from || '-';
+const casDo = item.time_to || '-';
+const typPriestupku = item.typ_priestupku || item.offence_type || item.offenceType || '-';
+
+        const photoHtml = item.photos && item.photos.length
+          ? '<div class="photo-grid">' + item.photos.map(photo => '<img src="' + escapeHtml(photo.dataUrl) + '" alt="Fotka" />').join('') + '</div>'
+          : '<div class="muted small">Bez fotiek</div>';
+
+        return [
+          '<div class="item">',
+            '<div class="item-head">',
+              '<div>',
+                '<strong>' + escapeHtml(fisherName) + '</strong> ' + statusBadge(item.result),
+                '<div class="muted small">Dátum: ' + escapeHtml(datum) +
+' | Čas: ' + escapeHtml(casOd) + ' - ' + escapeHtml(casDo) +
+' | Miesto: ' + escapeHtml(miesto) +
+' | Člen RS: ' + escapeHtml(memberName) + '</div>',
+              '</div>',
+            '</div>',
+            '<div><strong>Typ priestupku:</strong> ' + escapeHtml(typPriestupku) + '</div>',
+            '<div style="margin-top:6px;"><strong>Poznámka:</strong> ' + escapeHtml(item.poznamka || item.note || '-') + '</div>',
+            '<div style="margin-top:10px;"><strong>Fotky:</strong></div>',
+            photoHtml,
+          '</div>'
+        ].join('');
+      }).join('');
+    }
+
+    function renderChangeLog() {
+      const body = document.getElementById('changeLogTable');
+
+      if (appState.data.changeLog.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" class="muted">História zmien je prázdna.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = appState.data.changeLog.map(item => {
+        return [
+          '<tr>',
+            '<td>' + escapeHtml(item.time) + '</td>',
+            '<td>' + escapeHtml(item.user) + '</td>',
+            '<td>' + escapeHtml(item.area) + '</td>',
+            '<td>' + escapeHtml(item.action) + '</td>',
+            '<td>' + escapeHtml(item.detail) + '</td>',
+          '</tr>'
+        ].join('');
+      }).join('');
+    }
+
+    function clearChangeLog() {
+      if (!ensureLogged()) return;
+      if (!confirm('Naozaj chceš vymazať históriu zmien?')) return;
+
+      appState.data.changeLog = [];
+      logChange('História zmien', 'Vymazanie', 'História zmien bola vymazaná.');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+      renderChangeLog();
+    }
+
+    function renderAll() {
+      // populateLoginMembers();
+      populateCheckSelectors();
+      renderStats();
+      renderFishers();
+      renderMembers();
+      renderChecks();
+      renderChangeLog();
+    }
+
+function showMainMenu() {
+  document.getElementById('mainMenuSection').classList.remove('hidden');
+  document.getElementById('backToMenuSection').classList.add('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+
+  document.getElementById('legacyTabs').classList.remove('hidden');
+
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+
+  document.getElementById('dashboardCardsSection').classList.remove('hidden');
+
+  document.getElementById('appOverviewSection').classList.remove('hidden');
+
+  document.getElementById('filterSection').classList.add('hidden');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+    function switchTab(tabName, btn) {
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(button => button.classList.remove('active'));
+
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const found = document.querySelector('.tab-btn[data-tab="' + tabName + '"]');
+        if (found) found.classList.add('active');
+      }
+    }
+
+function openRybariModule() {
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.remove('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('appOverviewSection').classList.add('hidden');
+
+  document.getElementById('filterSection').classList.add('hidden');
+
+  switchTab('rybari');
+
+  document.getElementById('appSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function openKontrolyModule() {
+if (!appState.kontrolyLoaded) {
+  refreshKontrolyData();
+}
+
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.remove('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('appOverviewSection').classList.add('hidden');
+
+  document.getElementById('filterSection').classList.add('hidden');
+
+  switchTab('kontroly');
+
+  document.getElementById('appSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function openStatistikyModule() {
+  const loading = document.getElementById('statsLoading');
+
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.remove('hidden');
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+
+  document.getElementById('filterSection').classList.remove('hidden');
+
+  if (loading) {
+    loading.classList.remove('hidden');
+  }
+
+  if (!appState.kontrolyLoaded) {
+    await refreshKontrolyData();
+  }
+
+  updateDashboard();
+
+  if (loading) {
+    loading.classList.add('hidden');
+  }
+
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('graphsOnlySection').classList.remove('hidden');
+
+  document.getElementById('graphsOnlySection').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function openReportyModule() {
+  const loading = document.getElementById('statsLoading');
+
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.remove('hidden');
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+
+  document.getElementById('filterSection').classList.remove('hidden');
+
+  if (loading) {
+    loading.classList.remove('hidden');
+  }
+
+  if (!appState.kontrolyLoaded) {
+    await refreshKontrolyData();
+  }
+
+  updateDashboard();
+
+  if (loading) {
+    loading.classList.add('hidden');
+  }
+
+  document.getElementById('dashboardCardsSection').classList.remove('hidden');
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+
+  document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function csvValue(value) {
+  if (value === null || value === undefined) return '""';
+
+  const text = String(value).replace(/"/g, '""');
+  return '"' + text + '"';
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return value;
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
+}
+
+function buildChecksExcelHtml() {
+  const headers = [
+    'Dátum kontroly',
+    'Meno rybára',
+    'ID rybára',
+    'Revír / miesto',
+    'Výsledok',
+    'Typ priestupku',
+    'Poznámka',
+    'Člen RS 1',
+    'Člen RS 2',
+    'Fotky'
+  ];
+
+let exportChecks = [...(appState.data.checks || [])];
+
+const datumOd = document.getElementById("filterDatumOd")?.value;
+const datumDo = document.getElementById("filterDatumDo")?.value;
+const clenRS = document.getElementById("filterClenRS")?.value;
+const revir = document.getElementById("filterRevir")?.value;
+
+const reportGeneratedAt = formatDateTime(new Date());
+
+const filterObdobie = datumOd || datumDo
+  ? (datumOd || 'od začiatku') + ' - ' + (datumDo || 'do dnes')
+  : 'Všetky dátumy';
+
+const filterClenText = clenRS ? getMemberName(clenRS) : 'Všetci členovia RS';
+const filterRevirText = revir || 'Všetky revíry';
+
+if (datumOd) {
+  exportChecks = exportChecks.filter(k => {
+    const checkDate = localDateKey(k.created_at || k.date);
+    return checkDate >= datumOd;
+  });
+}
+
+if (datumDo) {
+  exportChecks = exportChecks.filter(k => {
+    const checkDate = localDateKey(k.created_at || k.date);
+    return checkDate <= datumDo;
+  });
+}
+
+if (clenRS) {
+  exportChecks = exportChecks.filter(k =>
+    String(k.clen_rs_1 || '') === String(getMemberName(clenRS)) ||
+    String(k.clen_rs_2 || '') === String(getMemberName(clenRS)) ||
+    String(k.member_name || '') === String(getMemberName(clenRS))
+  );
+}
+
+if (revir) {
+  exportChecks = exportChecks.filter(k =>
+    safeText(k.location || k.place) === safeText(revir)
+  );
+}
+
+let exportSluzby = [...(appState.data.sluzbyReviry || [])];
+
+if (datumOd) {
+  exportSluzby = exportSluzby.filter(s => (s.zaciatok || '') >= datumOd);
+}
+
+if (datumDo) {
+  exportSluzby = exportSluzby.filter(s => (s.zaciatok || '') <= datumDo);
+}
+
+if (clenRS) {
+  exportSluzby = exportSluzby.filter(s =>
+    String(s.clen_rs || '') === String(getMemberName(clenRS))
+  );
+}
+
+if (revir) {
+  exportSluzby = exportSluzby.filter(s =>
+    safeText(s.revir || '') === safeText(revir)
+  );
+}
+
+  const rows = exportChecks.map(item => [
+    formatDateTime(item.created_at),
+    item.fisher_name,
+    item.fisher_id_no,
+    item.location,
+    item.result,
+    item.typ_priestupku,
+    item.poznamka,
+    item.clen_rs_1,
+    item.clen_rs_2,
+    Array.isArray(item.photos) ? item.photos.join(' | ') : item.photos
+  ]);
+
+const totalKontroly = rows.length;
+
+const priestupky = exportChecks.filter(
+  item => item.result === 'Priestupok'
+).length;
+
+const pytliactvo = exportChecks.filter(
+  item => item.result === 'Pytliactvo'
+).length;
+
+const bezPorusenia = totalKontroly - priestupky - pytliactvo;
+
+const uspesnost = totalKontroly > 0
+  ? ((bezPorusenia / totalKontroly) * 100).toFixed(1)
+  : 0;
+
+const kontrolyPodlaRevirov = {};
+
+exportChecks.forEach(item => {
+  const revir = item.location || 'Nezadaný revír';
+  kontrolyPodlaRevirov[revir] = (kontrolyPodlaRevirov[revir] || 0) + 1;
+});
+
+const reviryRows = Object.entries(kontrolyPodlaRevirov)
+  .sort((a, b) => b[1] - a[1]);
+
+const kontrolyPodlaClenov = {};
+
+exportChecks.forEach(item => {
+  const clen1 = item.clen_rs_1 || '';
+  const clen2 = item.clen_rs_2 || '';
+
+  if (clen1 && clen1 !== '-') {
+    kontrolyPodlaClenov[clen1] = (kontrolyPodlaClenov[clen1] || 0) + 1;
+  }
+
+  if (clen2 && clen2 !== '-') {
+    kontrolyPodlaClenov[clen2] = (kontrolyPodlaClenov[clen2] || 0) + 1;
+  }
+});
+
+exportSluzby.forEach(item => {
+  const pocetKontrol = Number(item.pocet_kontrol) || 0;
+  if (pocetKontrol <= 0) return;
+
+  const clenovia = Array.isArray(item.clenovia_rs) && item.clenovia_rs.length > 0
+    ? item.clenovia_rs
+    : [];
+
+  clenovia.forEach(clen => {
+    const menoClena = typeof clen === 'string'
+      ? clen
+      : (clen.name || clen.meno || '');
+
+    if (menoClena && menoClena !== item.clen_rs) {
+      kontrolyPodlaClenov[menoClena] =
+        (kontrolyPodlaClenov[menoClena] || 0) + pocetKontrol;
+    }
+  });
+});
+
+const clenoviaRows = Object.entries(kontrolyPodlaClenov)
+  .sort((a, b) => b[1] - a[1]);
+
+const celkovoMinutRS = exportSluzby.reduce(
+  (sum, item) => sum + (Number(item.trvanie_min) || 0),
+  0
+);
+
+const celkovoHodinRS = (celkovoMinutRS / 60).toFixed(1);
+
+const hodinyPodlaClenov = {};
+
+exportSluzby.forEach(item => {
+  const minuty = Number(item.trvanie_min) || 0;
+
+  const clenovia = Array.isArray(item.clenovia_rs) && item.clenovia_rs.length > 0
+    ? item.clenovia_rs.map(c => c.name).filter(Boolean)
+    : [item.clen_rs || 'Neznámy člen'];
+
+  clenovia.forEach(clen => {
+    hodinyPodlaClenov[clen] =
+      (hodinyPodlaClenov[clen] || 0) + minuty;
+  });
+});
+
+const hodinyClenoviaRows = Object.entries(hodinyPodlaClenov)
+  .map(([clen, minuty]) => [
+    clen,
+    (minuty / 60).toFixed(1)
+  ])
+  .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+const hodinyPodlaRevirov = {};
+
+exportSluzby.forEach(item => {
+  const revir = item.revir || 'Nezadaný revír';
+  const minuty = Number(item.trvanie_min) || 0;
+
+  hodinyPodlaRevirov[revir] =
+    (hodinyPodlaRevirov[revir] || 0) + minuty;
+});
+
+const hodinyReviryRows = Object.entries(hodinyPodlaRevirov)
+  .map(([revir, minuty]) => [
+    revir,
+    (minuty / 60).toFixed(1)
+  ])
+  .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  let html = `
+    <html>
+    <head>
+      <meta charset="UTF-8">
+<style>
+  table {
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
+
+  th {
+    background-color: #d9ead3;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+
+</style>
+    </head>
+    <body>
+
+<h1>Rybárska stráž MsO Sereď</h1>
+<h2>Report kontrol</h2>
+
+<p><strong>Vygenerované:</strong> ${reportGeneratedAt}</p>
+<p><strong>Obdobie:</strong> ${filterObdobie}</p>
+<p><strong>Člen RS:</strong> ${filterClenText}</p>
+<p><strong>Revír:</strong> ${filterRevirText}</p>
+
+<br>
+
+<h2>Súhrn kontrol RS</h2>
+
+<p><strong>Počet kontrol:</strong> ${totalKontroly}</p>
+<p><strong>Odslúžené hodiny RS:</strong> ${celkovoHodinRS} h</p>
+<p><strong>Bez porušenia:</strong> ${bezPorusenia}</p>
+<p><strong>Priestupky:</strong> ${priestupky}</p>
+<p><strong>Pytliactvo:</strong> ${pytliactvo}</p>
+<h3>Kontroly podľa revírov</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Revír</th>
+      <th>Počet kontrol</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${reviryRows.map(([revir, count]) => `
+      <tr>
+        <td>${revir}</td>
+        <td>${count}</td>
+      </tr>
+    `).join('')}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Aktivita členov RS</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Člen RS</th>
+      <th>Počet kontrol</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${clenoviaRows.map(([clen, count]) => `
+      <tr>
+        <td>${clen}</td>
+        <td>${count}</td>
+      </tr>
+    `).join('')}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Odslúžené hodiny podľa členov RS</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Člen RS</th>
+      <th>Hodiny</th>
+    </tr>
+  </thead>
+  <tbody>
+   ${hodinyClenoviaRows.length > 0 ? hodinyClenoviaRows.map(([clen, hodiny]) => `
+  <tr>
+    <td>${clen}</td>
+    <td>${hodiny}</td>
+  </tr>
+`).join('') : `
+  <tr>
+    <td colspan="2">Zatiaľ nie sú evidované ukončené služby revírov.</td>
+  </tr>
+`}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Odslúžené hodiny podľa revírov</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Revír</th>
+      <th>Hodiny</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${hodinyReviryRows.length > 0 ? hodinyReviryRows.map(([revir, hodiny]) => `
+      <tr>
+        <td>${revir}</td>
+        <td>${hodiny}</td>
+      </tr>
+    `).join('') : `
+      <tr>
+        <td colspan="2">Zatiaľ nie sú evidované ukončené služby revírov.</td>
+      </tr>
+    `}
+  </tbody>
+</table>
+
+<br>
+
+      <table border="1">
+        <thead>
+          <tr>
+            ${headers.map(h => `<th>${h || ''}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row => `
+            <tr>
+              ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return html;
+}
+
+    function buildExportText() {
+      const nl = '\n';
+      const lines = [];
+
+      lines.push('Rybárska stráž – export údajov');
+      lines.push('Vygenerované: ' + nowText());
+      lines.push('');
+      lines.push('--- PREHĽAD ---');
+      lines.push('Počet rybárov: ' + appState.data.fishers.length);
+      lines.push('Počet členov RS: ' + appState.data.members.length);
+      lines.push('Počet kontrol: ' + appState.data.checks.length);
+      lines.push('Počet priestupkov: ' + appState.data.checks.filter(item => item.result === 'Priestupok').length);
+      lines.push('Počet pytliactva: ' + appState.data.checks.filter(item => item.result === 'Pytliactvo').length);
+      lines.push('');
+
+      lines.push('--- RYBÁRI ---');
+      appState.data.fishers.forEach((item, index) => {
+        lines.push((index + 1) + '. ' + item.name + ' | Povolenie: ' + item.permitNumber + ' | MO: ' + (item.district || '-') + ' | Stav: ' + item.status);
+      });
+      lines.push('');
+
+      lines.push('--- ČLENOVIA RS ---');
+      appState.data.members.forEach((item, index) => {
+        lines.push((index + 1) + '. ' + item.name + ' | Odznak: ' + (item.badge || '-') + ' | Revír: ' + (item.area || '-') + ' | Stav: ' + item.status + ' | Rola: ' + (item.role || '-'));
+      });
+      lines.push('');
+
+      lines.push('--- KONTROLY A PRIESTUPKY ---');
+      appState.data.checks.forEach((item, index) => {
+        lines.push((index + 1) + '. Dátum: ' + item.date + ' | Rybár: ' + (item.fisherName || item.fisherIdNo || getFisherName(item.fisherId) || '-') + ' | Člen RS: ' + getMemberName(item.memberId));
+        lines.push('   Miesto: ' + item.place);
+        lines.push('   Výsledok: ' + item.result);
+        lines.push('   Typ priestupku: ' + (item.offenceType || '-'));
+        lines.push('   Poznámka: ' + (item.note || '-'));
+        lines.push('   Fotky: ' + ((item.photos || []).length));
+      });
+      lines.push('');
+
+      lines.push('--- HISTÓRIA ZMIEN ---');
+      appState.data.changeLog.forEach((item, index) => {
+        lines.push((index + 1) + '. ' + item.time + ' | ' + item.user + ' | ' + item.area + ' | ' + item.action + ' | ' + item.detail);
+      });
+
+      return lines.join(nl);
+    }
+
+function exportData() {
+  const content = buildChecksExcelHtml();
+  const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = 'rs_kontroly_' + todayISO() + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  logChange('Export', 'Export kontrol', 'Bol vytvorený export kontrol do XLS.');
+}
+
+function resetDemoDataConfirm() {
+  alert('Obnova ukážkových dát je v tejto verzii vypnutá. Použi tlačidlo Obnoviť údaje v module Reporty.');
+}
+
+function aktualnyCas() {
+  return new Date().toTimeString().slice(0, 5);
+}
+
+function renderGrafKontrolyReviry(kontroly) {
+  const box = document.getElementById("grafKontrolyReviry");
+  if (!box) return;
+
+  const counts = {};
+
+  kontroly.forEach(k => {
+    const revir = k.location || k.place || 'Nezadaný revír';
+    counts[revir] = (counts[revir] || 0) + 1;
+  });
+
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p>Žiadne dáta pre graf.</p>';
+    return;
+  }
+
+  const max = Math.max(...rows.map(r => r[1]));
+
+  box.innerHTML = rows.map(([revir, count]) => {
+    const width = Math.max(8, Math.round((count / max) * 100));
+
+    return `
+      <div style="margin: 8px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <strong>${revir}</strong>
+          <span>${count}</span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:8px; overflow:hidden;">
+          <div style="width:${width}%; background:#166534; height:14px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGrafAktivitaClenov(kontroly, sluzby) {
+  const box = document.getElementById("grafAktivitaClenov");
+  if (!box) return;
+
+  const counts = {};
+
+ kontroly.forEach(k => {
+  const clen1 = k.clen_rs_1 || '';
+  const clen2 = k.clen_rs_2 || '';
+
+  if (clen1 && clen1 !== '-') {
+    counts[clen1] = (counts[clen1] || 0) + 1;
+  }
+
+  if (clen2 && clen2 !== '-') {
+    counts[clen2] = (counts[clen2] || 0) + 1;
+  }
+});
+
+(sluzby || []).forEach(s => {
+  const pocetKontrol = Number(s.pocet_kontrol) || 0;
+
+  if (pocetKontrol <= 0) return;
+
+  const clenovia = Array.isArray(s.clenovia_rs) && s.clenovia_rs.length > 0
+    ? s.clenovia_rs
+    : [];
+
+  clenovia.forEach(clen => {
+    const menoClena = typeof clen === 'string'
+      ? clen
+      : (clen.name || clen.meno || '');
+
+   if (menoClena && menoClena !== s.clen_rs) {
+  counts[menoClena] = (counts[menoClena] || 0) + pocetKontrol;
+}
+  });
+});
+
+  const rows = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p>Žiadne dáta pre graf.</p>';
+    return;
+  }
+
+  const max = Math.max(...rows.map(r => r[1]));
+
+  box.innerHTML = rows.map(([clen, count]) => {
+    const width = Math.max(8, Math.round((count / max) * 100));
+
+    return `
+      <div style="margin: 8px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <strong>${clen}</strong>
+          <span>${count}</span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:8px; overflow:hidden;">
+          <div style="width:${width}%; background:#1d4ed8; height:14px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGrafHodinyClenov(sluzby) {
+  const box = document.getElementById("grafHodinyClenov");
+  if (!box) return;
+
+  const counts = {};
+
+  sluzby.forEach(s => {
+    const minuty = Number(s.trvanie_min) || 0;
+
+    const clenovia = Array.isArray(s.clenovia_rs) && s.clenovia_rs.length > 0
+      ? s.clenovia_rs
+      : [s.clen_rs || 'Neznámy člen'];
+
+    clenovia.forEach(clen => {
+      const menoClena = typeof clen === 'string'
+        ? clen
+        : (clen.name || clen.meno || 'Neznámy člen');
+
+      counts[menoClena] = (counts[menoClena] || 0) + minuty;
+    });
+  });
+
+  const rows = Object.entries(counts)
+    .map(([clen, minuty]) => [clen, (minuty / 60).toFixed(1)])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p>Žiadne ukončené služby revírov.</p>';
+    return;
+  }
+
+  const max = Math.max(...rows.map(r => Number(r[1])));
+
+  box.innerHTML = rows.map(([clen, hodiny]) => {
+    const width = max > 0
+      ? Math.max(8, Math.round((Number(hodiny) / max) * 100))
+      : 8;
+
+    return `
+      <div style="margin: 8px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <strong>${clen}</strong>
+          <span>${hodiny} h</span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:8px; overflow:hidden;">
+          <div style="width:${width}%; background:#92400e; height:14px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGrafHodinyReviry(sluzby) {
+  const box = document.getElementById("grafHodinyReviry");
+  if (!box) return;
+
+  const counts = {};
+
+  sluzby.forEach(s => {
+    const revir = s.revir || 'Nezadaný revír';
+    const minuty = Number(s.trvanie_min) || 0;
+
+    counts[revir] = (counts[revir] || 0) + minuty;
+  });
+
+  const rows = Object.entries(counts)
+    .map(([revir, minuty]) => [revir, (minuty / 60).toFixed(1)])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p>Žiadne ukončené služby revírov.</p>';
+    return;
+  }
+
+  const max = Math.max(...rows.map(r => Number(r[1])));
+
+  box.innerHTML = rows.map(([revir, hodiny]) => {
+    const width = max > 0
+      ? Math.max(8, Math.round((Number(hodiny) / max) * 100))
+      : 8;
+
+    return `
+      <div style="margin: 8px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <strong>${revir}</strong>
+          <span>${hodiny} h</span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:8px; overflow:hidden;">
+          <div style="width:${width}%; background:#4b5563; height:14px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function getResultColor(vysledok) {
+  if (vysledok === 'Bez porušenia') return '#166534';
+  if (vysledok === 'Priestupok') return '#f97316';
+  if (vysledok === 'Pytliactvo') return '#991b1b';
+  return '#6b7280';
+}
+
+function renderGrafVysledkyKontrol(kontroly) {
+  const box = document.getElementById("grafVysledkyKontrol");
+  if (!box) return;
+
+  const counts = {
+    'Bez porušenia': 0,
+    'Priestupok': 0,
+    'Pytliactvo': 0
+  };
+
+  kontroly.forEach(k => {
+    const vysledok = k.result || 'Bez porušenia';
+    counts[vysledok] = (counts[vysledok] || 0) + 1;
+  });
+
+  const rows = Object.entries(counts)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p>Žiadne dáta pre graf.</p>';
+    return;
+  }
+
+  const max = Math.max(...rows.map(r => r[1]));
+
+  box.innerHTML = rows.map(([vysledok, count]) => {
+    const width = Math.max(8, Math.round((count / max) * 100));
+
+    return `
+      <div style="margin: 8px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <strong>${vysledok}</strong>
+          <span>${count}</span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:8px; overflow:hidden;">
+          <div style="width:${width}%; background:${getResultColor(vysledok)}; height:14px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+    function updateDashboard() {
+      const selectClen = document.getElementById("filterClenRS");
+      if (selectClen) {
+        const selectedClen = selectClen.value;
+        const members = (appState.data.members || []).filter(m =>
+  normalize(m.role || '').includes(normalize('Clen RS'))
+);
+
+        selectClen.innerHTML = '<option value="">Všetci</option>';
+
+        members.forEach(m => {
+          const option = document.createElement("option");
+          option.value = m.id;
+          option.textContent = m.name;
+          selectClen.appendChild(option);
+        });
+
+        if ([...members.map(m => m.id), ''].includes(selectedClen)) {
+          selectClen.value = selectedClen;
+        }
+      }
+
+      const selectRevir = document.getElementById("filterRevir");
+      if (selectRevir) {
+        const selectedRevir = selectRevir.value;
+
+        selectRevir.innerHTML = '<option value="">Všetky</option>';
+
+        REVIRS.forEach(r => {
+          const option = document.createElement("option");
+          option.value = r;
+          option.textContent = r;
+          selectRevir.appendChild(option);
+        });
+
+        if ([...REVIRS, ''].includes(selectedRevir)) {
+          selectRevir.value = selectedRevir;
+        }
+      }
+
+      let kontroly = [...(appState.data.checks || [])];
+
+      const datumOd = document.getElementById("filterDatumOd")?.value;
+      const datumDo = document.getElementById("filterDatumDo")?.value;
+      const clenRS = document.getElementById("filterClenRS")?.value;
+      const revir = document.getElementById("filterRevir")?.value;
+
+    if (datumOd) {
+  kontroly = kontroly.filter(k => {
+    const checkDate = (k.created_at || k.date || '').slice(0, 10);
+    return checkDate >= datumOd;
+  });
+}
+
+if (datumDo) {
+  kontroly = kontroly.filter(k => {
+    const checkDate = (k.created_at || k.date || '').slice(0, 10);
+    return checkDate <= datumDo;
+  });
+}
+
+     if (clenRS) {
+  kontroly = kontroly.filter(k =>
+    String(k.memberId || '') === String(clenRS) ||
+    String(k.clen_rs_1 || '') === String(getMemberName(clenRS)) ||
+    String(k.clen_rs_2 || '') === String(getMemberName(clenRS)) ||
+    String(k.member_name || '') === String(getMemberName(clenRS))
+  );
+}
+
+     if (revir) {
+  kontroly = kontroly.filter(k =>
+    safeText(k.location || k.place) === safeText(revir)
+  );
+}
+
+      const totalKontroly = kontroly.length;
+      const priestupky = kontroly.filter(k => {
+      const result = k.result || '';
+      return result && result !== 'Bez porušenia';
+}).length;
+
+const pytliactvo = kontroly.filter(k => k.result === "Pytliactvo").length;
+
+      const uspesnost = totalKontroly > 0
+        ? Math.round(((totalKontroly - priestupky - pytliactvo) / totalKontroly) * 100)
+        : 0;
+
+      const reviryCount = {};
+      kontroly.forEach(k => {
+        const miesto = k.location || k.place || "-";
+        reviryCount[miesto] = (reviryCount[miesto] || 0) + 1;
+      });
+
+      let topRevir = "-";
+      let max = 0;
+      for (const r in reviryCount) {
+        if (reviryCount[r] > max) {
+          max = reviryCount[r];
+          topRevir = r;
+        }
+      }
+
+const clenoviaCount = {};
+
+kontroly.forEach(k => {
+  const clenovia = [
+    k.clen_rs_1,
+    k.clen_rs_2,
+    k.member_name,
+    getMemberName(k.memberId),
+    getMemberName(k.memberId1),
+    getMemberName(k.memberId2)
+  ]
+  .map(clen => safeText(clen))
+  .filter(clen => clen && clen !== '-' && clen !== 'null' && clen !== 'undefined');
+
+  clenovia.forEach(clen => {
+    clenoviaCount[clen] = (clenoviaCount[clen] || 0) + 1;
+  });
+});
+
+let topClen = "-";
+let maxClen = 0;
+
+for (const c in clenoviaCount) {
+  if (clenoviaCount[c] > maxClen) {
+    maxClen = clenoviaCount[c];
+    topClen = c;
+  }
+}
+
+document.getElementById("totalKontroly").innerText = totalKontroly;
+
+const statChecksEl = document.getElementById("statChecks");
+if (statChecksEl) {
+  statChecksEl.innerText = totalKontroly;
+}
+
+const porusenia = priestupky + pytliactvo;
+const sluzbyReviry = (appState.data.sluzbyReviry || []).length;
+
+document.getElementById("totalPriestupky").innerText = porusenia;
+document.getElementById("totalSluzbyReviry").innerText = sluzbyReviry;
+     const sluzby = appState.data.sluzbyReviry || [];
+
+const celkovoMinut = sluzby.reduce(
+  (sum, item) => sum + (Number(item.trvanie_min) || 0),
+  0
+);
+
+const hodiny = Math.floor(celkovoMinut / 60);
+const minuty = celkovoMinut % 60;
+
+document.getElementById("hodinyRS").innerText =
+  hodiny + " h " + minuty + " min";
+
+      document.getElementById("topRevir").innerText = topRevir;
+      document.getElementById("topClen").innerText = topClen;
+
+      renderStats(kontroly);
+      renderGrafKontrolyReviry(kontroly);
+      renderGrafAktivitaClenov(kontroly, sluzby);
+      renderGrafHodinyClenov(sluzby);
+      renderGrafHodinyReviry(sluzby);
+      renderGrafVysledkyKontrol(kontroly);
+    }
+
+function suggestFishers() {
+  const input = document.getElementById('checkFisherName');
+  const wrap = document.getElementById('checkFisherSuggestions');
+  const query = normalize(input.value);
+
+  if (!query) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const matches = appState.data.fishers
+  .filter(f =>
+    normalize(f.name).includes(query) ||
+    normalize(f.memberId).includes(query) ||
+    normalize(f.permitNumber).includes(query)
+  )
+  .slice(0, 5);
+
+  if (matches.length === 0) {
+    wrap.innerHTML = '<div class="empty">Žiadni rybári</div>';
+    return;
+  }
+
+  wrap.innerHTML = matches.map(f => {
+    return '<div class="item" style="cursor:pointer;" onclick="selectFisher(\'' + escapeHtml(f.name) + '\')">' +
+      escapeHtml(f.name) +
+    '</div>';
+  }).join('');
+}
+
+function lockSelectedFisher() {
+  document.getElementById('checkFisherName').readOnly = true;
+  document.getElementById('checkFisherIdNo').readOnly = true;
+}
+
+function renderPermitInfo(fisher) {
+
+  const permitInfo = document.getElementById('checkPermitInfo');
+  if (!permitInfo || !fisher) return;
+
+  const validTo = fisher.validTo;
+
+  if (!validTo) {
+    permitInfo.innerHTML = '<span style="color:#f59e0b;">Povolenka: dátum platnosti neuvedený</span>';
+    return;
+  }
+
+  const today = new Date();
+  const validDate = new Date(validTo);
+  today.setHours(0, 0, 0, 0);
+  validDate.setHours(0, 0, 0, 0);
+
+  if (validDate >= today) {
+    permitInfo.innerHTML = `<span style="color:#22c55e;">Povolenka platná do: ${validTo} ✅</span>`;
+  } else {
+    permitInfo.innerHTML = `<span style="color:#ef4444;">Povolenka NEPLATNÁ od: ${validTo} ⚠️</span>`;
+  }
+}
+
+function autoFillFisherFromId() {
+  const idInput = document.getElementById('checkFisherIdNo');
+  const nameInput = document.getElementById('checkFisherName');
+  const permitInfo = document.getElementById('checkPermitInfo');
+
+  const query = normalize(idInput.value);
+
+  if (!query) {
+    if (permitInfo) permitInfo.innerHTML = '';
+    return;
+  }
+
+ const fisher = appState.data.fishers.find(f =>
+  normalize(f.memberId) === query ||
+  normalize(f.permitNumber) === query
+);
+
+  if (!fisher) {
+    if (permitInfo) permitInfo.innerHTML = '';
+    return;
+  }
+
+  nameInput.value = fisher.name || '';
+  document.getElementById('checkFisherDbId').value = fisher.id || '';
+
+  renderPermitInfo(fisher);
+  lockSelectedFisher();
+}
+
+function selectFisher(name) {
+  const fisher = appState.data.fishers.find(f => f.name === name);
+
+  document.getElementById('checkFisherName').value = name;
+  document.getElementById('checkFisherDbId').value = fisher ? fisher.id : '';
+
+ if (fisher && fisher.memberId) {
+  document.getElementById('checkFisherIdNo').value = fisher.memberId;
+}
+
+renderPermitInfo(fisher);
+lockSelectedFisher();
+
+  document.getElementById('checkFisherSuggestions').innerHTML = '';
+
+  const checkSearch = document.getElementById('checkSearch');
+if (checkSearch) checkSearch.value = name;
+renderChecks();
+
+showFisherHistory(name);
+
+}
+
+async function init() {
+  loadData();
+  loadActiveRevir();
+  resetFisherForm();
+  resetMemberForm();
+  resetCheckForm();
+
+  await loadMembersForLogin();
+}
+
+async function loadMembersForLogin() {
+  const { data: membersData, error: membersError } = await db
+    .from('members')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (membersError) {
+    console.error('Chyba pri načítaní členov RS pre login:', membersError);
+    alert('Nepodarilo sa načítať členov RS pre prihlásenie.');
+    return;
+  }
+
+  appState.data.members = membersData || [];
+
+  console.log('Členovia RS pre login načítaní:', appState.data.members.length);
+}
+
+    // init();
+async function loadKontroly() {
+    const datumOd = new Date();
+datumOd.setDate(datumOd.getDate() - 30);
+
+const { data: checksData, error: checksError } = await db
+  .from('checks')
+  .select('*')
+  .gte('created_at', datumOd.toISOString())
+  .order('created_at', { ascending: false });
+
+    if (checksError) {
+        console.error('Chyba pri nacitani kontrol:', checksError);
+        return;
+    }
+
+    const { data: membersData, error: membersError } = await db
+        .from('members')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (membersError) {
+        console.error('Chyba pri nacitani clenov RS:', membersError);
+        return;
+    }
+
+const { data: fishersData, error: fishersError } = await db
+  .from('fishers')
+  .select('*')
+  .order('name', { ascending: true });
+
+if (fishersError) {
+  console.error('Chyba pri nacitani rybarov:', fishersError);
+  return;
+}
+
+    console.log('Nacitane kontroly:', checksData);
+    console.log('Nacitani rybari:', fishersData);
+    console.log('Nacitani clenovia RS:', membersData);
+
+    appState.data.checks = checksData || [];
+    appState.data.members = membersData || [];
+    appState.data.fishers = (fishersData || []).map(f => ({
+  id: f.id,
+  name: f.name,
+  memberId: f.member_id || '',
+  permitNumber: f.permit_number || '',
+  validFrom: f.permit_valid_from || '',
+  validTo: f.permit_valid_to || '',
+  localPermit: !!f.local_permit,
+  unionPermit: !!f.union_permit,
+  district: f.organizacia || '',
+  status: f.stav || 'Aktívny',
+  note: f.poznamka || '',
+  createdAt: f.created_at || '',
+  updatedAt: f.updated_at || ''
+}));
+
+    // populateLoginMembers();
+       appState.kontrolyLoaded = true;
+    renderAll();
+  }
+
+async function refreshKontrolyData() {
+  const status = document.getElementById('refreshKontrolyStatus');
+
+  if (status) {
+    status.textContent = 'Aktualizujem údaje...';
+  }
+
+  await loadKontroly();
+  await loadSluzbyReviry();
+
+  if (status) {
+    status.textContent = '✓ Údaje aktualizované';
+
+    setTimeout(() => {
+      status.textContent = '';
+    }, 3000);
+  }
+}
+
+async function fixOldServiceCounts() {
+  if (!confirm('Spustiť spätný prepočet počtu kontrol pre staré služby revírov?')) {
+    return;
+  }
+
+  const { data: sluzby, error: sluzbyError } = await db
+    .from('sluzby_reviry')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (sluzbyError) {
+    console.error('Chyba pri načítaní služieb:', sluzbyError);
+    alert('Nepodarilo sa načítať služby revírov.');
+    return;
+  }
+
+  let opravene = 0;
+
+  for (const sluzba of sluzby || []) {
+    if (!sluzba.revir || !sluzba.zaciatok || !sluzba.koniec) continue;
+
+    const { count, error: countError } = await db
+      .from('checks')
+      .select('id', { count: 'exact', head: true })
+      .eq('location', sluzba.revir)
+      .gte('created_at', sluzba.zaciatok)
+      .lte('created_at', sluzba.koniec);
+
+    if (countError) {
+      console.error('Chyba pri počítaní kontrol pre službu:', sluzba.id, countError);
+      continue;
+    }
+
+    const novyPocet = count || 0;
+
+    if (Number(sluzba.pocet_kontrol) !== novyPocet) {
+      const { error: updateError } = await db
+        .from('sluzby_reviry')
+        .update({ pocet_kontrol: novyPocet })
+        .eq('id', sluzba.id);
+
+      if (updateError) {
+        console.error('Chyba pri aktualizácii služby:', sluzba.id, updateError);
+      } else {
+        opravene++;
+      }
+    }
+  }
+
+  await loadSluzbyReviry();
+  renderStats();
+  updateDashboard();
+
+  alert('Spätný prepočet hotový. Opravené služby: ' + opravene);
+}
+
+  async function loadSluzbyReviry() {
+  const { data, error } = await db
+    .from('sluzby_reviry')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Chyba pri načítaní služieb revírov:', error);
+    return;
+  }
+
+  appState.data.sluzbyReviry = data || [];
+  console.log('Nacítané služby revírov:', appState.data.sluzbyReviry);
+}
+
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const db = window.supabase.createClient(
+      "https://jcxdlsoxgluuxifhzxxy.supabase.co",
+      "sb_publishable_mmO_V9BEccIq-tx2Er2ifQ_Fn7hwQg_"
+    );
+
+init();
+
+function showAllChecks() {
+    const kontroly = appState.data.checks || [];
+    const list = document.getElementById('checksModalList');
+    const modal = document.getElementById('checksModal');
+
+    if (!list || !modal) return;
+
+    if (kontroly.length === 0) {
+        list.innerHTML = '<div class="empty">Zatiaľ nie sú uložené žiadne kontroly.</div>';
+    } else {
+        list.innerHTML = kontroly.map((item, index) => {
+            const meno = item.fisher_name || item.fisherName || item.fisher_id_no || item.fisherIdNo || '-';
+            const revir = item.location || item.place || '-';
+            const vysledok = item.result || '-';
+
+            return `
+                <div class="item" onclick="showCheckDetail('${item.id}')">
+                    <strong>${index + 1}. ${meno}</strong><br>
+                    <span class="muted">Revír:</span> ${revir}<br>
+                    <span class="muted">Výsledok:</span> ${statusBadge(vysledok)}
+                </div>
+            `;
+        }).join('');
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function showPoruseniaDetail() {
+  const checks = appState.data.checks || [];
+  const modal = document.getElementById('checksModal');
+  const list = document.getElementById('checksModalList');
+
+  if (!modal || !list) return;
+
+  const porusenia = checks.filter(k => {
+    const result = k.result || '';
+    return result && result !== 'Bez porušenia';
+  });
+
+  if (porusenia.length === 0) {
+    list.innerHTML = '<div class="empty">Nie sú evidované žiadne porušenia.</div>';
+  } else {
+    list.innerHTML = porusenia.map((item, index) => {
+      const meno = item.fisher_name || item.fisherName || item.fisher_id_no || item.fisherIdNo || '-';
+      const revir = item.location || item.place || '-';
+      const vysledok = item.result || '-';
+      const poznamka = item.poznamka || item.note || '-';
+
+      return `
+        <div class="item" onclick="showCheckDetail('${item.id}')">
+          <strong>${index + 1}. ${meno}</strong><br>
+          <span class="muted">Revír:</span> ${revir}<br>
+          <span class="muted">Výsledok:</span> ${statusBadge(vysledok)}<br>
+          <span class="muted">Poznámka:</span> ${poznamka}
+        </div>
+      `;
+    }).join('');
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function showHodinyRsDetail() {
+  const sluzby = appState.data.sluzby_reviry || appState.data.sluzbyReviry || [];
+  const modal = document.getElementById('checksModal');
+  const list = document.getElementById('checksModalList');
+
+  if (!modal || !list) return;
+
+  if (sluzby.length === 0) {
+    list.innerHTML = '<div class="empty">Nie sú evidované žiadne služby revírov.</div>';
+  } else {
+    list.innerHTML = sluzby.map((s, index) => {
+      const clen = s.clen_rs || s.clenRs || '-';
+      const revir = s.revir || '-';
+      const zaciatok = formatDateTime(s.zaciatok || s.start || '');
+      const koniec = formatDateTime(s.koniec || s.end || '');
+      const trvanie = s.trvanie_min || s.durationMin || 0;
+      const pocet = s.pocet_kontrol || s.checkCount || 0;
+
+      return `
+        <div class="item">
+          <strong>${index + 1}. Služba revíru</strong><br>
+          <span class="muted">Člen RS:</span> ${clen}<br>
+          <span class="muted">Revír:</span> ${revir}<br>
+          <span class="muted">Začiatok:</span> ${zaciatok}<br>
+          <span class="muted">Koniec:</span> ${koniec}<br>
+          <span class="muted">Trvanie:</span> ${trvanie} min<br>
+          <span class="muted">Počet kontrol:</span> ${pocet}
+        </div>
+      `;
+    }).join('');
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function showCheckDetail(id) {
+  const item = (appState.data.checks || []).find(k => String(k.id) === String(id));
+
+console.log('DETAIL KONTROLY ITEM:', item);
+console.log('DETAIL KONTROLY PHOTOS:', item.photos);
+
+  const modal = document.getElementById('checkDetailModal');
+  const body = document.getElementById('checkDetailBody');
+
+  if (!item || !modal || !body) {
+    alert('Kontrola sa nenašla.');
+    return;
+  }
+
+  const meno = item.fisher_name || item.fisherName || item.fisher_id_no || '-';
+  const revir = item.location || item.place || '-';
+  const vysledok = item.result || '-';
+  const typ = item.typ_priestupku || '-';
+  const poznamka = item.poznamka || '-';
+  const clen1 = item.clen_rs_1 || '-';
+  const clen2 = item.clen_rs_2 || '-';
+  const datum = formatDateTime(item.created_at || item.date);
+
+  let photos = [];
+
+if (Array.isArray(item.photos)) {
+  photos = item.photos;
+} else if (typeof item.photos === 'string' && item.photos.trim()) {
+  try {
+    const parsed = JSON.parse(item.photos);
+    photos = Array.isArray(parsed) ? parsed : [item.photos];
+  } catch (e) {
+    photos = [item.photos];
+  }
+}
+
+  const photosHtml = photos.length > 0
+  ? photos.map(photo => {
+      const url = photo.dataUrl || photo.url || photo.src || photo;
+
+      return `
+        <img src="${url}" style="max-width:180px; border-radius:12px; margin:6px; border:1px solid #ddd;" onclick="window.open('${url}', '_blank')">
+      `;
+    }).join('')
+  : '<div class="muted">Bez fotiek.</div>';
+
+  body.innerHTML = `
+    <div class="item">
+      <h3 style="margin-top:0;">${meno}</h3>
+
+      <p><strong>Dátum:</strong> ${datum}</p>
+      <p><strong>Revír:</strong> ${revir}</p>
+      <p><strong>Výsledok:</strong> ${vysledok}</p>
+      <p><strong>Typ priestupku:</strong> ${typ}</p>
+      <p><strong>Poznámka:</strong> ${poznamka}</p>
+      <p><strong>Člen RS 1:</strong> ${clen1}</p>
+      <p><strong>Člen RS 2:</strong> ${clen2}</p>
+
+     <p><strong>Fotky:</strong></p>
+      <div>${photosHtml}</div>
+
+      <button
+        class="btn-primary"
+        style="margin-top:12px;"
+        onclick="openEditCheckModal('${item.id}')">
+        Upraviť kontrolu
+      </button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function openEditCheckModal(id) {
+  const item = (appState.data.checks || []).find(
+    k => String(k.id) === String(id)
+  );
+
+  if (!item) {
+    alert('Kontrola sa nenašla.');
+    return;
+  }
+
+if (!window.editCheckRemovedPhotos) {
+  window.editCheckRemovedPhotos = [];
+}
+
+  document.getElementById('editCheckId').value = item.id || '';
+
+  document.getElementById('editCheckResult').value =
+    item.result || 'Bez porušenia';
+
+  document.getElementById('editCheckOffence').value =
+    item.typ_priestupku || '';
+
+  document.getElementById('editCheckNote').value =
+    item.poznamka || '';
+
+const photosWrap = document.getElementById('editCheckExistingPhotos');
+
+let photos = [];
+
+if (Array.isArray(item.photos)) {
+  photos = item.photos;
+}
+
+const removedPhotos = window.editCheckRemovedPhotos || [];
+
+photosWrap.innerHTML = photos
+  .filter((photo, index) => !removedPhotos.includes(index))
+  .map((photo, index) => {
+
+  const url = photo.dataUrl || photo.url || photo.src || photo;
+
+  return `
+    <div style="position:relative;">
+      <img
+        src="${url}"
+        style="
+          width:100px;
+          height:100px;
+          object-fit:cover;
+          border-radius:8px;
+          border:1px solid #ddd;
+        ">
+
+      <button
+        type="button"
+        onclick="removeEditPhoto(${index})"
+        style="
+          position:absolute;
+           top:6px;
+           right:6px;
+           width:28px;
+           height:28px;
+           border:none;
+           border-radius:50%;
+           background:#dc3545;
+           color:white;
+           font-size:18px;
+           font-weight:bold;
+           display:flex;
+           align-items:center;
+           justify-content:center;
+           cursor:pointer;
+           box-shadow:0 2px 6px rgba(0,0,0,0.25);
+          ">
+        ×
+      </button>
+    </div>
+  `;
+}).join('');
+
+  document.getElementById('editCheckModal').classList.remove('hidden');
+}
+
+function closeEditCheckModal() {
+  document.getElementById('editCheckModal').classList.add('hidden');
+}
+
+function removeEditPhoto(index) {
+  window.editCheckRemovedPhotos =
+    window.editCheckRemovedPhotos || [];
+
+  window.editCheckRemovedPhotos.push(index);
+
+  const id = document.getElementById('editCheckId').value;
+
+  closeEditCheckModal();
+  openEditCheckModal(id);
+}
+
+async function saveEditedCheck() {
+  const id = document.getElementById('editCheckId').value;
+  const result = document.getElementById('editCheckResult').value;
+  const offence = document.getElementById('editCheckOffence').value.trim();
+  const note = document.getElementById('editCheckNote').value.trim();
+  const photoInput = document.getElementById('editCheckPhotos');
+
+  if (!id) {
+    alert('Chýba ID kontroly.');
+    return;
+  }
+
+  const item = (appState.data.checks || []).find(
+    k => String(k.id) === String(id)
+  );
+
+  if (!item) {
+    alert('Kontrola sa nenašla v lokálnych dátach.');
+    return;
+  }
+
+  let existingPhotos = [];
+
+  if (Array.isArray(item.photos)) {
+    existingPhotos = item.photos;
+  } else if (typeof item.photos === 'string' && item.photos.trim()) {
+    try {
+      const parsed = JSON.parse(item.photos);
+      existingPhotos = Array.isArray(parsed) ? parsed : [item.photos];
+    } catch (e) {
+      existingPhotos = [item.photos];
+    }
+  }
+
+  let newPhotos = [];
+
+  if (photoInput && photoInput.files && photoInput.files.length > 0) {
+    newPhotos = await Promise.all(
+      Array.from(photoInput.files).map(file => {
+        return new Promise(resolve => {
+          const reader = new FileReader();
+
+          reader.onload = event => {
+            resolve({
+              name: file.name,
+              type: file.type,
+              dataUrl: event.target.result,
+              addedAt: new Date().toISOString()
+            });
+          };
+
+          reader.readAsDataURL(file);
+        });
+      })
+    );
+  }
+
+  const removedPhotos = window.editCheckRemovedPhotos || [];
+
+const keptPhotos = existingPhotos.filter((photo, index) =>
+  !removedPhotos.includes(index)
+);
+
+const allPhotos = keptPhotos.concat(newPhotos);
+
+  const { error } = await db
+    .from('checks')
+    .update({
+      result: result,
+      typ_priestupku: offence,
+      poznamka: note,
+      photos: allPhotos
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Chyba pri úprave kontroly:', error);
+    alert('Kontrolu sa nepodarilo upraviť.');
+    return;
+  }
+
+  item.result = result;
+  item.typ_priestupku = offence;
+  item.poznamka = note;
+  item.photos = allPhotos;
+
+  if (photoInput) {
+    photoInput.value = '';
+  }
+
+  renderChecks();
+  closeEditCheckModal();
+  closeCheckDetailModal();
+
+  alert('Kontrola bola upravená.');
+}
+
+function closeChecksModal() {
+    document.getElementById('checksModal').classList.add('hidden');
+}
+
+function closeServiceWithoutCheckModal() {
+  document.getElementById('serviceWithoutCheckModal').classList.add('hidden');
+}
+
+function openGroupActionModal() {
+  const modal = document.getElementById('groupActionModal');
+  const list = document.getElementById('groupActionMembersList');
+
+  if (!modal || !list) return;
+
+  const currentUserId = String(appState.currentUserId || '');
+
+ const members = (appState.data.members || [])
+  .filter(member =>
+    String(member.id) !== currentUserId &&
+    normalize(member.role || '').includes(normalize('Clen RS'))
+  );
+
+  list.innerHTML = members.map(member => `
+    <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+      <input
+        type="checkbox"
+        class="group-action-member-checkbox"
+        value="${member.id}"
+        data-name="${member.name}"
+        style="width:auto;"
+      >
+      <span>${member.name}</span>
+    </label>
+  `).join('');
+
+  modal.classList.remove('hidden');
+}
+
+function closeGroupActionModal() {
+  document.getElementById('groupActionModal').classList.add('hidden');
+}
+
+function openServiceWithoutCheckModal() {
+    const serviceType = document.getElementById('serviceType');
+
+    if (serviceType) {
+        serviceType.value = 'Bežná kontrola rybárov';
+    }
+
+    document.getElementById('serviceWithoutCheckModal').classList.remove('hidden');
+}
+
+function toggleGroupMembersBox() {
+  const checkbox = document.getElementById('isGroupService');
+  const box = document.getElementById('groupMembersBox');
+  const list = document.getElementById('groupMembersList');
+
+  if (!checkbox || !box || !list) return;
+
+  if (checkbox.checked) {
+    const currentUserId = String(appState.currentUserId || '');
+
+   const members = (appState.data.members || [])
+  .filter(member =>
+    String(member.id) !== currentUserId &&
+    normalize(member.role || '').includes(normalize('Clen RS'))
+  );
+
+    list.innerHTML = members.map(member => `
+      <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+        <input
+          type="checkbox"
+          class="group-member-checkbox"
+          value="${member.id}"
+          data-name="${member.name}"
+          style="width:auto;"
+        >
+        <span>${member.name}</span>
+      </label>
+    `).join('');
+
+    box.classList.remove('hidden');
+  } else {
+    list.innerHTML = '';
+    box.classList.add('hidden');
+  }
+}
+
+async function saveServiceWithoutCheck() {
+const saveBtn = document.getElementById('saveServiceWithoutCheckBtn');
+
+if (saveBtn) {
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Ukladám...';
+}
+  const typSluzby = document.getElementById('serviceType').value;
+  const poznamka = document.getElementById('serviceNote').value.trim();
+
+if (!typSluzby) {
+  alert('Vyber typ služby.');
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť službu';
+  }
+
+  return;
+}
+
+  const currentMember = getCurrentUser();
+
+const groupCheckbox = document.getElementById('isGroupService');
+
+let clenoviaRs = [];
+
+if (currentMember) {
+  clenoviaRs.push({
+    id: appState.currentUserId || currentMember.id || '',
+    name: currentMember.name || ''
+  });
+}
+
+if (groupCheckbox && groupCheckbox.checked) {
+  const selectedMembers = Array.from(
+    document.querySelectorAll('.group-member-checkbox:checked')
+  ).map(input => ({
+    id: input.value,
+    name: input.dataset.name || ''
+  }));
+
+  clenoviaRs = clenoviaRs.concat(selectedMembers);
+}
+
+  const zaciatokDate = new Date(appState.activeRevirStart);
+  const koniecDate = new Date();
+
+  let trvanieMin = 0;
+
+  if (!isNaN(zaciatokDate.getTime())) {
+    trvanieMin = Math.floor((koniecDate - zaciatokDate) / 60000);
+  }
+
+  const { data: novaSluzba, error: sluzbaError } = await db
+    .from('sluzby_reviry')
+    .insert([{
+      revir: appState.activeRevir,
+      zaciatok: appState.activeRevirStart,
+      koniec: koniecDate.toISOString(),
+      trvanie_min: trvanieMin,
+      pocet_kontrol: 0,
+      clen_rs: currentMember ? currentMember.name : '',
+      clen_rs_id: appState.currentUserId || '',
+      poznamka: poznamka,
+      clenovia_rs: clenoviaRs
+    }])
+.select()
+.single();
+
+ if (sluzbaError) {
+  console.error('Chyba pri uložení služby bez kontroly:', sluzbaError);
+  alert('Služba bez kontroly sa neuložila do Supabase.');
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť službu';
+  }
+
+  return;
+}
+
+if (novaSluzba) {
+  appState.data.sluzbyReviry = appState.data.sluzbyReviry || [];
+  appState.data.sluzbyReviry.unshift(novaSluzba);
+}
+
+renderStats();
+
+  closeServiceWithoutCheckModal();
+
+  appState.activeRevir = '';
+  appState.activeRevirStart = '';
+
+  localStorage.removeItem(ACTIVE_REVIR_KEY);
+
+  document.getElementById('checkPlace').value = '';
+  document.getElementById('serviceType').value = '';
+  document.getElementById('serviceNote').value = '';
+
+if (saveBtn) {
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Uložiť službu';
+}
+
+  alert('Služba bez kontroly bola uložená.');
+}
+
+function closeCheckDetailModal() {
+  document.getElementById('checkDetailModal').classList.add('hidden');
+}
+
+function closeFisherProfileModal() {
+    document.getElementById('fisherProfileModal').classList.add('hidden');
+}
+
+function closeMemberStatsModal() {
+    document.getElementById('memberStatsModal').classList.add('hidden');
+}
+
+function closeMemberStatsModal() {
+  document.getElementById('memberStatsModal').classList.add('hidden');
+}
+
+function closeRevirStatsModal() {
+  document.getElementById('revirStatsModal').classList.add('hidden');
+}
+
+function closeRevirStatsModal() {
+    document.getElementById('revirStatsModal').classList.add('hidden');
+}
+
+function showSluzbyReviry() {
+  const modal = document.getElementById('sluzbyReviryModal');
+  const list = document.getElementById('sluzbyReviryList');
+
+  if (!modal || !list) {
+    alert('Chýba modal služieb revírov.');
+    return;
+  }
+
+  const sluzby = appState.data.sluzbyReviry || [];
+
+const celkomSluzieb = sluzby.length;
+const celkomMinut = sluzby.reduce(
+  (sum, item) => sum + (Number(item.trvanie_min) || 0),
+  0
+);
+const celkomHodiny = Math.floor(celkomMinut / 60);
+const celkomZostavaMin = celkomMinut % 60;
+
+const celkomKontrol = sluzby.reduce(
+  (sum, item) => sum + (Number(item.pocet_kontrol) || 0),
+  0
+);
+
+const priemerKontrol = celkomSluzieb > 0
+  ? (celkomKontrol / celkomSluzieb).toFixed(1)
+  : '0.0';
+
+const suhrnHtml = `
+  <div class="item">
+    <strong>Súhrn služieb revírov</strong><br>
+    <span class="muted">Celkom služieb:</span> ${celkomSluzieb}<br>
+    <span class="muted">Celkom čas:</span> ${celkomHodiny} h ${celkomZostavaMin} min<br>
+    <span class="muted">Priemer kontrol / služba:</span> ${priemerKontrol}
+  </div>
+`;
+
+  if (sluzby.length === 0) {
+    list.innerHTML = '<div class="empty">Zatiaľ nie sú uložené žiadne služby revírov.</div>';
+  } else {
+    list.innerHTML = suhrnHtml + sluzby.map((item, index) => {
+      return `
+        <div class="item">
+          <strong>${index + 1}. ${item.revir || '-'}</strong><br>
+          <span class="muted">Člen RS:</span> ${item.clen_rs || '-'}<br>
+          ${Array.isArray(item.clenovia_rs) && item.clenovia_rs.length > 1
+          ? `<span class="muted">Spoločná akcia:</span> ${item.clenovia_rs.map(clen => clen.name).join(', ')}<br>`
+          : ''
+         }
+          <span class="muted">Začiatok:</span> ${new Date(item.zaciatok).toLocaleString('sk-SK')}<br>
+          <span class="muted">Koniec:</span> ${new Date(item.koniec).toLocaleString('sk-SK')}<br>
+          <span class="muted">Trvanie:</span> ${item.trvanie_min || 0} min<br>
+          <span class="muted">Počet kontrol:</span> ${item.pocet_kontrol || 0}
+
+        </div>
+      `;
+    }).join('');
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeSluzbyReviryModal() {
+  document.getElementById('sluzbyReviryModal').classList.add('hidden');
+}
+
+function closeReviryInfoModal() {
+  const modal = document.getElementById('reviryInfoModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function closeRevirDetailModal() {
+  const modal = document.getElementById('revirDetailModal');
+
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function showRevirStats() {
+
+    const modal = document.getElementById('revirStatsModal');
+    const list = document.getElementById('revirStatsList');
+
+    if (!modal || !list) {
+        alert('Chyba: nenasiel sa modal revirov.');
+        return;
+    }
+
+    const kontroly = appState.data.checks || [];
+const reviry = {};
+
+kontroly.forEach(item => {
+    const revir = item.location || item.place || '-';
+
+    if (!reviry[revir]) {
+        reviry[revir] = 0;
+    }
+
+    reviry[revir]++;
+});
+
+console.log('Statistika reviry:', reviry);
+
+const reviryList = Object.keys(reviry).sort((a, b) => reviry[b] - reviry[a]);
+
+if (reviryList.length === 0) {
+    list.innerHTML = '<div class="empty">Zatiaľ nie sú dostupné štatistiky revírov.</div>';
+} else {
+    list.innerHTML = reviryList.map(revir => {
+        return `
+            <div class="item">
+                <strong>${revir}</strong><br>
+                <span class="muted">Počet kontrol:</span> ${reviry[revir]}
+            </div>
+        `;
+    }).join('');
+}
+
+modal.classList.remove('hidden');
+}
+
+function showReviryInfo() {
+  const modal = document.getElementById('reviryInfoModal');
+  const list = document.getElementById('reviryInfoList');
+
+  if (!modal || !list) {
+    alert('Chýba: modal informácií o revíroch.');
+    return;
+  }
+
+  list.innerHTML = Object.keys(reviryInfo).map(revir => {
+    const info = reviryInfo[revir];
+
+    return `
+      <div class="item" onclick="showRevirDetail('${revir}')">
+        <strong>${revir}</strong><br>
+        <span class="muted">Číslo revíru:</span> ${info.cislo || '—'}<br>
+        <span class="muted">Rozloha:</span> ${info.rozloha || '—'}<br>
+        <span class="muted">Okres:</span> ${info.okres || '—'}<br>
+        <span class="muted">Charakter:</span> ${info.charakter || '—'}<br>
+        <span class="muted">Popis:</span> ${info.popis || '—'}
+      </div>
+    `;
+  }).join('');
+
+  modal.classList.remove('hidden');
+}
+
+function showRevirDetail(revir) {
+
+  const modal = document.getElementById('revirDetailModal');
+  const title = document.getElementById('revirDetailTitle');
+  const content = document.getElementById('revirDetailContent');
+
+  if (!modal || !title || !content) {
+    alert('Chýba modal detailu revíru.');
+    return;
+  }
+
+  const info = reviryInfo[revir];
+
+  if (!info) {
+    alert('Revír nebol nájdený.');
+    return;
+  }
+
+  title.textContent = revir;
+
+content.innerHTML = `
+  <div class="item">
+    <strong>Číslo revíru:</strong> ${info.cislo || '-'}<br>
+    <strong>Rozloha:</strong> ${info.rozloha || '-'}<br>
+    <strong>Okres:</strong> ${info.okres || '-'}<br>
+    <strong>Charakter:</strong> ${info.charakter || '-'}<br>
+    <strong>Popis:</strong> ${info.popis || '-'}<br>
+    <br>
+    <strong>Poznámka:</strong> ${info.poznamka || '-'}<br>
+    <strong>Lovná miera:</strong> ${info.lovnaMiera || '-'}<br>
+    <strong>Osobitné ustanovenia:</strong> ${info.ustanovenia || '-'}
+  </div>
+`;
+
+  modal.classList.remove('hidden');
+}
+
+function showMemberStats() {
+
+const modal = document.getElementById('memberStatsModal');
+const list = document.getElementById('memberStatsList');
+
+if (!modal || !list) {
+    alert('Chyba: nenasiel sa modal statistik.');
+    return;
+}
+    const kontroly = appState.data.checks || [];
+    const stats = {};
+
+    kontroly.forEach(item => {
+        const clenovia = [
+            item.clen_rs_1 || item.member_name,
+            item.clen_rs_2
+        ].filter(clen => clen && clen !== '-');
+
+        clenovia.forEach(clen => {
+            const revir = item.location || item.place || '-';
+
+            if (!stats[clen]) {
+                stats[clen] = {
+                    total: 0,
+                    reviry: {}
+                };
+            }
+
+            stats[clen].total += 1;
+            stats[clen].reviry[revir] = (stats[clen].reviry[revir] || 0) + 1;
+        });
+    });
+
+const sluzbyReviry = appState.data.sluzbyReviry || [];
+
+sluzbyReviry.forEach(sluzba => {
+  const clenoviaSluzby = Array.isArray(sluzba.clenovia_rs)
+    ? sluzba.clenovia_rs
+    : [];
+
+  clenoviaSluzby.forEach(clen => {
+    const meno = clen.name || '';
+    if (!meno) return;
+
+    const revir = sluzba.revir || '-';
+
+    if (!stats[meno]) {
+      stats[meno] = {
+        total: 0,
+        reviry: {}
+      };
+    }
+
+   const pocetKontrol = Number(sluzba.pocet_kontrol) || 0;
+
+if (meno !== sluzba.clen_rs) {
+  stats[meno].total += pocetKontrol;
+  stats[meno].reviry[revir] = (stats[meno].reviry[revir] || 0) + pocetKontrol;
+}
+  });
+});
+
+const povoleniClenoviaRs = (appState.data.members || [])
+  .filter(member =>
+    normalize(member.role || '').includes(normalize('Clen RS'))
+  )
+  .map(member => normalize(member.name || ''));
+
+const mena = Object.keys(stats).filter(meno =>
+  povoleniClenoviaRs.includes(normalize(meno))
+);
+
+    if (mena.length === 0) {
+        alert("Zatiaľ nie sú dostupné štatistiky členov RS.");
+        return;
+    }
+
+ list.innerHTML = mena.map(meno => {
+    const data = stats[meno];
+
+    const reviryHtml = Object.keys(data.reviry).map(revir => {
+        return `
+            <div class="muted small" style="margin-top:4px;">
+                <span class="muted">Revír:</span> ${escapeHtml(revir)}
+                | <strong>${data.reviry[revir]}x</strong>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="item">
+            <div class="item-head">
+                <div>
+                    <strong>${escapeHtml(meno)}</strong>
+                    <div class="muted small">Celkový počet kontrol: <strong>${data.total}</strong></div>
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                ${reviryHtml}
+            </div>
+        </div>
+    `;
+}).join('');
+
+modal.classList.remove('hidden');
+}
+
+  </script>
+</body>
+</html>
