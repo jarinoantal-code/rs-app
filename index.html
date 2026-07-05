@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-  <meta charset="UTF-8" />
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1f6f2a">
-<link rel="icon" type="image/png" href="icon-512.png">
-<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" type="image/png" href="icons/icon-512.png">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -3200,6 +3199,7 @@ function buildChecksExcelHtml() {
     'Poznámka',
     'Člen RS 1',
     'Člen RS 2',
+    'Účastníci spoločnej akcie',
     'Fotky'
   ];
 
@@ -3234,11 +3234,40 @@ if (datumDo) {
 }
 
 if (clenRS) {
-  exportChecks = exportChecks.filter(k =>
-    String(k.clen_rs_1 || '') === String(getMemberName(clenRS)) ||
-    String(k.clen_rs_2 || '') === String(getMemberName(clenRS)) ||
-    String(k.member_name || '') === String(getMemberName(clenRS))
-  );
+  const menoClena = safeText(getMemberName(clenRS));
+
+  exportChecks = exportChecks.filter(k => {
+    const priamaKontrola =
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena;
+
+    if (priamaKontrola) return true;
+
+    const revirKontroly = safeText(k.location || k.place);
+    const casKontroly = new Date(k.created_at || k.date);
+    const tolerance = 10 * 60 * 1000;
+
+    const matchedService = (appState.data.sluzbyReviry || []).find(s => {
+      const zaciatok = new Date(s.zaciatok);
+      const koniec = new Date(s.koniec);
+
+      return (
+        safeText(s.revir || '') === revirKontroly &&
+        !isNaN(casKontroly.getTime()) &&
+        !isNaN(zaciatok.getTime()) &&
+        !isNaN(koniec.getTime()) &&
+        casKontroly >= new Date(zaciatok.getTime() - tolerance) &&
+        casKontroly <= new Date(koniec.getTime() + tolerance) &&
+        Array.isArray(s.clenovia_rs) &&
+        s.clenovia_rs.some(clen =>
+          safeText(clen.name || clen.meno || clen) === menoClena
+        )
+      );
+    });
+
+    return !!matchedService;
+  });
 }
 
 if (revir) {
@@ -3258,9 +3287,18 @@ if (datumDo) {
 }
 
 if (clenRS) {
-  exportSluzby = exportSluzby.filter(s =>
-    String(s.clen_rs || '') === String(getMemberName(clenRS))
-  );
+  const menoClena = safeText(getMemberName(clenRS));
+
+  exportSluzby = exportSluzby.filter(s => {
+    const clenovia = Array.isArray(s.clenovia_rs) ? s.clenovia_rs : [];
+
+    return (
+      safeText(s.clen_rs || '') === menoClena ||
+      clenovia.some(clen =>
+        safeText(clen.name || clen.meno || clen) === menoClena
+      )
+    );
+  });
 }
 
 if (revir) {
@@ -3269,7 +3307,34 @@ if (revir) {
   );
 }
 
-  const rows = exportChecks.map(item => [
+const rows = exportChecks.map(item => {
+
+  const revirKontroly = safeText(item.location || item.place);
+  const casKontroly = new Date(item.created_at || item.date);
+  const tolerance = 10 * 60 * 1000;
+
+  const matchedService = (appState.data.sluzbyReviry || []).find(s => {
+    const zaciatok = new Date(s.zaciatok);
+    const koniec = new Date(s.koniec);
+
+    return (
+      safeText(s.revir || '') === revirKontroly &&
+      !isNaN(casKontroly.getTime()) &&
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime()) &&
+      casKontroly >= new Date(zaciatok.getTime() - tolerance) &&
+      casKontroly <= new Date(koniec.getTime() + tolerance)
+    );
+  });
+
+  const spolocnaAkcia =
+    Array.isArray(matchedService?.clenovia_rs)
+      ? matchedService.clenovia_rs
+          .map(c => c.name || c.meno || c)
+          .join(', ')
+      : '';
+
+  return [
     formatDateTime(item.created_at),
     item.fisher_name,
     item.fisher_id_no,
@@ -3279,8 +3344,12 @@ if (revir) {
     item.poznamka,
     item.clen_rs_1,
     item.clen_rs_2,
-    Array.isArray(item.photos) ? item.photos.join(' | ') : item.photos
-  ]);
+    spolocnaAkcia,
+    Array.isArray(item.photos)
+      ? item.photos.join(' | ')
+      : item.photos
+  ];
+});
 
 const totalKontroly = rows.length;
 
@@ -3656,44 +3725,90 @@ function renderGrafKontrolyReviry(kontroly) {
   }).join('');
 }
 
+function getMemberActivityStats(kontroly, sluzby) {
+  const counts = {};
+
+  function addCount(name) {
+    const clen = safeText(name);
+    if (!clen || clen === '-' || clen === 'null' || clen === 'undefined') return;
+    counts[clen] = (counts[clen] || 0) + 1;
+  }
+
+  function getServiceMembers(s) {
+    if (Array.isArray(s.clenovia_rs) && s.clenovia_rs.length > 0) {
+      return s.clenovia_rs
+        .map(clen => typeof clen === 'string' ? clen : (clen.name || clen.meno || ''))
+        .map(safeText)
+        .filter(Boolean);
+    }
+
+    return [safeText(s.clen_rs || '')].filter(Boolean);
+  }
+
+  function getCheckDateTime(k) {
+    const baseDate = localDateKey(k.created_at || k.date);
+
+    if (baseDate && k.time_from) {
+      const d = new Date(baseDate + 'T' + k.time_from);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    if (k.created_at) {
+      const d = new Date(k.created_at);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    return null;
+  }
+
+  (kontroly || []).forEach(k => {
+    const revirKontroly = safeText(k.location || k.place);
+    const casKontroly = getCheckDateTime(k);
+
+    const matchedService = (sluzby || []).find(s => {
+      const revirSluzby = safeText(s.revir);
+      const zaciatok = new Date(s.zaciatok);
+      const koniec = new Date(s.koniec);
+
+  const tolerance = 10 * 60 * 1000;
+
+return (
+  revirKontroly === revirSluzby &&
+  casKontroly &&
+  !isNaN(zaciatok.getTime()) &&
+  !isNaN(koniec.getTime()) &&
+  casKontroly >= new Date(zaciatok.getTime() - tolerance) &&
+  casKontroly <= new Date(koniec.getTime() + tolerance)
+);
+    });
+
+    if (matchedService) {
+      getServiceMembers(matchedService).forEach(addCount);
+      return;
+    }
+
+    [
+      k.clen_rs_1,
+      k.clen_rs_2,
+      k.member_name,
+      getMemberName(k.memberId),
+      getMemberName(k.memberId1),
+      getMemberName(k.memberId2)
+    ]
+      .map(safeText)
+      .filter(clen => clen && clen !== '-' && clen !== 'null' && clen !== 'undefined')
+      .filter((clen, index, arr) => arr.indexOf(clen) === index)
+      .forEach(addCount);
+  });
+
+  return counts;
+}
+
 function renderGrafAktivitaClenov(kontroly, sluzby) {
   const box = document.getElementById("grafAktivitaClenov");
   if (!box) return;
 
-  const counts = {};
-
- kontroly.forEach(k => {
-  const clen1 = k.clen_rs_1 || '';
-  const clen2 = k.clen_rs_2 || '';
-
-  if (clen1 && clen1 !== '-') {
-    counts[clen1] = (counts[clen1] || 0) + 1;
-  }
-
-  if (clen2 && clen2 !== '-') {
-    counts[clen2] = (counts[clen2] || 0) + 1;
-  }
-});
-
-(sluzby || []).forEach(s => {
-  const pocetKontrol = Number(s.pocet_kontrol) || 0;
-
-  if (pocetKontrol <= 0) return;
-
-  const clenovia = Array.isArray(s.clenovia_rs) && s.clenovia_rs.length > 0
-    ? s.clenovia_rs
-    : [];
-
-  clenovia.forEach(clen => {
-    const menoClena = typeof clen === 'string'
-      ? clen
-      : (clen.name || clen.meno || '');
-
-   if (menoClena && menoClena !== s.clen_rs) {
-  counts[menoClena] = (counts[menoClena] || 0) + pocetKontrol;
-}
-  });
-});
+  const counts = getMemberActivityStats(kontroly, sluzby);
 
   const rows = Object.entries(counts)
     .sort((a, b) => b[1] - a[1]);
@@ -3927,13 +4042,41 @@ if (datumDo) {
   });
 }
 
-     if (clenRS) {
-  kontroly = kontroly.filter(k =>
-    String(k.memberId || '') === String(clenRS) ||
-    String(k.clen_rs_1 || '') === String(getMemberName(clenRS)) ||
-    String(k.clen_rs_2 || '') === String(getMemberName(clenRS)) ||
-    String(k.member_name || '') === String(getMemberName(clenRS))
-  );
+if (clenRS) {
+  const menoClena = safeText(getMemberName(clenRS));
+  const tolerance = 10 * 60 * 1000;
+
+  kontroly = kontroly.filter(k => {
+    const priamaKontrola =
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena;
+
+    if (priamaKontrola) return true;
+
+    const revirKontroly = safeText(k.location || k.place);
+    const casKontroly = new Date(k.created_at || k.date);
+
+    const matchedService = (appState.data.sluzbyReviry || []).find(s => {
+      const zaciatok = new Date(s.zaciatok);
+      const koniec = new Date(s.koniec);
+
+      return (
+        safeText(s.revir || '') === revirKontroly &&
+        !isNaN(casKontroly.getTime()) &&
+        !isNaN(zaciatok.getTime()) &&
+        !isNaN(koniec.getTime()) &&
+        casKontroly >= new Date(zaciatok.getTime() - tolerance) &&
+        casKontroly <= new Date(koniec.getTime() + tolerance) &&
+        Array.isArray(s.clenovia_rs) &&
+        s.clenovia_rs.some(clen =>
+          safeText(clen.name || clen.meno || clen) === menoClena
+        )
+      );
+    });
+
+    return !!matchedService;
+  });
 }
 
      if (revir) {
@@ -3969,35 +4112,6 @@ const pytliactvo = kontroly.filter(k => k.result === "Pytliactvo").length;
         }
       }
 
-const clenoviaCount = {};
-
-kontroly.forEach(k => {
-  const clenovia = [
-    k.clen_rs_1,
-    k.clen_rs_2,
-    k.member_name,
-    getMemberName(k.memberId),
-    getMemberName(k.memberId1),
-    getMemberName(k.memberId2)
-  ]
-  .map(clen => safeText(clen))
-  .filter(clen => clen && clen !== '-' && clen !== 'null' && clen !== 'undefined');
-
-  clenovia.forEach(clen => {
-    clenoviaCount[clen] = (clenoviaCount[clen] || 0) + 1;
-  });
-});
-
-let topClen = "-";
-let maxClen = 0;
-
-for (const c in clenoviaCount) {
-  if (clenoviaCount[c] > maxClen) {
-    maxClen = clenoviaCount[c];
-    topClen = c;
-  }
-}
-
 document.getElementById("totalKontroly").innerText = totalKontroly;
 
 const statChecksEl = document.getElementById("statChecks");
@@ -4010,7 +4124,54 @@ const sluzbyReviry = (appState.data.sluzbyReviry || []).length;
 
 document.getElementById("totalPriestupky").innerText = porusenia;
 document.getElementById("totalSluzbyReviry").innerText = sluzbyReviry;
-     const sluzby = appState.data.sluzbyReviry || [];
+     let sluzby = [...(appState.data.sluzbyReviry || [])];
+
+if (datumOd) {
+  sluzby = sluzby.filter(s =>
+    localDateKey(s.zaciatok || s.created_at) >= datumOd
+  );
+}
+
+if (datumDo) {
+  sluzby = sluzby.filter(s =>
+    localDateKey(s.zaciatok || s.created_at) <= datumDo
+  );
+}
+
+if (revir) {
+  sluzby = sluzby.filter(s =>
+    safeText(s.revir || '') === safeText(revir)
+  );
+}
+
+if (clenRS) {
+  const menoClena = getMemberName(clenRS);
+
+const clenoviaCount = getMemberActivityStats(kontroly, sluzby);
+
+let topClen = "-";
+let maxClen = 0;
+
+for (const c in clenoviaCount) {
+  if (clenoviaCount[c] > maxClen) {
+    maxClen = clenoviaCount[c];
+    topClen = c;
+  }
+}
+
+  sluzby = sluzby.filter(s => {
+    const clenovia = Array.isArray(s.clenovia_rs)
+      ? s.clenovia_rs
+      : [];
+
+    return (
+      safeText(s.clen_rs || '') === safeText(menoClena) ||
+      clenovia.some(clen =>
+        safeText(clen.name || clen.meno || clen) === safeText(menoClena)
+      )
+    );
+  });
+}
 
 const celkovoMinut = sluzby.reduce(
   (sum, item) => sum + (Number(item.trvanie_min) || 0),
@@ -4745,6 +4906,121 @@ function closeGroupActionModal() {
   document.getElementById('groupActionModal').classList.add('hidden');
 }
 
+async function saveGroupActionService() {
+  const currentMember = getCurrentUser();
+
+  if (!currentMember) {
+    alert('Najprv sa prihlás ako člen RS.');
+    return;
+  }
+
+  if (!appState.activeRevir || !appState.activeRevirStart) {
+    alert('Nie je zvolený aktívny revír alebo chýba začiatok služby.');
+    return;
+  }
+
+  const koniecDate = new Date();
+  const koniecIso = koniecDate.toISOString();
+  const zaciatokDate = new Date(appState.activeRevirStart);
+
+  let trvanieMin = 0;
+
+  if (!isNaN(zaciatokDate.getTime())) {
+    trvanieMin = Math.floor((koniecDate - zaciatokDate) / 60000);
+  }
+
+const pocetKontrolSluzby = (appState.data.checks || []).filter(k => {
+  const revirKontroly = safeText(k.location || k.place);
+  const casKontroly = new Date(k.created_at || k.date);
+
+  return (
+    revirKontroly === safeText(appState.activeRevir) &&
+    !isNaN(casKontroly.getTime()) &&
+    !isNaN(zaciatokDate.getTime()) &&
+    casKontroly >= zaciatokDate &&
+    casKontroly <= koniecDate
+  );
+}).length;
+
+  const { count, error: countError } = await db
+    .from('checks')
+    .select('id', { count: 'exact', head: true })
+    .eq('location', appState.activeRevir)
+    .gte('created_at', appState.activeRevirStart)
+    .lte('created_at', koniecIso);
+
+  if (countError) {
+    console.error('Chyba pri počítaní kontrol spoločnej služby:', countError);
+    alert('Nepodarilo sa načítať počet kontrol zo Supabase.');
+    return;
+  }
+
+  const selectedMembers = Array.from(
+    document.querySelectorAll('.group-action-member-checkbox:checked')
+  ).map(input => ({
+    id: input.value,
+    name: input.dataset.name || ''
+  }));
+
+  const clenoviaRs = [
+    {
+      id: appState.currentUserId || currentMember.id || '',
+      name: currentMember.name || ''
+    },
+    ...selectedMembers
+  ];
+
+  const { data: novaSluzba, error: sluzbaError } = await db
+    .from('sluzby_reviry')
+    .insert([{
+      revir: appState.activeRevir,
+      zaciatok: appState.activeRevirStart,
+      koniec: koniecIso,
+      trvanie_min: trvanieMin,
+      pocet_kontrol: count || 0,
+      clen_rs: currentMember.name || '',
+      clen_rs_id: appState.currentUserId || '',
+      poznamka: 'Spoločná akcia RS',
+      clenovia_rs: clenoviaRs
+    }])
+    .select()
+    .single();
+
+  if (sluzbaError) {
+    console.error('Chyba pri uložení spoločnej služby:', sluzbaError);
+    alert('Spoločná služba sa neuložila do Supabase.');
+    return;
+  }
+
+  appState.data.sluzbyReviry = appState.data.sluzbyReviry || [];
+  appState.data.sluzbyReviry.unshift(novaSluzba);
+
+  closeGroupActionModal();
+
+  appState.activeRevir = '';
+  appState.activeRevirStart = '';
+  localStorage.removeItem(ACTIVE_REVIR_KEY);
+
+  const checkPlace = document.getElementById('checkPlace');
+  if (checkPlace) checkPlace.value = '';
+
+ await loadSluzbyReviry();
+renderStats();
+updateDashboard();
+
+resetCheckForm();
+
+const isGroupCheck = document.getElementById('isGroupCheck');
+if (isGroupCheck) isGroupCheck.checked = false;
+
+const checkFisherSuggestions = document.getElementById('checkFisherSuggestions');
+if (checkFisherSuggestions) checkFisherSuggestions.innerHTML = '';
+
+renderChecks();
+
+  alert('Spoločná služba bola uložená.');
+}
+
 function openServiceWithoutCheckModal() {
     const serviceType = document.getElementById('serviceType');
 
@@ -4852,7 +5128,7 @@ if (groupCheckbox && groupCheckbox.checked) {
       zaciatok: appState.activeRevirStart,
       koniec: koniecDate.toISOString(),
       trvanie_min: trvanieMin,
-      pocet_kontrol: 0,
+      pocet_kontrol: pocetKontrolSluzby,
       clen_rs: currentMember ? currentMember.name : '',
       clen_rs_id: appState.currentUserId || '',
       poznamka: poznamka,
@@ -4878,6 +5154,8 @@ if (novaSluzba) {
   appState.data.sluzbyReviry.unshift(novaSluzba);
 }
 
+await refreshKontrolyData();
+updateDashboard();
 renderStats();
 
   closeServiceWithoutCheckModal();
@@ -5218,14 +5496,6 @@ const mena = Object.keys(stats).filter(meno =>
 modal.classList.remove('hidden');
 }
 
-init();
   </script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js');
-  });
-}
-</script>
 </body>
 </html>
