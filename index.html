@@ -608,6 +608,11 @@
     <div class="card-icon">📈</div>
     <h3>Reporty</h3>
 </div>
+
+<div class="card card-asistent" onclick="openAsistentRSModule()">
+    <div class="card-icon">📘</div>
+    <h3>Asistent RS</h3>
+</div>
   </div>
 </div>
 
@@ -615,6 +620,59 @@
     <button class="btn-secondary" onclick="showMainMenu()">
         ← Späť do hlavného menu
     </button>
+</div>
+
+<div id="asistentRSSection" class="hidden">
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">📘 Asistent RS</h2>
+      <div class="muted small">Metodické usmernenia pre výkon rybárskej stráže</div>
+    </div>
+  </div>
+
+ <div class="note">
+  Vyberte modelovú situáciu. Modul slúži ako rýchla metodická pomôcka pri výkone rybárskej stráže.
+</div>
+
+<div class="main-menu-cards">
+  <div class="card card-kontroly" onclick="openAsistentCategory('kontrola_rybara')">
+    <div class="card-icon">🎣</div>
+    <h3>Kontrola rybára</h3>
+    <div class="muted small">Doklady, povolenia, povinnosti</div>
+  </div>
+
+  <div class="card card-rybari" onclick="openAsistentCategory('ulovok_sposob_lovu')">
+    <div class="card-icon">🐟</div>
+    <h3>Úlovok a spôsob lovu</h3>
+    <div class="muted small">Lovné miery, doby lovu, úlovky</div>
+  </div>
+
+  <div class="card card-reviry" onclick="openAsistentCategory('spravanie_pri_vode')">
+    <div class="card-icon">🏕️</div>
+    <h3>Správanie pri vode</h3>
+    <div class="muted small">Odpad, táborenie, poriadok</div>
+  </div>
+
+  <div class="card card-statistiky" onclick="openAsistentCategory('ochrana_reviru')">
+    <div class="card-icon">🌿</div>
+    <h3>Ochrana revíru</h3>
+    <div class="muted small">Pytliactvo, brehy, voda</div>
+  </div>
+
+  <div class="card card-reporty" onclick="openAsistentCategory('vykon_sluzby_rs')">
+    <div class="card-icon">🛡️</div>
+    <h3>Výkon služby RS</h3>
+    <div class="muted small">Oprávnenia, postupy, bezpečnosť</div>
+  </div>
+
+  <div class="card card-asistent" onclick="openAsistentPlaceholder('Mimoriadne udalosti')">
+    <div class="card-icon">⚠️</div>
+    <h3>Mimoriadne udalosti</h3>
+    <div class="muted small">Úhyn, havária, agresia</div>
+  </div>
+</div>
+
+<div id="asistentDetailBox" class="note hidden" style="margin-top:15px;"></div>
 </div>
 
     <div id="dashboardSection" class="dashboard hidden">
@@ -2478,20 +2536,116 @@ document.getElementById('checkTimeTo').value = teraz;
 
       uploadCheckPhotos(check, files);
     }
+
+let checkSaveInProgress = false;
+
+function setCheckSaveUi(isSaving, text) {
+  const saveBtn = document.getElementById('saveCheckBtn');
+  const saveStatus = document.getElementById('saveCheckStatus');
+
+  if (saveBtn) {
+    saveBtn.disabled = isSaving;
+    saveBtn.textContent = isSaving ? 'Ukladám...' : 'Uložiť kontrolu';
+  }
+
+  if (saveStatus) {
+    saveStatus.textContent = text || '';
+  }
+}
+
+function resizeImageForUpload(file, maxWidth = 1600, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      img.onload = function () {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          function (blob) {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+
+            const resizedFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, '') + '.jpg',
+              { type: 'image/jpeg' }
+            );
+
+            resolve(resizedFile);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadCheckPhotos(check, files) {
+  if (checkSaveInProgress) {
+    return;
+  }
+
+  checkSaveInProgress = true;
+  setCheckSaveUi(true, 'Nahrávam fotografie...');
+
+let slowUploadTimer = setTimeout(() => {
+  setCheckSaveUi(true, '📶 Slabý signál alebo pomalé pripojenie – čakajte, prosím...');
+}, 12000);
+
   try {
+    const total = files.length;
+    let index = 0;
+
     for (const file of files) {
-      const ext = file.name.split('.').pop();
-      const fileName = Date.now() + '_' + Math.random().toString(36).substring(2) + '.' + ext;
+      index++;
+
+      setCheckSaveUi(true, 'Zmenšujem fotografiu ' + index + ' z ' + total + '...');
+
+      const uploadFile = await resizeImageForUpload(file);
+
+      setCheckSaveUi(true, 'Nahrávam fotografiu ' + index + ' z ' + total + '...');
+
+      const fileName =
+        Date.now() +
+        '_' +
+        Math.random().toString(36).substring(2) +
+        '.jpg';
+
       const filePath = 'checks/' + check.id + '/' + fileName;
 
       const { error } = await db.storage
         .from('check-photos')
-        .upload(filePath, file);
+        .upload(filePath, uploadFile);
 
       if (error) {
         console.error('Chyba pri nahrávaní fotky:', error);
         alert('Chyba pri nahrávaní fotky.');
+
+        checkSaveInProgress = false;
+        setCheckSaveUi(false, 'Fotky sa nepodarilo nahrať – skúste menej fotiek alebo slabší internet.');
         return;
       }
 
@@ -2501,18 +2655,24 @@ async function uploadCheckPhotos(check, files) {
 
       check.photos.push({
         id: uid('photo'),
-        name: file.name,
+        name: uploadFile.name,
         dataUrl: data.publicUrl,
         path: filePath
       });
     }
 
+    setCheckSaveUi(true, 'Ukladám kontrolu do databázy...');
     finalizeCheckSave(check);
+
   } catch (error) {
     console.error('Chyba pri fotkách:', error);
     alert('Chyba pri spracovaní fotiek.');
+
+    checkSaveInProgress = false;
+    setCheckSaveUi(false, 'Chyba pri spracovaní fotiek.');
   }
 }
+
  async function finalizeCheckSave(check) {
   const saveBtn = document.getElementById('saveCheckBtn');
   const saveStatus = document.getElementById('saveCheckStatus');
@@ -2557,6 +2717,7 @@ async function uploadCheckPhotos(check, files) {
       saveStatus.textContent = 'Nepodarilo sa uložiť – slabý signál / skúste znova';
     }
 
+    checkSaveInProgress = false;
     return;
   }
 
@@ -2596,6 +2757,8 @@ async function uploadCheckPhotos(check, files) {
       saveStatus.textContent = '';
     }, 3000);
   }
+
+checkSaveInProgress = false;
 }
 
     function renderStats(kontroly = appState.data.checks || []) {
@@ -3039,7 +3202,763 @@ function showMainMenu() {
 
   document.getElementById('filterSection').classList.add('hidden');
 
+  document.getElementById('asistentRSSection').classList.add('hidden');
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const ASISTENT_RS_METODIKY = [
+{
+    id: 'znecistene_lovne_miesto',
+    category: 'spravanie_pri_vode',
+
+    title: 'Znečistené lovné miesto',
+
+    icon: '🏕️',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+paragraph: '§ 14 ods. 18',
+
+quote: `
+  „Loviaci nesmie pred začiatkom lovu, počas lovu, pri prerušení lovu a po ukončení lovu
+  znečisťovať akýmkoľvek spôsobom miesto lovu a jeho okolie; loviaci zodpovedá za čistotu
+  miesta lovu a jeho okolia. Zvyšky rýb nesmie ponechávať na mieste lovu ani ich hádzať do vody.“
+`,
+
+advice: `
+„Pán rybár, podľa § 14 ods. 18 vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z.
+ste povinný neznečisťovať miesto lovu a jeho okolie a zodpovedáte za čistotu miesta lovu
+a jeho okolia. Zvyšky rýb nesmiete ponechávať na mieste lovu ani ich hádzať do vody.
+Prosím, aby ste pred ukončením lovu uviedli lovné miesto do čistého stavu v súlade s vyhláškou.“
+`,
+
+note: `
+Ak loviaci tvrdí, že lovné miesto bolo znečistené už pri jeho príchode, môže túto skutočnosť zdokumentovať (napríklad fotografiou) a oznámiť ju MsO Sereď.
+
+Podľa § 14 ods. 18 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. však loviaci zodpovedá za čistotu miesta lovu a jeho okolia. Po ukončení lovu musí zostať lovné miesto čisté.
+`
+},
+
+{
+
+  id: 'lov_bez_zapisaneho_datumu_reviru',
+  category: 'kontrola_rybara',
+  title: 'Lov bez zapísaného dátumu a čísla revíru',
+  icon: '📅',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 14 ods. 1',
+
+  quote: `
+    „Loviaci pred začiatkom lovu zapisuje do záznamu čitateľne, bez možnosti vymazania
+    každý deň lovu s uvedením dátumu a čísla rybárskeho revíru, v ktorom bude lov vykonávať.“
+  `,
+
+  advice: `
+    „Pán rybár, podľa § 14 ods. 1 vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z.
+    ste povinný pred začiatkom lovu čitateľne a bez možnosti vymazania zapísať do záznamu
+    dátum lovu a číslo rybárskeho revíru.“
+`,
+
+note: `
+Povinnosť zápisu vzniká ešte pred začiatkom lovu.
+
+Ak sú udice nahodené a dátum alebo číslo revíru nie sú zapísané, ide o porušenie § 14 ods. 1 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z.
+
+Pri nepretržitom love (24 hodín denne) je po zmene dátumu potrebné ešte pred pokračovaním v love zapísať nový dátum a číslo rybárskeho revíru.
+`
+},
+
+{
+    id: 'neukonceny_lov',
+
+    category: 'kontrola_rybara',
+
+    title: 'Neukončený lov',
+
+    icon: '✏️',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: 'Príloha č. 18 – Návod na vypĺňanie záznamu o úlovkoch',
+
+    quote: `
+"Loviaci je povinný po ukončení lovu riadne ukončiť záznam o love podľa pokynov uvedených v zázname o úlovkoch."
+`,
+
+    advice: `
+„Pán rybár, po ukončení lovu ste povinný riadne ukončiť záznam o love. Ak ste si neprivlastnili žiadnu rybu, záznam je potrebné pred odchodom ukončiť podľa pokynov uvedených v zázname o úlovkoch.“
+`,
+
+    note: `
+Ak rybár ukončil lov (udice sú vytiahnuté z vody) a záznam nie je ukončený, ide o porušenie povinností loviaceho.
+
+Pri kontrole je vhodné najskôr overiť, či lov skutočne ukončil alebo v ňom ešte pokračuje.
+`
+},
+
+{
+  id: 'nezapisana_privlastnena_ryba',
+
+  category: 'kontrola_rybara',
+
+  title: 'Nezapísaná privlastnená ryba',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 14 ods. 9',
+
+  quote: `
+"Loviaci zapisuje každú privlastnenú rybu, ktorá má podľa § 12 ods. 1 ustanovenú lovnú mieru,
+do samostatného riadku záznamu s uvedením druhu ryby, jej dĺžky a hmotnosti. Ak pokračuje
+v love, opätovne zapíše dátum a číslo rybárskeho revíru do ďalšieho riadka záznamu."
+`,
+
+  advice: `
+„Pán rybár, podľa § 14 ods. 9 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z.
+ste povinný bezodkladne zapísať každú privlastnenú rybu s ustanovenou lovnou mierou,
+vrátane jej dĺžky a hmotnosti. Ak po zápise pokračujete v love, opätovne zapíšete dátum
+a číslo rybárskeho revíru do ďalšieho riadka záznamu.“
+`,
+
+  note: `
+Ak si loviaci privlastní rybu s hmotnosťou vyššou ako 5 kg, jeho denný úlovok sa obmedzuje na tento jeden kus a denný lov sa končí.
+
+Ak vzniknú pochybnosti o dĺžke alebo hmotnosti ryby, RS môže v rámci výkonu kontroly vykonať kontrolné premeranie a odváženie úlovku, aby bolo možné správne posúdiť dodržanie podmienok lovu.
+`
+},
+
+{
+  id: 'lov_na_viac_udic',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Lov na viac udíc',
+
+  icon: '🎣',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 15 ods. 1, ods. 2, ods. 4',
+
+  quote: `
+„Lov rýb na plávanú je spôsob lovu rýb s použitím najviac dvoch udíc.“
+
+„Lov rýb na položenú je spôsob lovu rýb s použitím najviac dvoch udíc.“
+
+„Lov rýb prívlačou je spôsob lovu rýb jednou udicou. Pri tomto spôsobe lovu nemôže byť súčasne používaná na lov ďalšia udica.“
+`,
+
+  advice: `
+„Pán rybár, podľa § 15 vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. je pri love na plávanú a položenú dovolené použiť najviac dve udice. Pri prívlači je dovolené loviť jednou udicou a súčasne nesmie byť používaná ďalšia udica.“
+`,
+
+  note: `
+RS pri kontrole posúdi spôsob lovu a počet súčasne používaných udíc.
+
+Pri plávanej a položenej sú povolené najviac dve udice. Pri prívlači je povolená jedna udica a bez súčasného použitia ďalšej udice.
+`
+},
+
+{
+    id: 'chybajuca_podlozka',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Chýbajúca podložka pod ryby',
+
+    icon: '🟩',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 ods. 20',
+
+    quote: `
+"Loviaci je pri love na kaprových vodách spôsobom na položenú alebo plávanú povinný mať ako súčasť povinnej výbavy rybársku podložku, ak ide o revír s ustanovenou najväčšou lovnou mierou alebo revír s režimom Chyť a pusť."
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 ods. 20 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste pri tomto spôsobe lovu povinný mať ako súčasť povinnej výbavy rybársku podložku. Keďže ju pri sebe nemáte, ide o porušenie podmienok výkonu rybárskeho práva.“
+`,
+
+    note: `
+Povinnosť mať rybársku podložku sa vzťahuje na lov na kaprových vodách pri love na položenú alebo plávanú na revíroch s ustanovenou najväčšou lovnou mierou alebo s režimom Chyť a pusť.
+
+Na niektorých revíroch môže miestny rybársky poriadok ustanoviť povinnosť mať podložku aj v ďalších prípadoch. Pred rozhodnutím je vhodné overiť miestny rybársky poriadok príslušného revíru.
+`
+},
+
+{
+    id: 'nezapisana_nastrahova_ryba',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Nezapísaná nástrahová rybka',
+
+    icon: '🐠',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 ods. 9 až 11',
+
+    quote: `
+Privlastnené nástrahové rybky sa zapisujú do záznamu o úlovkoch spôsobom ustanoveným vo vyhláške podľa druhu ryby.
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 ods. 9 až 11 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste povinný zapisovať privlastnené nástrahové rybky do záznamu o úlovkoch spôsobom ustanoveným vyhláškou.“
+`,
+
+    note: `
+• Druhy bez lovnej miery sa zapisujú hromadne podľa § 14 ods. 10.
+
+• Druhy s lovnou mierou sa zapisujú jednotlivo podľa § 14 ods. 9.
+
+• Invázne nepôvodné druhy sa zapisujú podľa § 14 ods. 11.
+
+• Na pstruhových vodách je použitie živej alebo mŕtvej rybky ako nástrahy zakázané.
+
+• Na revíroch Chyť a pusť je používanie živej alebo mŕtvej rybky alebo jej častí zakázané.
+`
+},
+
+{
+    id: 'nezapisana_hmotnost_ryby',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Nezapísaná hmotnosť privlastnenej ryby',
+
+    icon: '⚖️',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 ods. 9',
+
+    quote: `
+"Loviaci zapisuje každú privlastnenú rybu ... s uvedením druhu ryby, jej dĺžky a hmotnosti."
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 ods. 9 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste povinný pri zápise privlastnenej ryby uviesť aj jej hmotnosť.“
+`,
+
+    note: `
+Pri kontrole RS overí, či záznam obsahuje druh ryby, dĺžku aj hmotnosť.
+
+Ak vzniknú pochybnosti o skutočnej hmotnosti ryby, je vhodné vykonať kontrolné odváženie úlovku.
+`
+},
+
+{
+    id: 'neplatny_rybarsky_listok',
+
+    category: 'kontrola_rybara',
+
+    title: 'Neplatný rybársky lístok',
+
+    icon: '📄',
+
+    law: 'Zákon č. 216/2018 Z. z. o rybárstve',
+
+    paragraph: '§ 12 ods. 1 a § 12 ods. 10',
+
+    quote: `
+„Loviť a privlastňovať si ryby v rybárskych revíroch môžu len osoby, ktoré sú držiteľmi rybárskeho lístka a povolenia na rybolov.“
+
+„Počas lovu rýb je osoba povinná mať rybársky lístok, povolenie na rybolov alebo osobitné povolenie na rybolov pri sebe a pri kontrole ich predložiť na požiadanie člena rybárskej stráže.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 12 zákona č. 216/2018 Z. z. o rybárstve ste počas lovu povinný mať pri sebe rybársky lístok a povolenie na rybolov a na požiadanie ich predložiť rybárskej stráži. Ak rybársky lístok nie je platný, nie je splnená podmienka výkonu lovu.“
+`,
+
+    note: `
+RS pri kontrole overí, či má loviaci pri sebe rybársky lístok a povolenie na rybolov a či predložené doklady zodpovedajú kontrolovanej osobe.
+
+Ďalší postup RS sa volí podľa zisteného skutkového stavu a zákonných oprávnení.
+`
+},
+
+{
+    id: 'neosvetlene_lovne_miesto',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Neosvetlené lovné miesto',
+
+    icon: '💡',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 19',
+
+    quote: `
+"Lovné miesto musí byť po uplynutí jednej hodiny od západu slnka až do jeho osvetlenia denným svetlom osvetlené nezávislým svetelným zdrojom s intenzitou umožňujúcou jednoznačne rozpoznať miesto lovu."
+`,
+
+    advice: `
+„Pán rybár, podľa § 19 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste po uplynutí jednej hodiny od západu slnka povinný mať lovné miesto riadne osvetlené nezávislým svetelným zdrojom.“
+`,
+
+    note: `
+Za osvetlenie lovného miesta sa nepovažujú signalizátory záberu ani nedostatočný zdroj svetla.
+
+Pri love z člna alebo pri zabrodení musí byť svetelný zdroj umiestnený na člne alebo na loviacom.
+`
+},
+
+{
+    id: 'nesetrne_zaobchadzanie_s_rybou',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Nešetrné zaobchádzanie s rybou',
+
+    icon: '🐟',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 ods. 22',
+
+    quote: `
+„Loviaci je povinný s ulovenou rybou zaobchádzať šetrne a pri jej vracaní do vody ju voľne pustiť z rúk bez hádzania.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 ods. 22 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste povinný s ulovenou rybou zaobchádzať šetrne. Prosím, manipulujte s rybou tak, aby nedošlo k jej zbytočnému poraneniu alebo poškodeniu.“
+`,
+
+    note: `
+Pri kontrole RS sleduje najmä spôsob manipulácie s rybou.
+
+Za nešetrné zaobchádzanie možno považovať napríklad:
+
+• položenie ryby na holú zem alebo kamene,
+• hádzanie ryby späť do vody,
+• držanie ryby za oči alebo žiabre,
+• neprimerane dlhú manipuláciu mimo vody,
+• násilné vyberanie háčika bez vhodnej pomôcky.
+
+Ak má loviaci pripravenú podložku, ryba má byť počas manipulácie uložená na nej.
+`
+},
+
+{
+    id: 'nespravne_vedenie_zaznamu_ulovkov',
+
+    category: 'kontrola_rybara',
+
+    title: 'Nesprávne vedenie záznamu o úlovkoch',
+
+    icon: '📝',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 a Príloha č. 18',
+
+    quote: `
+„Loviaci je povinný viesť záznam o úlovkoch čitateľne, bez možnosti vymazania a spôsobom ustanoveným vyhláškou a pokynmi uvedenými v zázname o úlovkoch.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. a jej Prílohy č. 18 ste povinný viesť záznam o úlovkoch čitateľne, bez možnosti vymazania a so všetkými povinnými údajmi.“
+`,
+
+    note: `
+RS pri kontrole overí najmä:
+
+• či je záznam čitateľný a bez možnosti vymazania,
+• či nie je písaný ceruzkou alebo gumovacím perom,
+• či údaje nie sú prepisované, gumované alebo bielené,
+• či je pri privlastnenej rybe uvedený druh, dĺžka a hmotnosť,
+• či ryba nebola zapísaná až po výzve RS,
+• či sú ryby bez lovnej miery zapísané podľa pravidiel pre tieto druhy.
+
+Konkrétne zistenie je vhodné pomenovať vecne, napríklad: chýba hmotnosť ryby, zápis je prepisovaný, záznam je nečitateľný alebo bol vykonaný až po výzve RS.
+`
+},
+
+{
+    id: 'lov_v_case_individualnej_ochrany',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Lov v čase individuálnej ochrany',
+
+    icon: '🐟',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 10 a § 14 ods. 19',
+
+    quote: `
+„Ryby ulovené v čase ich individuálnej ochrany loviaci s náležitou opatrnosťou v čo najkratšom čase pustí späť do vody.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 10 a § 14 ods. 19 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. je tento druh ryby v čase individuálnej ochrany. Rybu ste povinný s náležitou opatrnosťou v čo najkratšom čase pustiť späť do vody.“
+`,
+
+    note: `
+RS pri kontrole overí najmä:
+
+• druh ryby,
+• aktuálne obdobie individuálnej ochrany,
+• či bola ryba privlastnená alebo bezodkladne vrátená späť do vody,
+• či nešlo o cielený lov chráneného druhu.
+
+Pri náhodnom úlovku ryby v čase individuálnej ochrany nie je vhodná zbytočne dlhá manipulácia, fotografovanie ani váženie. Ryba má byť s náležitou opatrnosťou čo najskôr vrátená späť do vody.
+`
+},
+
+{
+    id: 'cierne_stavby_pri_reviri',
+
+    category: 'ochrana_reviru',
+
+    title: 'Čierne stavby pri revíri',
+
+    icon: '🏚️',
+
+    law: 'Zákon č. 364/2004 Z. z. o vodách, Stavebný zákon č. 25/2025 Z. z. a Zákon č. 216/2018 Z. z. o rybárstve',
+
+    paragraph: 'vodné stavby / nepovolené stavby / ochrana revíru',
+
+    quote: `
+Nepovolené móla, prístrešky, chatky alebo pevné úpravy brehov môžu predstavovať zásah do vodného toku, brehového pásma alebo nepovolenú stavbu.
+`,
+
+    advice: `
+„Pán rybár, rybárska stráž nie je stavebný úrad ani orgán štátnej vodnej správy. Ak je pri revíri zistené nepovolené mólo, prístrešok, chatka alebo úprava brehu, vec bude zdokumentovaná a oznámená príslušným orgánom alebo správcovi toku.“
+`,
+
+    note: `
+RS pri zistení takejto situácie najmä:
+
+• zdokumentuje miesto a rozsah zistenia,
+• zistí, či objekt súvisí s konkrétnou osobou, ak je to možné,
+• nezasahuje do stavby svojpomocne,
+• neodstraňuje objekt na mieste,
+• podnet odovzdá MsO Sereď, správcovi toku alebo príslušnému úradu.
+
+Do tejto metodiky zatiaľ nedávame sankcie ani rozhodnutia o odstránení stavby. O tom rozhodujú príslušné orgány.
+`
+},
+
+{
+    id: 'zakladanie_ohna',
+
+    category: 'spravanie_pri_vode',
+
+    title: 'Zakladanie otvoreného ohňa',
+
+    icon: '🔥',
+
+    law: 'Zákon č. 326/2005 Z. z. o lesoch, Zákon č. 314/2001 Z. z. o ochrane pred požiarmi a Miestny rybársky poriadok',
+
+    paragraph: 'Podľa miesta výkonu lovu',
+
+    quote: `
+Zakladanie otvoreného ohňa je možné iba tam, kde to povoľujú právne predpisy a miestny rybársky poriadok.
+`,
+
+    advice: `
+„Pán rybár, na tomto revíri platí zákaz zakladania otvoreného ohňa. Prosím, oheň okamžite uhaste a rešpektujte miestny rybársky poriadok.“
+`,
+
+    note: `
+RS pri kontrole overí najmä:
+
+• či ide o otvorené ohnisko alebo len turistický varič,
+• či sa lovné miesto nachádza v lese alebo v ochrannom pásme lesa,
+• či platí miestny zákaz zakladania ohňa,
+• či nie je vyhlásený čas zvýšeného nebezpečenstva vzniku požiarov.
+
+Ak je to potrebné, RS situáciu zdokumentuje a oznámi príslušnému orgánu alebo správcovi revíru.
+`
+},
+
+{
+    id: 'chybajuci_podberak',
+
+    category: 'ulovok_sposob_lovu',
+
+    title: 'Chýbajúci podberák',
+
+    icon: '🪝',
+
+    law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+    paragraph: '§ 14 ods. 2',
+
+    quote: `
+„Loviaci je povinný mať na lovnom mieste pripravený podberák na použitie.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 14 ods. 2 Vyhlášky Ministerstva životného prostredia SR č. 381/2018 Z. z. ste povinný mať na lovnom mieste pripravený podberák na použitie. Prosím, zabezpečte jeho pripravenosť počas výkonu lovu.“
+`,
+
+    note: `
+RS pri kontrole overí najmä:
+
+• či je podberák prítomný na lovnom mieste,
+• či je pripravený na okamžité použitie,
+• či nie je uložený v aute alebo mimo dosahu loviaceho,
+• či jeho rozmery zodpovedajú spôsobu lovu a prípadným požiadavkám miestneho rybárskeho poriadku.
+
+Niektoré miestne rybárske poriadky môžu určovať aj minimálne rozmery podberáka (napríklad na kaprových revíroch s hornou mierou). Preto je vhodné overiť aj miestne pravidlá príslušného revíru.
+`
+},
+
+{
+    id: 'agresivny_rybar',
+
+    category: 'vykon_sluzby_rs',
+
+    title: 'Agresívny rybár počas kontroly',
+
+    icon: '⚠️',
+
+    law: 'Zákon č. 216/2018 Z. z. o rybárstve, Trestný zákon, zákon o Policajnom zbore',
+
+    paragraph: 'Bezpečný postup člena rybárskej stráže',
+
+    quote: `
+Ak kontrolovaná osoba odmieta spolupracovať, správa sa agresívne alebo bezprostredne ohrozuje bezpečnosť osôb, člen rybárskej stráže nesmie zbytočne eskalovať konflikt a podľa okolností privolá Policajný zbor.
+`,
+
+    advice: `
+"Pán rybár, vykonávam kontrolu podľa zákona o rybárstve. Žiadam vás o pokojné správanie a spoluprácu. Ak budete pokračovať v agresívnom správaní alebo odmietnete spolupracovať, budem nútený privolať Policajný zbor."
+`,
+
+    note: `
+Odporúčaný postup:
+
+• zachovať pokoj a profesionálne vystupovanie,
+• nevstupovať do fyzického konfliktu,
+• udržiavať bezpečný odstup,
+• ak je to možné, vykonávať kontrolu vo dvojici,
+• zaznamenať priebeh kontroly a svedkov,
+• pri vyhrážaní alebo fyzickom útoku okamžite volať linku 158,
+• po ukončení udalosti vyhotoviť podrobný služobný záznam.
+
+Bezpečnosť člena RS a ostatných osôb má vždy prednosť pred dokončením kontroly.
+`
+},
+
+{
+    id: 'odmietnutie_predlozit_doklady',
+
+    category: 'vykon_sluzby_rs',
+
+    title: 'Odmietnutie predložiť doklady',
+
+    icon: '🪪',
+
+    law: 'Zákon č. 216/2018 Z. z. o rybárstve',
+
+    paragraph: '§ 23 ods. 5',
+
+    quote: `
+„Loviaci je povinný na výzvu člena rybárskej stráže predložiť doklady ustanovené zákonom.“
+`,
+
+    advice: `
+„Pán rybár, podľa § 23 ods. 5 zákona č. 216/2018 Z. z. o rybárstve ste povinný na výzvu člena rybárskej stráže predložiť doklady potrebné na vykonanie kontroly. Žiadam vás o ich predloženie.“
+`,
+
+    note: `
+Ak loviaci odmieta predložiť doklady:
+
+• RS zachová pokojný a profesionálny prístup,
+• opätovne poučí loviaceho o jeho zákonnej povinnosti,
+• zbytočne neeskaluje konflikt,
+• podľa okolností zabezpečí privolanie Policajného zboru SR,
+• priebeh udalosti zdokumentuje a po ukončení služby vyhotoví služobný záznam.
+
+Bezpečnosť člena RS a ostatných osôb má vždy prednosť pred dokončením kontroly.
+`
+},
+];
+
+const ASISTENT_RS_KATEGORIE = {
+  spravanie_pri_vode: {
+    title: 'Správanie pri vode',
+    icon: '🏕️'
+  },
+
+  kontrola_rybara: {
+    title: 'Kontrola rybára',
+    icon: '🎣'
+},
+
+ulovok_sposob_lovu: {
+  title: 'Úlovok a spôsob lovu',
+  icon: '🐟'
+},
+
+ochrana_reviru: {
+  title: 'Ochrana revíru',
+  icon: '🌿'
+},
+
+vykon_sluzby_rs: {
+  title: 'Výkon služby RS',
+  icon: '🛡️'
+},
+};
+
+function openAsistentRSModule() {
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('appOverviewSection').classList.add('hidden');
+  document.getElementById('filterSection').classList.add('hidden');
+
+  document.getElementById('asistentRSSection').classList.remove('hidden');
+
+  closeAsistentDetail();
+
+  document.getElementById('asistentRSSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function openAsistentPlaceholder(title) {
+  const box = document.getElementById('asistentDetailBox');
+
+  box.innerHTML = `
+    <strong>${title}</strong><br>
+    Obsah metodiky pripravujeme.
+  `;
+
+  box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeAsistentDetail() {
+  const box = document.getElementById('asistentDetailBox');
+
+  if (!box) return;
+
+  box.innerHTML = '';
+  box.classList.add('hidden');
+}
+
+function openMetodikaZnecisteneMiesto() {
+  const box = document.getElementById('asistentDetailBox');
+
+  box.innerHTML = `
+    <h3>🏕️ Znečistené lovné miesto</h3>
+
+    <h4>⚖️ Právny základ</h4>
+    <p>
+      <strong>Vyhláška č. 381/2018 Z. z.</strong><br>
+      Loviaci je povinný udržiavať na lovnom mieste a v jeho bezprostrednom okolí poriadok a čistotu.
+    </p>
+
+    <h4>🗣 Odporúčané poučenie</h4>
+    <p>
+      <strong>
+        „Pán rybár, vykonávacia vyhláška k zákonu o rybárstve vám ukladá povinnosť
+        udržiavať na lovnom mieste a v jeho bezprostrednom okolí poriadok a čistotu.
+        Prosím, aby ste lovné miesto uviedli do poriadku.“
+      </strong>
+    </p>
+  `;
+
+  box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function openAsistentCategory(categoryId) {
+  const box = document.getElementById('asistentDetailBox');
+  const category = ASISTENT_RS_KATEGORIE[categoryId];
+
+  if (!box || !category) return;
+
+  const metodiky = ASISTENT_RS_METODIKY.filter(item => item.category === categoryId);
+
+  box.innerHTML = `
+    <button class="btn-secondary" onclick="closeAsistentDetail()" style="margin-bottom:12px;">
+      ← Späť na hlavné kategórie
+    </button>
+
+    <h3>${category.icon} ${category.title}</h3>
+
+    ${metodiky.map(item => `
+      <div class="card card-reviry"
+           style="margin-bottom:10px;cursor:pointer;"
+           onclick="openAsistentMethod('${item.id}')">
+
+        <div class="card-icon">${item.icon}</div>
+        <h3>${item.title}</h3>
+
+      </div>
+    `).join('')}
+  `;
+
+  box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function openAsistentMethod(methodId) {
+  const box = document.getElementById('asistentDetailBox');
+  const item = ASISTENT_RS_METODIKY.find(m => m.id === methodId);
+
+  if (!box || !item) return;
+
+  box.innerHTML = `
+    <button class="btn-secondary" onclick="openAsistentCategory('${item.category}')" style="margin-bottom:12px;">
+      ← Späť na kategóriu
+    </button>
+
+    <h3>${item.icon} ${item.title}</h3>
+
+<div class="note" style="margin-bottom:18px;">
+
+<h4>⚖️ Právny základ</h4>
+
+<p><strong>${item.law}</strong></p>
+
+<p><strong>${item.paragraph}</strong></p>
+
+<blockquote style="border-left:4px solid #ddd;padding-left:15px;margin-left:0;font-style:italic;">
+  ${item.quote}
+</blockquote>
+</div>
+
+<div class="note">
+
+<h4>🗣 Odporúčané poučenie</h4>
+
+<p><strong>${item.advice}</strong></p>
+
+</div>
+
+${item.note ? `
+<div class="note" style="margin-top:18px;">
+
+<h4>📌 Poznámka pre RS</h4>
+
+<p>${item.note}</p>
+
+</div>
+` : ''}
+`;
+
+  box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth' });
 }
 
     function switchTab(tabName, btn) {
@@ -3106,6 +4025,9 @@ async function openStatistikyModule() {
   document.getElementById('dashboardSection').classList.remove('hidden');
   document.getElementById('legacyTabs').classList.add('hidden');
 
+  document.getElementById('asistentRSSection').classList.add('hidden');
+  document.getElementById('appOverviewSection').classList.add('hidden');
+
   document.getElementById('dashboardCardsSection').classList.add('hidden');
   document.getElementById('graphsOnlySection').classList.add('hidden');
 
@@ -3115,9 +4037,13 @@ async function openStatistikyModule() {
     loading.classList.remove('hidden');
   }
 
-  if (!appState.kontrolyLoaded) {
+ if (!appState.kontrolyLoaded) {
+  try {
     await refreshKontrolyData();
+  } catch (error) {
+    console.warn('Štatistiky/Reporty pokračujú s už načítanými dátami:', error);
   }
+}
 
   updateDashboard();
 
@@ -3141,6 +4067,9 @@ async function openReportyModule() {
   document.getElementById('dashboardSection').classList.remove('hidden');
   document.getElementById('legacyTabs').classList.add('hidden');
 
+  document.getElementById('asistentRSSection').classList.add('hidden');
+  document.getElementById('appOverviewSection').classList.add('hidden');
+
   document.getElementById('dashboardCardsSection').classList.add('hidden');
   document.getElementById('graphsOnlySection').classList.add('hidden');
 
@@ -3150,9 +4079,13 @@ async function openReportyModule() {
     loading.classList.remove('hidden');
   }
 
-  if (!appState.kontrolyLoaded) {
+ if (!appState.kontrolyLoaded) {
+  try {
     await refreshKontrolyData();
+  } catch (error) {
+    console.warn('Štatistiky/Reporty pokračujú s už načítanými dátami:', error);
   }
+}
 
   updateDashboard();
 
@@ -4144,9 +5077,6 @@ if (revir) {
   );
 }
 
-if (clenRS) {
-  const menoClena = getMemberName(clenRS);
-
 const clenoviaCount = getMemberActivityStats(kontroly, sluzby);
 
 let topClen = "-";
@@ -4158,6 +5088,9 @@ for (const c in clenoviaCount) {
     topClen = c;
   }
 }
+
+if (clenRS) {
+  const menoClena = getMemberName(clenRS);
 
   sluzby = sluzby.filter(s => {
     const clenovia = Array.isArray(s.clenovia_rs)
