@@ -8017,17 +8017,22 @@ if (fishersError) {
 async function loadStatsChecks() {
   const { data, error } = await db
     .from('checks')
-    .select(`
-      id,
-      created_at,
-      location,
-      result,
-      member_name,
-      clen_rs_1,
-      clen_rs_2,
-      time_from,
-      time_to
-    `)
+.select(`
+  id,
+  created_at,
+  fisher_name,
+  fisher_id_no,
+  location,
+  result,
+  typ_priestupku,
+  poznamka,
+  photos,
+  member_name,
+  clen_rs_1,
+  clen_rs_2,
+  time_from,
+  time_to
+`)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -8643,7 +8648,11 @@ function showHodinyRsDetail() {
 }
 
 function showCheckDetail(id) {
-  const item = (appState.data.checks || []).find(k => String(k.id) === String(id));
+  const item = (
+  appState.data.statsChecks ||
+  appState.data.checks ||
+  []
+).find(k => String(k.id) === String(id));
 
 console.log('DETAIL KONTROLY ITEM:', item);
 console.log('DETAIL KONTROLY PHOTOS:', item.photos);
@@ -8664,6 +8673,105 @@ console.log('DETAIL KONTROLY PHOTOS:', item.photos);
   const clen1 = item.clen_rs_1 || '-';
   const clen2 = item.clen_rs_2 || '-';
   const datum = formatDateTime(item.created_at || item.date);
+const checkTime = new Date(
+  item.created_at ||
+  item.date ||
+  ''
+);
+
+const checkDateKey = localDateKey(
+  item.created_at ||
+  item.date ||
+  ''
+);
+
+const matchedService = (
+  appState.data.sluzbyReviry || []
+).find(service => {
+  const serviceDateKey =
+    getServiceDateKey(service);
+
+  const serviceRevir = safeText(
+    service.revir || ''
+  );
+
+  if (
+    serviceDateKey !== checkDateKey ||
+    normalize(serviceRevir) !== normalize(revir)
+  ) {
+    return false;
+  }
+
+  const serviceStart = new Date(
+    service.zaciatok ||
+    service.start ||
+    ''
+  );
+
+  const serviceEnd = new Date(
+    service.koniec ||
+    service.end ||
+    ''
+  );
+
+  /*
+    Ak máme platný čas služby, kontrola musí patriť
+    do jej časového rozsahu s toleranciou 10 minút.
+  */
+  if (
+    !isNaN(checkTime.getTime()) &&
+    !isNaN(serviceStart.getTime()) &&
+    !isNaN(serviceEnd.getTime())
+  ) {
+    const tolerance = 10 * 60 * 1000;
+
+    return (
+      checkTime >= new Date(
+        serviceStart.getTime() - tolerance
+      ) &&
+      checkTime <= new Date(
+        serviceEnd.getTime() + tolerance
+      )
+    );
+  }
+
+  /*
+    Pri starších záznamoch bez spoľahlivého času
+    použijeme zhodu dátumu a revíru.
+  */
+  return true;
+});
+
+const spolocniClenovia = Array.isArray(
+  matchedService?.clenovia_rs
+)
+  ? matchedService.clenovia_rs
+      .map(member =>
+        typeof member === 'string'
+          ? safeText(member)
+          : safeText(
+              member?.name ||
+              member?.meno ||
+              ''
+            )
+      )
+      .filter(Boolean)
+      .filter((name, index, array) =>
+        array.indexOf(name) === index
+      )
+  : [];
+
+const spolocnaAkciaHtml =
+  spolocniClenovia.length > 1
+    ? `
+        <p>
+          <strong>Účastníci spoločnej akcie:</strong>
+          ${spolocniClenovia
+            .map(name => escapeHtml(name))
+            .join(', ')}
+        </p>
+      `
+    : '';
 
   let photos = [];
 
@@ -8699,6 +8807,8 @@ if (Array.isArray(item.photos)) {
       <p><strong>Poznámka:</strong> ${poznamka}</p>
       <p><strong>Člen RS 1:</strong> ${clen1}</p>
       <p><strong>Člen RS 2:</strong> ${clen2}</p>
+
+      ${spolocnaAkciaHtml}
 
      <p><strong>Fotky:</strong></p>
       <div>${photosHtml}</div>
