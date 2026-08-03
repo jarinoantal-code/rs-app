@@ -8163,7 +8163,7 @@ async function fixOldServiceCounts() {
 init();
 
 function showAllChecks() {
-    const kontroly = appState.data.checks || [];
+    const kontroly = appState.data.statsChecks || [];
     const list = document.getElementById('checksModalList');
     const modal = document.getElementById('checksModal');
 
@@ -8191,7 +8191,7 @@ function showAllChecks() {
 }
 
 function showPoruseniaDetail() {
-  const checks = appState.data.checks || [];
+  const checks = appState.data.statsChecks || [];
   const modal = document.getElementById('checksModal');
   const list = document.getElementById('checksModalList');
 
