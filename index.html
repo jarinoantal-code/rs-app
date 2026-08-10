@@ -772,6 +772,29 @@
   box-sizing: border-box;
 }
 
+.quick-history-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin: 10px 0 14px 0;
+
+  background: #f8faf8;
+  border: 1px solid #d7e4d9;
+  border-radius: 14px;
+
+  cursor: pointer;
+}
+
+.quick-history-card:active {
+  transform: scale(0.99);
+}
+
+.quick-history-ok {
+  cursor: default;
+  background: #f2fbf4;
+  border-color: #cce8d2;
+}
+
 /* Potvrdenie úspešného uloženia */
 .save-success-modal {
   position: fixed;
@@ -2134,9 +2157,13 @@ function setActiveRevirFromSelect() {
       return String(value ?? '').trim();
     }
 
-    function normalize(value) {
-      return safeText(value).toLowerCase();
-    }
+   function normalize(value) {
+  return safeText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
     function getCurrentUser() {
       return appState.data.members.find(item => item.id === appState.currentUserId) || null;
@@ -3951,13 +3978,96 @@ if (appState.activeRevir && REVIRS.includes(appState.activeRevir)) {
     }
 
 function syncMobileChecksSummary() {
-  const desktopSummary = document.getElementById('checksSummary');
-  const mobileSummary = document.getElementById('mobileChecksSummary');
+  const desktopSummary =
+    document.getElementById('checksSummary');
+
+  const mobileSummary =
+    document.getElementById('mobileChecksSummary');
 
   if (!desktopSummary || !mobileSummary) return;
 
-  mobileSummary.innerHTML = desktopSummary.innerHTML;
-  mobileSummary.className = desktopSummary.className + ' mobile-checks-summary';
+  const totalChecks =
+    Number(desktopSummary.dataset.totalChecks || 0);
+
+  const offenceCount =
+    Number(desktopSummary.dataset.offenceCount || 0);
+
+  const suspicionCount =
+    Number(desktopSummary.dataset.suspicionCount || 0);
+
+  const poachingCount =
+    Number(desktopSummary.dataset.poachingCount || 0);
+
+  const identified =
+    desktopSummary.dataset.identified === 'true';
+
+  if (!identified) {
+    mobileSummary.className =
+      'empty mobile-checks-summary';
+
+    mobileSummary.innerHTML =
+      desktopSummary.textContent ||
+      'Sumár sa zobrazí po zadaní rybára.';
+
+    mobileSummary.onclick = null;
+    return;
+  }
+
+  if (totalChecks === 0) {
+    mobileSummary.className =
+      'mobile-checks-summary quick-history-card quick-history-ok';
+
+    mobileSummary.innerHTML = `
+      <strong>✓ Bez predchádzajúcich kontrol</strong>
+      <div class="muted small" style="margin-top:3px;">
+        Rybár zatiaľ nemá evidovanú históriu kontrol.
+      </div>
+    `;
+
+    mobileSummary.onclick = null;
+    return;
+  }
+
+  const problemCount =
+    offenceCount +
+    suspicionCount +
+    poachingCount;
+
+  mobileSummary.className =
+    'mobile-checks-summary quick-history-card';
+
+  mobileSummary.innerHTML = `
+    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+      <div>
+        <strong>
+          ${problemCount > 0 ? '⚠️' : '📋'} História rybára
+        </strong>
+
+        <div class="muted small" style="margin-top:4px;">
+          ${totalChecks} kontrol
+          ${suspicionCount > 0 ? ' • ' + suspicionCount + ' podozrenie' : ''}
+          ${offenceCount > 0 ? ' • ' + offenceCount + ' priestupok' : ''}
+          ${poachingCount > 0 ? ' • ' + poachingCount + ' pytliactvo' : ''}
+        </div>
+      </div>
+
+      <strong style="white-space:nowrap;">
+        Detail ›
+      </strong>
+    </div>
+  `;
+
+  mobileSummary.onclick = () => {
+    const historyCard =
+      document.getElementById('historiaKontrolCard');
+
+    if (!historyCard) return;
+
+    historyCard.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
 }
 
 function formatDateSK(value) {
@@ -4094,6 +4204,8 @@ if (!enteredName && !enteredId) {
 
   if (summaryBox) {
     summaryBox.innerHTML = 'Sumár sa zobrazí po zadaní rybára.';
+
+    summaryBox.dataset.identified = 'false';
   }
 
   syncMobileChecksSummary();
@@ -4108,6 +4220,8 @@ if (!selectedFisher) {
 
   if (summaryBox) {
     summaryBox.innerHTML = 'Rybár zatiaľ nebol jednoznačne identifikovaný.';
+
+    summaryBox.dataset.identified = 'false';
   }
 
   syncMobileChecksSummary();
@@ -4123,6 +4237,8 @@ if (!query) {
   const summaryBox = document.getElementById('checksSummary');
   if (summaryBox) {
     summaryBox.innerHTML = 'Sumár sa zobrazí po zadaní rybára.';
+
+    summaryBox.dataset.identified = 'false';
   }
 
   syncMobileChecksSummary();
@@ -4176,6 +4292,12 @@ if (summaryBox && query) {
   const poachingCount = fisherChecks.filter(
     item => item.result === 'Pytliactvo'
   ).length;
+
+summaryBox.dataset.identified = 'true';
+summaryBox.dataset.totalChecks = String(totalChecks);
+summaryBox.dataset.offenceCount = String(offenceCount);
+summaryBox.dataset.suspicionCount = String(suspicionCount);
+summaryBox.dataset.poachingCount = String(poachingCount);
 
   /*
     Zobrazujeme iba jeden typ povolenky.
@@ -4275,6 +4397,8 @@ summaryBox.innerHTML =
 
 } else if (summaryBox) {
   summaryBox.innerHTML = 'Sumár sa zobrazí po zadaní rybára.';
+
+  summaryBox.dataset.identified = 'false';
 }
 
 syncMobileChecksSummary();
