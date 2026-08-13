@@ -150,6 +150,11 @@
   border-color: #dbe3ea;
 }
 
+.card-dk {
+  background: #fff4f2;
+  border-color: #fecaca;
+}
+
 .main-menu-cards {
     display: flex;
     gap: 15px;
@@ -975,6 +980,12 @@
     <h3>Reporty</h3>
 </div>
 
+<div class="card card-dk" onclick="openDisciplinarnaKomisiaModule()">
+    <div class="card-icon">⚖️</div>
+    <h3>Disciplinárna komisia</h3>
+    <div class="muted small">Riešenie disciplinárnych prípadov</div>
+</div>
+
 <div class="card card-asistent" onclick="openAsistentRSModule()">
     <div class="card-icon">📘</div>
     <h3>Asistent RS</h3>
@@ -986,6 +997,30 @@
     <button class="btn-secondary" onclick="showMainMenu()">
         ← Späť do hlavného menu
     </button>
+</div>
+
+<div id="disciplinarnaKomisiaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">⚖️ Disciplinárna komisia</h2>
+      <div class="muted small">
+        Evidencia a riešenie disciplinárnych prípadov
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    V tejto časti sa zobrazia iba kontroly, pri ktorých bol označený
+    disciplinárny záznam ako „Áno – vypísaný“.
+  </div>
+
+  <div id="disciplinarnePripadyList" class="list" style="margin-top:16px;">
+    <div class="empty">
+      Disciplinárne prípady sa načítajú po otvorení modulu.
+    </div>
+  </div>
+
 </div>
 
 <div id="asistentRSSection" class="hidden">
@@ -1502,13 +1537,25 @@
 
   <div class="field">
     <label for="checkResult">Výsledok</label>
-    <select id="checkResult" onchange="toggleOffenceType()">
-      <option value="Bez porušenia">Bez porušenia</option>
-      <option value="Podozrenie">Podozrenie</option>
-      <option value="Priestupok">Priestupok</option>
-      <option value="Pytliactvo">Pytliactvo</option>
-    </select>
+ <select id="checkResult" onchange="toggleOffenceType()">
+  <option value="Bez porušenia">Bez porušenia</option>
+  <option value="Poučenie rybára">Poučenie rybára</option>
+  <option value="Podozrenie">Podozrenie</option>
+  <option value="Priestupok">Priestupok</option>
+  <option value="Pytliactvo">Pytliactvo</option>
+</select>
   </div>
+
+<div class="field">
+  <label for="checkDisciplinarnyZaznam">
+    Disciplinárny záznam
+  </label>
+
+  <select id="checkDisciplinarnyZaznam">
+    <option value="Nie">Nie</option>
+    <option value="Áno – vypísaný">Áno – vypísaný</option>
+  </select>
+</div>
 
 <div class="field">
   <label for="checkPhotos">Fotky</label>
@@ -1624,6 +1671,29 @@
     </div>
 
     <div id="checkDetailBody" class="list"></div>
+
+  </div>
+</div>
+
+<div id="disciplinarnyPripadModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 style="margin:0;">⚖️ Detail disciplinárneho prípadu</h3>
+        <div class="muted small">
+          Kontrola RS a riešenie disciplinárnou komisiou
+        </div>
+      </div>
+
+      <button
+        class="btn-muted"
+        onclick="closeDisciplinarnyPripadModal()">
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="disciplinarnyPripadBody" class="list"></div>
 
   </div>
 </div>
@@ -2210,6 +2280,9 @@ function showFisherHistory(fisherName) {
       if (status === 'Pozastavený') return '<span class="badge badge-orange">Pozastavený</span>';
       if (status === 'Neplatné povolenie') return '<span class="badge badge-red">Neplatné povolenie</span>';
       if (status === 'Bez porušenia') return '<span class="badge badge-green">Bez porušenia</span>';
+      if (status === 'Poučenie rybára') {
+      return '<span class="badge badge-blue">Poučenie rybára</span>';
+     }
       if (status === 'Podozrenie') return '<span class="badge badge-yellow">Podozrenie</span>';
       if (status === 'Priestupok') return '<span class="badge badge-orange">Priestupok</span>';
       if (status === 'Pytliactvo') return '<span class="badge badge-red">Pytliactvo</span>';
@@ -3283,6 +3356,7 @@ function resetCheckForm() {
 
   document.getElementById('checkResult').value = 'Bez porušenia';
   document.getElementById('checkOffenceType').value = '';
+  document.getElementById('checkDisciplinarnyZaznam').value = 'Nie';
   document.getElementById('checkNote').value = '';
   document.getElementById('checkPhotos').value = '';
 
@@ -3326,6 +3400,8 @@ function resetCheckForm() {
       const timeTo = document.getElementById('checkTimeTo').value;
       const place = safeText(document.getElementById('checkPlace').value);
       const result = document.getElementById('checkResult').value;
+      const disciplinarnyZaznam =
+      document.getElementById('checkDisciplinarnyZaznam')?.value || 'Nie';
       const offenceType = safeText(document.getElementById('checkOffenceType').value);
       const note = safeText(document.getElementById('checkNote').value);
       const files = Array.from(document.getElementById('checkPhotos').files || []);
@@ -3351,6 +3427,7 @@ function resetCheckForm() {
         timeTo,
         place,
         result,
+        disciplinarnyZaznam,
         offenceType,
         note,
         photos: [],
@@ -3559,9 +3636,11 @@ function showSaveSuccess(message = 'Kontrola bola úspešne uložená.') {
       clen_rs_1: getMemberName(check.memberId1),
       clen_rs_2: getMemberName(check.memberId2),
       location: check.place,
+      check_date: check.date || null,
       time_from: check.timeFrom,
       time_to: check.timeTo,
       result: check.result,
+      disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
       poznamka: check.note,
       typ_priestupku: check.offenceType,
       photos: check.photos || []
@@ -3837,15 +3916,116 @@ const displayStatus = validToDate && today > validToDate
       }).join('');
     }
 
-    function showFisherProfile(id) {
+async function loadFisherFullHistory(fisher) {
+  const queries = [];
+
+  if (fisher.permitNumber) {
+    queries.push(
+      db
+        .from('checks')
+        .select(`
+          id,
+          created_at,
+          fisher_name,
+          fisher_id_no,
+          result
+        `)
+        .eq('fisher_id_no', fisher.permitNumber)
+    );
+  }
+
+  if (fisher.memberId) {
+    queries.push(
+      db
+        .from('checks')
+        .select(`
+          id,
+          created_at,
+          fisher_name,
+          fisher_id_no,
+          result
+        `)
+        .eq('fisher_id_no', fisher.memberId)
+    );
+  }
+
+  if (fisher.name) {
+    queries.push(
+      db
+        .from('checks')
+        .select(`
+          id,
+          created_at,
+          fisher_name,
+          fisher_id_no,
+          result
+        `)
+        .eq('fisher_name', fisher.name)
+    );
+  }
+
+  if (queries.length === 0) {
+    return [];
+  }
+
+  const results = await Promise.all(queries);
+
+  const historyMap = new Map();
+
+  for (const response of results) {
+    if (response.error) {
+      console.error(
+        'Chyba pri načítaní kompletnej histórie rybára:',
+        response.error
+      );
+
+      throw response.error;
+    }
+
+    for (const check of response.data || []) {
+      historyMap.set(String(check.id), check);
+    }
+  }
+
+  return Array.from(historyMap.values()).sort(
+    (a, b) =>
+      new Date(b.created_at || 0) -
+      new Date(a.created_at || 0)
+  );
+}
+
+    async function showFisherProfile(id) {
       const fisher = appState.data.fishers.find(item => String(item.id) === String(id));
       if (!fisher) return;
 
-      const checks = appState.data.checks.filter(item => {
-        return item.fisherId === id ||
-          normalize(item.fisherName) === normalize(fisher.name) ||
-          normalize(item.fisherIdNo) === normalize(fisher.permitNumber);
-      });
+let checks = [];
+
+try {
+  checks = await loadFisherFullHistory(fisher);
+} catch (error) {
+  console.warn(
+    'Používam lokálne načítanú históriu rybára:',
+    error
+  );
+
+  checks = appState.data.checks.filter(item => {
+    const checkName =
+      item.fisher_name ||
+      item.fisherName ||
+      '';
+
+    const checkId =
+      item.fisher_id_no ||
+      item.fisherIdNo ||
+      '';
+
+    return (
+      normalize(checkName) === normalize(fisher.name) ||
+      normalize(checkId) === normalize(fisher.permitNumber) ||
+      normalize(checkId) === normalize(fisher.memberId)
+    );
+  });
+}
 
       const offences = checks.filter(item => item.result === 'Priestupok');
 
@@ -4534,6 +4714,8 @@ function showMainMenu() {
 
   document.getElementById('asistentRSSection').classList.add('hidden');
 
+  document.getElementById('disciplinarnaKomisiaSection')?.classList.add('hidden');
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -5164,6 +5346,887 @@ function openAsistentRSModule() {
   document.getElementById('asistentRSSection').scrollIntoView({ behavior: 'smooth' });
 }
 
+async function openDisciplinarnaKomisiaModule() {
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('appOverviewSection').classList.add('hidden');
+  document.getElementById('filterSection').classList.add('hidden');
+
+  document.getElementById('asistentRSSection').classList.add('hidden');
+  document.getElementById('disciplinarnaKomisiaSection').classList.remove('hidden');
+
+  try {
+  await loadDisciplinarnePripady();
+} catch (error) {
+  console.warn(
+    'Nepodarilo sa načítať disciplinárne prípady:',
+    error
+  );
+}
+
+  renderDisciplinarnePripady();
+
+  document
+    .getElementById('disciplinarnaKomisiaSection')
+    .scrollIntoView({ behavior: 'smooth' });
+}
+
+async function loadDisciplinarnePripady() {
+  const { data, error } = await db
+    .from('checks')
+    .select(`
+      id,
+      created_at,
+      fisher_name,
+      fisher_id_no,
+      location,
+      result,
+      disciplinarny_zaznam,
+      typ_priestupku,
+      poznamka,
+      photos,
+      member_name,
+      clen_rs_1,
+      clen_rs_2
+    `)
+    .eq('disciplinarny_zaznam', 'Áno – vypísaný')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(
+      'Chyba pri načítaní disciplinárnych prípadov:',
+      error
+    );
+
+    throw error;
+  }
+
+  appState.data.disciplinarnePripady = data || [];
+
+  console.log(
+    'Načítané disciplinárne prípady:',
+    appState.data.disciplinarnePripady.length
+  );
+}
+
+function renderDisciplinarnePripady() {
+  const list =
+    document.getElementById('disciplinarnePripadyList');
+
+  if (!list) return;
+
+  const checks =
+  appState.data.disciplinarnePripady || [];
+
+  const disciplinarnePripady = checks
+    .filter(check =>
+      safeText(check.disciplinarny_zaznam) ===
+      'Áno – vypísaný'
+    )
+    .sort((a, b) => {
+      const dateA = new Date(
+        a.created_at ||
+        a.date ||
+        0
+      );
+
+      const dateB = new Date(
+        b.created_at ||
+        b.date ||
+        0
+      );
+
+      return dateB - dateA;
+    });
+
+  if (disciplinarnePripady.length === 0) {
+    list.innerHTML = `
+      <div class="empty">
+        Momentálne nie sú evidované žiadne
+        disciplinárne prípady.
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = disciplinarnePripady
+    .map((item, index) => {
+      const meno =
+        item.fisher_name ||
+        item.fisherName ||
+        item.fisher_id_no ||
+        '-';
+
+      const idRybara =
+        item.fisher_id_no ||
+        item.fisherIdNo ||
+        '-';
+
+      const revir =
+        item.location ||
+        item.place ||
+        '-';
+
+      const vysledok =
+        item.result ||
+        '-';
+
+      const typ =
+        item.typ_priestupku ||
+        '-';
+
+      const datum =
+        formatDateTime(
+          item.created_at ||
+          item.date ||
+          ''
+        );
+
+      return `
+        <div
+          class="item"
+          onclick="showDisciplinarnyPripadDetail('${item.id}')"
+          style="cursor:pointer;"
+        >
+          <div class="item-head">
+            <div>
+              <strong>
+                ${index + 1}. ${escapeHtml(meno)}
+              </strong>
+
+              <div class="muted small">
+                ID: ${escapeHtml(idRybara)}
+              </div>
+            </div>
+
+            <div>
+              ${statusBadge(vysledok)}
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <div>
+              <strong>Dátum kontroly:</strong>
+              ${escapeHtml(datum)}
+            </div>
+
+            <div>
+              <strong>Revír:</strong>
+              ${escapeHtml(revir)}
+            </div>
+
+            <div>
+              <strong>Typ priestupku:</strong>
+              ${escapeHtml(typ)}
+            </div>
+
+            <div>
+              <strong>Disciplinárny záznam:</strong>
+              Áno – vypísaný
+            </div>
+          </div>
+
+          <div
+            class="muted small"
+            style="margin-top:8px;"
+          >
+            Kliknutím otvoríš detail prípadu.
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function showDisciplinarnyPripadDetail(id) {
+  const item = (appState.data.disciplinarnePripady || [])
+  .find(check => String(check.id) === String(id));
+
+  const modal =
+    document.getElementById('disciplinarnyPripadModal');
+
+  const body =
+    document.getElementById('disciplinarnyPripadBody');
+
+  if (!item || !modal || !body) {
+    alert('Disciplinárny prípad sa nenašiel.');
+    return;
+  }
+
+  const meno =
+    item.fisher_name ||
+    item.fisherName ||
+    item.fisher_id_no ||
+    '-';
+
+  const idRybara =
+    item.fisher_id_no ||
+    item.fisherIdNo ||
+    '-';
+
+  const revir =
+    item.location ||
+    item.place ||
+    '-';
+
+  const vysledok =
+    item.result ||
+    '-';
+
+  const typ =
+    item.typ_priestupku ||
+    '-';
+
+  const poznamka =
+    item.poznamka ||
+    item.note ||
+    '-';
+
+  const clen1 =
+    item.clen_rs_1 ||
+    item.member_name ||
+    '-';
+
+  const clen2 =
+    item.clen_rs_2 ||
+    '-';
+
+  const datum =
+    formatDateTime(
+      item.created_at ||
+      item.date ||
+      ''
+    );
+
+  let photos = [];
+
+  if (Array.isArray(item.photos)) {
+    photos = item.photos;
+  } else if (
+    typeof item.photos === 'string' &&
+    item.photos.trim()
+  ) {
+    try {
+      const parsed = JSON.parse(item.photos);
+      photos = Array.isArray(parsed)
+        ? parsed
+        : [item.photos];
+    } catch (error) {
+      photos = [item.photos];
+    }
+  }
+
+  const photosHtml = photos.length > 0
+    ? photos.map(photo => {
+        const url =
+          photo.dataUrl ||
+          photo.url ||
+          photo.src ||
+          photo;
+
+        return `
+          <img
+            src="${url}"
+            style="
+              max-width:180px;
+              border-radius:12px;
+              margin:6px;
+              border:1px solid #ddd;
+            "
+            onclick="window.open('${url}', '_blank')"
+          >
+        `;
+      }).join('')
+    : '<div class="muted">Bez fotiek.</div>';
+
+  body.innerHTML = `
+    <div class="item">
+
+      <h3 style="margin-top:0;">
+        ${escapeHtml(meno)}
+      </h3>
+
+      <p>
+        <strong>ID rybára:</strong>
+        ${escapeHtml(idRybara)}
+      </p>
+
+      <p>
+        <strong>Dátum kontroly:</strong>
+        ${escapeHtml(datum)}
+      </p>
+
+      <p>
+        <strong>Revír:</strong>
+        ${escapeHtml(revir)}
+      </p>
+
+      <p>
+        <strong>Výsledok kontroly:</strong>
+        ${statusBadge(vysledok)}
+      </p>
+
+      <p>
+        <strong>Typ priestupku:</strong>
+        ${escapeHtml(typ)}
+      </p>
+
+      <p>
+        <strong>Poznámka RS:</strong>
+        ${escapeHtml(poznamka)}
+      </p>
+
+      <p>
+        <strong>Člen RS 1:</strong>
+        ${escapeHtml(clen1)}
+      </p>
+
+      <p>
+        <strong>Člen RS 2:</strong>
+        ${escapeHtml(clen2)}
+      </p>
+
+      <p>
+        <strong>Disciplinárny záznam:</strong>
+        ${escapeHtml(item.disciplinarny_zaznam || 'Nie')}
+      </p>
+
+      <p><strong>Fotky:</strong></p>
+      <div>${photosHtml}</div>
+
+    </div>
+
+  <div class="item">
+  <h3 style="margin-top:0;">
+    Riešenie disciplinárnou komisiou
+  </h3>
+
+  <input
+    type="hidden"
+    id="dkCheckId"
+    value="${escapeHtml(String(item.id))}"
+  >
+
+  <div class="field">
+    <label for="dkStavPripadu">Stav prípadu</label>
+
+    <select id="dkStavPripadu">
+      <option value="Čaká na riešenie">
+        Čaká na riešenie
+      </option>
+
+      <option value="V riešení">
+        V riešení
+      </option>
+
+      <option value="Uzavreté">
+        Uzavreté
+      </option>
+
+      <option value="Bez ďalšieho riešenia">
+        Bez ďalšieho riešenia
+      </option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="dkDatumPrerokovania">
+      Dátum prerokovania
+    </label>
+
+    <input
+      id="dkDatumPrerokovania"
+      type="date"
+    >
+  </div>
+
+  <div class="field">
+    <label for="dkVysledok">
+      Výsledok / spôsob riešenia
+    </label>
+
+<select id="dkVysledok" onchange="toggleDkDoplnkovePolia()">
+  <option value="">
+    Vyber výsledok / spôsob riešenia
+  </option>
+
+  <option value="Upustenie od uloženia disciplinárneho opatrenia">
+    Upustenie od uloženia disciplinárneho opatrenia
+  </option>
+
+  <option value="Upozornenie">
+    Upozornenie
+  </option>
+
+  <option value="Peňažná pokuta">
+    Peňažná pokuta
+  </option>
+
+  <option value="Odňatie povolenia na rybolov">
+    Odňatie povolenia na rybolov
+  </option>
+
+  <option value="Nevydanie povolenia na rybolov">
+    Nevydanie povolenia na rybolov
+  </option>
+
+  <option value="Odňatie a nevydanie povolenia na rybolov">
+    Odňatie + nevydanie povolenia na rybolov
+  </option>
+
+  <option value="Odvolanie zo zvolenej funkcie">
+    Odvolanie zo zvolenej funkcie
+  </option>
+
+  <option value="Dočasné vylúčenie z členstva SRZ">
+    Dočasné vylúčenie z členstva SRZ
+  </option>
+
+  <option value="Trvalé vylúčenie z členstva SRZ">
+    Trvalé vylúčenie z členstva SRZ
+  </option>
+
+  <option value="Oslobodenie">
+    Oslobodenie
+  </option>
+
+  <option value="Zastavenie disciplinárneho konania">
+    Zastavenie disciplinárneho konania
+  </option>
+
+  <option value="Postúpenie príslušnému orgánu">
+    Postúpenie príslušnému orgánu
+  </option>
+
+  <option value="Iné">
+    Iné
+  </option>
+</select>
+  </div>
+
+<div style="
+  margin:18px 0 14px 0;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+">
+
+<div
+  id="dkPokutaBox"
+  class="field hidden"
+>
+  <label for="dkVyskaPokuty">
+    Výška pokuty (€)
+  </label>
+
+  <input
+    id="dkVyskaPokuty"
+    type="number"
+    min="0"
+    step="1"
+    placeholder="Napr. 50"
+  >
+</div>
+
+<div
+  id="dkDobaOpatreniaBox"
+  class="field hidden"
+>
+  <label for="dkDobaOpatrenia">
+    Doba opatrenia
+  </label>
+
+  <input
+    id="dkDobaOpatrenia"
+    type="text"
+    placeholder="Napr. 1 rok / 2 roky"
+  >
+</div>
+
+  <strong>⚖️ Právne posúdenie prípadu</strong>
+  <div class="muted small" style="margin-top:3px;">
+    Posúdenie porušeného predpisu a závažnosti previnenia.
+  </div>
+</div>
+
+<div class="field">
+  <label for="dkStupenPrevinenia">
+    Stupeň disciplinárneho previnenia
+  </label>
+
+  <select id="dkStupenPrevinenia">
+    <option value="">
+      Vyber stupeň previnenia
+    </option>
+
+    <option value="Menej závažné">
+      Menej závažné
+    </option>
+
+    <option value="Závažné">
+      Závažné
+    </option>
+
+    <option value="Hrubé">
+      Hrubé
+    </option>
+
+    <option value="Mimoriadne hrubé">
+      Mimoriadne hrubé
+    </option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="dkPorusenyPredpis">
+    Porušený predpis
+  </label>
+
+  <input
+    id="dkPorusenyPredpis"
+    type="text"
+    placeholder="Napr. Zákon č. 216/2018 Z. z. o rybárstve"
+  >
+</div>
+
+<div class="field">
+  <label for="dkUstanovenie">
+    Konkrétne ustanovenie
+  </label>
+
+  <input
+    id="dkUstanovenie"
+    type="text"
+    placeholder="Napr. § 12 ods. 1"
+  >
+</div>
+
+<div class="field">
+  <label for="dkPravnePosudenie">
+    Právne posúdenie prípadu
+  </label>
+
+  <textarea
+    id="dkPravnePosudenie"
+    rows="4"
+    placeholder="Stručné právne posúdenie skutku..."
+  ></textarea>
+</div>
+
+  <div class="field">
+    <label for="dkPoznamka">
+      Poznámka disciplinárnej komisie
+    </label>
+
+    <textarea
+      id="dkPoznamka"
+      rows="5"
+      placeholder="Zapíš výsledok prerokovania alebo stručné odôvodnenie..."
+    ></textarea>
+  </div>
+
+<div style="
+  margin:18px 0 14px 0;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+">
+  <strong>📎 Dokumenty disciplinárneho prípadu</strong>
+
+  <div class="muted small" style="margin-top:3px;">
+    Prilož fotografiu alebo PDF dokument súvisiaci s prípadom.
+  </div>
+</div>
+
+<div class="field">
+  <label for="dkDokumenty">
+    Priložiť dokument
+  </label>
+
+  <input
+    id="dkDokumenty"
+    type="file"
+    accept="image/*,application/pdf"
+    multiple
+  >
+</div>
+
+<div
+  id="dkDokumentyList"
+  class="list"
+  style="margin-bottom:14px;"
+>
+  <div class="muted small">
+    Zatiaľ nie sú priložené žiadne dokumenty.
+  </div>
+</div>
+
+  <button
+    class="btn-primary"
+    onclick="saveDisciplinarneRiesenie()">
+    Uložiť riešenie
+  </button>
+</div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeDisciplinarnyPripadModal() {
+  document
+    .getElementById('disciplinarnyPripadModal')
+    ?.classList.add('hidden');
+}
+
+
+/* Doplnkové polia disciplinárnej komisie */
+function toggleDkDoplnkovePolia() {
+  const vysledok =
+    document.getElementById('dkVysledok')?.value || '';
+
+  const pokutaBox =
+    document.getElementById('dkPokutaBox');
+
+  const dobaBox =
+    document.getElementById('dkDobaOpatreniaBox');
+
+  if (!pokutaBox || !dobaBox) return;
+
+  // Najskôr obe doplnkové polia skryjeme
+  pokutaBox.classList.add('hidden');
+  dobaBox.classList.add('hidden');
+
+  // Peňažná pokuta
+  if (vysledok === 'Peňažná pokuta') {
+    pokutaBox.classList.remove('hidden');
+  }
+
+  // Opatrenia súvisiace s povolením na rybolov
+  if (
+    vysledok === 'Odňatie povolenia na rybolov' ||
+    vysledok === 'Nevydanie povolenia na rybolov' ||
+    vysledok === 'Odňatie a nevydanie povolenia na rybolov'
+  ) {
+    dobaBox.classList.remove('hidden');
+  }
+}
+
+async function uploadDisciplinarneDokumenty(checkId, files) {
+  const dokumenty = [];
+
+  for (const file of files) {
+    const originalName = file.name || 'dokument';
+
+    const safeName = originalName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+
+    const fileName =
+      Date.now() +
+      '_' +
+      Math.random().toString(36).substring(2) +
+      '_' +
+      safeName;
+
+    const filePath =
+      'pripady/' +
+      checkId +
+      '/' +
+      fileName;
+
+    const { error } = await db.storage
+      .from('disciplinarne-dokumenty')
+      .upload(filePath, file);
+
+    if (error) {
+      console.error(
+        'Chyba pri nahrávaní disciplinárneho dokumentu:',
+        error
+      );
+
+      throw error;
+    }
+
+    dokumenty.push({
+      nazov: originalName,
+      cesta: filePath,
+      typ: file.type || '',
+      velkost: file.size || 0,
+      nahrate_at: new Date().toISOString()
+    });
+  }
+
+  return dokumenty;
+}
+
+async function saveDisciplinarneRiesenie() {
+  if (!ensureLogged()) return;
+
+  const checkId =
+    document.getElementById('dkCheckId')?.value || '';
+
+  const stavPripadu =
+    document.getElementById('dkStavPripadu')?.value || 'Čaká na riešenie';
+
+  const datumPrerokovania =
+    document.getElementById('dkDatumPrerokovania')?.value || null;
+
+  const vysledokRiesenia =
+    document.getElementById('dkVysledok')?.value || null;
+
+  const vyskaPokutyRaw =
+    document.getElementById('dkVyskaPokuty')?.value || '';
+
+  const dobaOpatrenia =
+    document.getElementById('dkDobaOpatrenia')?.value.trim() || null;
+
+  const stupenPrevinenia =
+    document.getElementById('dkStupenPrevinenia')?.value || null;
+
+  const porusenyPredpis =
+    document.getElementById('dkPorusenyPredpis')?.value.trim() || null;
+
+  const ustanovenie =
+    document.getElementById('dkUstanovenie')?.value.trim() || null;
+
+  const pravnePosudenie =
+    document.getElementById('dkPravnePosudenie')?.value.trim() || null;
+
+  const poznamkaDk =
+    document.getElementById('dkPoznamka')?.value.trim() || null;
+
+const dokumentFiles =
+  Array.from(
+    document.getElementById('dkDokumenty')?.files || []
+  );
+
+  if (!checkId) {
+    alert('Chýba prepojenie na pôvodnú kontrolu.');
+    return;
+  }
+
+  const vyskaPokuty =
+    vyskaPokutyRaw !== ''
+      ? Number(vyskaPokutyRaw)
+      : null;
+
+  const currentUser = getCurrentUser();
+
+let noveDokumenty = [];
+
+if (dokumentFiles.length > 0) {
+  try {
+    noveDokumenty =
+      await uploadDisciplinarneDokumenty(
+        checkId,
+        dokumentFiles
+      );
+  } catch (error) {
+    console.error(
+      'Nepodarilo sa nahrať dokumenty DK:',
+      error
+    );
+
+    alert(
+      'Riešenie sa neuložilo, pretože sa nepodarilo nahrať dokumenty.'
+    );
+
+    return;
+  }
+}
+
+  const zaznam = {
+    check_id: checkId,
+    stav_pripadu: stavPripadu,
+    datum_prerokovania: datumPrerokovania,
+    vysledok_riesenia: vysledokRiesenia,
+    vyska_pokuty: vyskaPokuty,
+    doba_opatrenia: dobaOpatrenia,
+    stupen_previnenia: stupenPrevinenia,
+    poruseny_predpis: porusenyPredpis,
+    ustanovenie: ustanovenie,
+    pravne_posudenie: pravnePosudenie,
+    poznamka_dk: poznamkaDk,
+    zapisal: currentUser?.name || '-',
+    upravene_at: new Date().toISOString()
+  };
+
+  const { data: existujuci, error: searchError } = await db
+    .from('disciplinarne_pripady')
+    .select('id, dokumenty')
+    .eq('check_id', checkId)
+    .maybeSingle();
+
+  if (searchError) {
+    console.error(
+      'Chyba pri kontrole disciplinárneho prípadu:',
+      searchError
+    );
+
+    alert('Nepodarilo sa overiť disciplinárny prípad.');
+    return;
+  }
+
+const existujuceDokumenty =
+  Array.isArray(existujuci?.dokumenty)
+    ? existujuci.dokumenty
+    : [];
+
+const vsetkyDokumenty = [
+  ...existujuceDokumenty,
+  ...noveDokumenty
+];
+
+zaznam.dokumenty = vsetkyDokumenty;
+
+  let data;
+  let error;
+
+  if (existujuci?.id) {
+    const response = await db
+      .from('disciplinarne_pripady')
+      .update(zaznam)
+      .eq('id', existujuci.id)
+      .select()
+      .single();
+
+    data = response.data;
+    error = response.error;
+  } else {
+    const response = await db
+      .from('disciplinarne_pripady')
+      .insert([zaznam])
+      .select()
+      .single();
+
+    data = response.data;
+    error = response.error;
+  }
+
+  if (error) {
+    console.error(
+      'Chyba pri ukladaní riešenia DK:',
+      error
+    );
+
+    alert('Riešenie disciplinárnej komisie sa nepodarilo uložiť.');
+    return;
+  }
+
+  console.log(
+    'Riešenie disciplinárnej komisie uložené:',
+    data
+  );
+
+  alert('Riešenie disciplinárnej komisie bolo uložené.');
+}
+
 function openAsistentPlaceholder(title) {
   const box = document.getElementById('asistentDetailBox');
 
@@ -5392,7 +6455,7 @@ async function openStatistikyModule() {
 }
 
 try {
-  await loadStatsChecks();
+  await loadStatsChecksLite();
 } catch (error) {
   console.warn(
     'Nepodarilo sa načítať celú históriu pre Štatistiky:',
@@ -5431,25 +6494,44 @@ async function openReportyModule() {
   document.getElementById('filterSection').classList.remove('hidden');
 
   if (loading) {
+    loading.textContent = '⏳ Načítavam reporty...';
     loading.classList.remove('hidden');
   }
 
+try {
+
  if (!appState.kontrolyLoaded) {
-  try {
-    await refreshKontrolyData();
-  } catch (error) {
-    console.warn('Štatistiky/Reporty pokračujú s už načítanými dátami:', error);
-  }
+  console.time('REPORTY - refreshKontrolyData');
+
+  await refreshKontrolyData();
+
+  console.timeEnd('REPORTY - refreshKontrolyData');
 }
 
-try {
-  await loadStatsChecks();
-} catch (error) {
-  console.warn(
-    'Nepodarilo sa načítať celú históriu pre Reporty:',
-    error
-  );
-}
+console.time('REPORTY - loadStatsChecks');
+
+await loadStatsChecksLite();
+
+console.timeEnd('REPORTY - loadStatsChecks');
+
+  } catch (error) {
+    console.error(
+      'Reporty sa nepodarilo načítať:',
+      error
+    );
+
+    if (loading) {
+      loading.textContent =
+        '⚠️ Údaje reportov sa nepodarilo načítať. Skontrolujte pripojenie a skúste Reporty otvoriť znova.';
+      loading.classList.remove('hidden');
+    }
+
+    document
+      .getElementById('dashboardCardsSection')
+      .classList.add('hidden');
+
+    return;
+  }
 
   updateDashboard();
 
@@ -5457,10 +6539,17 @@ try {
     loading.classList.add('hidden');
   }
 
-  document.getElementById('dashboardCardsSection').classList.remove('hidden');
-  document.getElementById('graphsOnlySection').classList.add('hidden');
+  document
+    .getElementById('dashboardCardsSection')
+    .classList.remove('hidden');
 
-  document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth' });
+  document
+    .getElementById('graphsOnlySection')
+    .classList.add('hidden');
+
+  document
+    .getElementById('dashboardSection')
+    .scrollIntoView({ behavior: 'smooth' });
 }
 
 function csvValue(value) {
@@ -7383,8 +8472,11 @@ function renderGrafHodinyReviry(kontroly, sluzby) {
 
 function getResultColor(vysledok) {
   if (vysledok === 'Bez porušenia') return '#166534';
+  if (vysledok === 'Poučenie rybára') return '#2563eb';
+  if (vysledok === 'Podozrenie') return '#ca8a04';
   if (vysledok === 'Priestupok') return '#f97316';
   if (vysledok === 'Pytliactvo') return '#991b1b';
+
   return '#6b7280';
 }
 
@@ -7392,11 +8484,13 @@ function renderGrafVysledkyKontrol(kontroly) {
   const box = document.getElementById("grafVysledkyKontrol");
   if (!box) return;
 
-  const counts = {
-    'Bez porušenia': 0,
-    'Priestupok': 0,
-    'Pytliactvo': 0
-  };
+ const counts = {
+  'Bez porušenia': 0,
+  'Poučenie rybára': 0,
+  'Podozrenie': 0,
+  'Priestupok': 0,
+  'Pytliactvo': 0
+};
 
   kontroly.forEach(k => {
     const vysledok = k.result || 'Bez porušenia';
@@ -7624,6 +8718,7 @@ function renderGrafMesacnyTarget(
 if (datumOd) {
   kontroly = kontroly.filter(k => {
     const checkDate = localDateKey(
+      k.check_date ||
       k.created_at ||
       k.date ||
       ''
@@ -7636,10 +8731,11 @@ if (datumOd) {
 if (datumDo) {
   kontroly = kontroly.filter(k => {
     const checkDate = localDateKey(
-      k.created_at ||
-      k.date ||
-      ''
-    );
+  k.check_date ||
+  k.created_at ||
+  k.date ||
+  ''
+);
 
     return checkDate && checkDate <= datumDo;
   });
@@ -7688,17 +8784,23 @@ if (clenRS) {
   );
 }
 
-      const totalKontroly = kontroly.length;
-      const priestupky = kontroly.filter(k => {
-      const result = k.result || '';
-      return result && result !== 'Bez porušenia';
-}).length;
+const totalKontroly = kontroly.length;
 
-const pytliactvo = kontroly.filter(k => k.result === "Pytliactvo").length;
+const priestupky = kontroly.filter(
+  k => k.result === 'Priestupok'
+).length;
 
-      const uspesnost = totalKontroly > 0
-        ? Math.round(((totalKontroly - priestupky - pytliactvo) / totalKontroly) * 100)
-        : 0;
+const pytliactvo = kontroly.filter(
+  k => k.result === 'Pytliactvo'
+).length;
+
+const porusenia = priestupky + pytliactvo;
+
+const uspesnost = totalKontroly > 0
+  ? Math.round(
+      ((totalKontroly - porusenia) / totalKontroly) * 100
+    )
+  : 0;
 
       const reviryCount = {};
       kontroly.forEach(k => {
@@ -7722,7 +8824,6 @@ if (statChecksEl) {
   statChecksEl.innerText = totalKontroly;
 }
 
-const porusenia = priestupky + pytliactvo;
 const sluzbyReviry = (appState.data.sluzbyReviry || []).length;
 
 document.getElementById("totalPriestupky").innerText = porusenia;
@@ -8095,7 +9196,7 @@ const { data: checksData, error: checksError } = await db
 
     if (checksError) {
         console.error('Chyba pri nacitani kontrol:', checksError);
-        return;
+        throw checksError;
     }
 
     const { data: membersData, error: membersError } = await db
@@ -8105,7 +9206,7 @@ const { data: checksData, error: checksError } = await db
 
     if (membersError) {
         console.error('Chyba pri nacitani clenov RS:', membersError);
-        return;
+        throw membersError;
     }
 
 const { data: fishersData, error: fishersError } = await db
@@ -8115,7 +9216,7 @@ const { data: fishersData, error: fishersError } = await db
 
 if (fishersError) {
   console.error('Chyba pri nacitani rybarov:', fishersError);
-  return;
+  throw fishersError;
 }
 
     console.log('Nacitane kontroly:', checksData);
@@ -8141,9 +9242,42 @@ if (fishersError) {
 }));
 
     // populateLoginMembers();
-       appState.kontrolyLoaded = true;
     renderAll();
   }
+
+async function loadStatsChecksLite() {
+  const { data, error } = await db
+    .from('checks')
+    .select(`
+      id,
+      created_at,
+      check_date,
+      fisher_name,
+      fisher_id_no,
+      location,
+      result,
+      member_name,
+      clen_rs_1,
+      clen_rs_2
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(
+      'Chyba pri načítaní ľahkých dát pre štatistiky:',
+      error
+    );
+
+    throw error;
+  }
+
+  appState.data.statsChecks = data || [];
+
+  console.log(
+    'Štatistiky – ľahké dáta načítané:',
+    appState.data.statsChecks.length
+  );
+}
 
 async function loadStatsChecks() {
   const { data, error } = await db
@@ -8151,10 +9285,12 @@ async function loadStatsChecks() {
 .select(`
   id,
   created_at,
+  check_date,
   fisher_name,
   fisher_id_no,
   location,
   result,
+  disciplinarny_zaznam,
   typ_priestupku,
   poznamka,
   photos,
@@ -8280,7 +9416,7 @@ async function fixOldServiceCounts() {
 
   if (error) {
     console.error('Chyba pri načítaní služieb revírov:', error);
-    return;
+    throw error;
   }
 
   appState.data.sluzbyReviry = data || [];
