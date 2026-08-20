@@ -1593,6 +1593,7 @@
       <option>Lov bez peánu / uvoľňovača háčikov</option>
       <option>Lov bez platného povolenia</option>
       <option>Lov bez podložky pod rybu</option>
+      <option>Lov bez povinnej výbavy</option>
       <option>Lov bez povolenia</option>
       <option>Lov bez rybárskeho lístka</option>
       <option>Lov na viac udíc ako je povolené</option>
@@ -1600,6 +1601,7 @@
       <option>Nadlimitný úlovok</option>
       <option>Nedodržaná lovná miera</option>
       <option>Neúplne vyplnený záznam o úlovku</option>
+      <option>Nesprávne / neúplné číslo revíru</option>
       <option>Neudržiavanie poriadku na lovnom mieste</option>
       <option>Nezapísaná nástrahová ryba</option>
       <option>Nezapísaná privlastnená ryba</option>
@@ -1800,20 +1802,56 @@
 
     <input type="hidden" id="editCheckId">
 
-    <label>Výsledok kontroly</label>
-    <select id="editCheckResult">
-      <option>Bez porušenia</option>
-      <option>Podozrenie</option>
-      <option>Priestupok</option>
-      <option>Pytliactvo</option>
-    </select>
+<label>Výsledok kontroly</label>
+<select id="editCheckResult">
+  <option>Bez porušenia</option>
+  <option>Poučenie rybára</option>
+  <option>Podozrenie</option>
+  <option>Priestupok</option>
+  <option>Pytliactvo</option>
+</select>
 
-    <label style="margin-top:12px;">Typ priestupku</label>
-    <input
-      id="editCheckOffence"
-      type="text"
-      placeholder="Voliteľné"
-    >
+   <label style="margin-top:12px;">Typ priestupku</label>
+
+<select id="editCheckOffence">
+  <option value="">Vyber typ priestupku</option>
+  <option>Bez zapísania úlovku</option>
+  <option>Iné</option>
+  <option>Lov bez meradla</option>
+  <option>Lov bez peánu / uvoľňovača háčikov</option>
+  <option>Lov bez platného povolenia</option>
+  <option>Lov bez podložky pod rybu</option>
+  <option>Lov bez povinnej výbavy</option>
+  <option>Lov bez povolenia</option>
+  <option>Lov bez rybárskeho lístka</option>
+  <option>Lov na viac udíc ako je povolené</option>
+  <option>Lov v čase hájenia</option>
+  <option>Nadlimitný úlovok</option>
+  <option>Nedodržaná lovná miera</option>
+  <option>Neúplne vyplnený záznam o úlovku</option>
+  <option>Nesprávne / neúplné číslo revíru</option>
+  <option>Neudržiavanie poriadku na lovnom mieste</option>
+  <option>Nezapísaná nástrahová ryba</option>
+  <option>Nezapísaná privlastnená ryba</option>
+  <option>Nepovolený spôsob lovu</option>
+  <option>Nepredloženie dokladov ku kontrole</option>
+  <option>Nesprávne zapísaný úlovok</option>
+  <option>Po privlastnení nezapísaná dĺžka ryby</option>
+  <option>Po privlastnení nezapísaná hmotnosť ryby</option>
+  <option>Po privlastnení nezapísaný druh ryby</option>
+  <option>Po privlastnení nezapísaný počet rýb</option>
+  <option>Porušenie denného času lovu</option>
+  <option>Porušenie denného limitu úlovkov</option>
+  <option>Použitie zakázanej nástrahy</option>
+  <option>Privlastnenie ryby mimo lovnej miery</option>
+  <option>Privlastnenie ryby v čase ochrany</option>
+</select>
+
+<label style="margin-top:12px;">Disciplinárny záznam</label>
+<select id="editCheckDisciplinarnyZaznam">
+  <option value="Nie">Nie</option>
+  <option value="Áno – vypísaný">Áno – vypísaný</option>
+</select>
 
     <label style="margin-top:12px;">Poznámka</label>
     <textarea
@@ -2117,7 +2155,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Vodná plocha nádrže pri obci Báb.",
   poznamka: "Všeobecný zákaz lovu rýb od 15. marca do 31. mája; neplatí od 1. mája do 31. mája, ak užívateľ uskutočňuje rybárske preteky alebo športové rybárske preteky.",
-  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  lovnaMiera: "Lieň min. 40 cm, amur min. 70 cm.",
   ustanovenia: ""
 },
 
@@ -2128,7 +2166,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Vodná plocha štrkoviska pri obci Šintava.",
   poznamka: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany.",
-  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  lovnaMiera: "Lieň min. 40 cm, amur min. 70 cm. Kapor rybničný – maximálna lovná miera 70 cm (K70). Kapra nad 70 cm si loviaci nesmie privlastniť a musí ho bezodkladne vrátiť späť do vody.",
   ustanovenia: ""
 },
 
@@ -2140,7 +2178,7 @@ const reviryInfo = {
   popis: "Čiastkové povodie Váhu od cestného mosta v obci Váhovce po kanál Dudváh pri obci Siladice. Tri ostrovy nad diaľničným mostom pri obci Váhovce sú vyhlásené za prírodnú rezerváciu – vstup zakázaný.",
   poznamka: "Čiastkové povodie Váhu od cestného mosta v obci Váhovce po kanál Dudváh pri obci Siladice. Tri ostrovy nad diaľničným mostom pri obci Váhovce sú vyhlásené za prírodnú rezerváciu – vstup zakázaný.",
   lovnaMiera: "Lieň 40 cm, amur 70 cm.",
-  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
+  ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany. Tri ostrovy nad diaľničným mostom pri obci Váhovce sú vyhlásené za prírodnú rezerváciu – vstup zakázaný."
 },
 
 "VN Kráľová (2-4930-1-1)": {
@@ -2151,7 +2189,7 @@ const reviryInfo = {
   popis: "Vodná plocha nádrže pri obci Kráľová nad Váhom.",
   poznamka: "Tento rybársky revír je vyhlásený vyhláškou č. 21/2008 Ministerstva životného prostredia SR za chránené vtáčie územie Kráľová.",
   lovnaMiera: "-",
-  ustanovenia: "Zakázané činnosti: lov rýb z ostrovov, stáť posedmi, móla alebo stany na náveternej strane hrádze po celej vodnej ploche zdrže VD ako aj ostrovov, kempovanie a parkovanie kempingových prívesov a stanov po celej návodnej strane hrádze zdrže VD, lov rýb v celom objekte ZKŠ Štrkopiesky."
+ustanovenia: "Zakázané činnosti: lov rýb z ostrovov; stavanie posedov, mól alebo stanov na náveternej strane hrádze po celej vodnej ploche zdrže VD a na ostrovoch; kempovanie a parkovanie kempingových prívesov a stanov po celej návodnej strane hrádze zdrže VD; lov rýb v celom objekte ZKŠ Štrkopiesky."
 },
 
  "Rameno Horný Čepeň (2-1590-1-1)": {
@@ -2162,7 +2200,7 @@ const reviryInfo = {
   popis: "Vodná plocha odstaveného ramena rieky Váh pri obci Horný Čepeň.",
   poznamka: "Vodná plocha odstaveného ramena rieky Váh pri obci Horný Čepeň.",
   lovnaMiera: "Lieň 40 cm, amur 70 cm.",
-  ustanovenia: "Všeobecný zákaz lovu rýb – od 15. marca sa zakazuje lov všetkých rýb do 31. mája; to neplatí od 1." 
+  ustanovenia: "Všeobecný zákaz lovu rýb – od 15. marca sa zakazuje lov všetkých rýb do 31. mája; to neplatí od 1. mája do 31. mája, ak užívateľ uskutočňuje rybárske preteky alebo športové rybárske preteky." 
 },
 
  "VN Pusté Sady (2-5190-1-1)": {
@@ -2183,7 +2221,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Vodná nádrž Hlohovník pri obci Hlohovec určená na športový rybolov.",
   poznamka: "Vodná plocha nádrže pri obci Vinohrady nad Váhom.",
-  lovnaMiera: "",
+ lovnaMiera: "-",
   ustanovenia: ""
 },
 
@@ -2194,7 +2232,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Vodná plocha Nová Voda (Účko) pri Seredi využívaná na športový rybolov.",
   poznamka: "Štrkovisko na rozhraní katastrálnych území Horný a Stredný Čepeň /Bývalé Účko/.",
-  lovnaMiera: "Minimálna lovná miera: lieň sliznatý 40 cm, amur biely 70 cm. Maximálna lovná miera: kapor rybničný 70 cm.",
+  lovnaMiera: "Lieň min. 40 cm, amur min. 70 cm. Kapor rybničný – maximálna lovná miera 70 cm (K70). Kapra nad 70 cm si loviaci nesmie privlastniť a musí ho bezodkladne vrátiť späť do vody.",
   ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
 },
 
@@ -2205,7 +2243,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Vodná plocha Koleno pri Seredi využívaná na športový rybolov.",
   poznamka: "Vodná plocha sústavy 2. štrkovísk pri záhradkárskej osade v katastrálnom území Dolný Čepeň. Sem patrí aj 'Kačičáreň'.",
-  lovnaMiera: "Minimálna lovná miera: lieň sliznatý 40 cm, amur biely 70 cm. Maximálna lovná miera: kapor rybničný 70 cm.",
+  lovnaMiera: "Lieň min. 40 cm, amur min. 70 cm. Kapor rybničný – maximálna lovná miera 70 cm (K70). Kapra nad 70 cm si loviaci nesmie privlastniť a musí ho bezodkladne vrátiť späť do vody.",
   ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
 },
 
@@ -2216,7 +2254,7 @@ const reviryInfo = {
   charakter: "kaprové vody",
   popis: "Sústava štrkovísk pri mestskej časti Horný Čepeň. Významný revír MsO Sereď využívaný na športový rybolov.",
   poznamka: "Vodná plocha sústavy 6. štrkovísk v katastrálnom území Horný Čepeň. Sem patria všetky štrkoviská za Novou vodou /Účkom/.",
-  lovnaMiera: "Lieň 40 cm, amur 70 cm.",
+  lovnaMiera: "Lieň min. 40 cm, amur min. 70 cm. Kapor rybničný – maximálna lovná miera 70 cm (K70). Kapra nad 70 cm si loviaci nesmie privlastniť a musí ho bezodkladne vrátiť späť do vody.",
   ustanovenia: "Lov rýb povolený celoročne s dodržaním individuálnej doby ochrany."
 },
 
@@ -3482,7 +3520,7 @@ function resetCheckForm() {
 
   // Ostatné údaje kontroly
   // Miesto kontroly zámerne ponechávame podľa doterajšej logiky.
- document.getElementById('checkPlace').value = '';
+ document.getElementById('checkPlace').value = appState.activeRevir || '';
 
   document.getElementById('checkResult').value = 'Bez porušenia';
   document.getElementById('checkOffenceType').value = '';
@@ -10965,6 +11003,9 @@ async function openEditCheckModal(id, preserveRemovedPhotos = false) {
   document.getElementById('editCheckOffence').value =
     item.typ_priestupku || '';
 
+document.getElementById('editCheckDisciplinarnyZaznam').value =
+  item.disciplinarny_zaznam || 'Nie';
+
   document.getElementById('editCheckNote').value =
     item.poznamka || '';
 
@@ -11108,6 +11149,8 @@ async function saveEditedCheck() {
   const result = document.getElementById('editCheckResult').value;
   const offence = document.getElementById('editCheckOffence').value.trim();
   const note = document.getElementById('editCheckNote').value.trim();
+  const disciplinarnyZaznam =
+  document.getElementById('editCheckDisciplinarnyZaznam').value;
   const photoInput = document.getElementById('editCheckPhotos');
 
   if (!id) {
@@ -11122,6 +11165,7 @@ const { data: item, error: loadError } = await db
     result,
     typ_priestupku,
     poznamka,
+    disciplinarny_zaznam,
     photos
   `)
   .eq('id', id)
@@ -11182,12 +11226,13 @@ const allPhotos = keptPhotos.concat(newPhotos);
 
   const { error } = await db
     .from('checks')
-    .update({
-      result: result,
-      typ_priestupku: offence,
-      poznamka: note,
-      photos: allPhotos
-    })
+   .update({
+  result: result,
+  typ_priestupku: offence,
+  poznamka: note,
+  disciplinarny_zaznam: disciplinarnyZaznam,
+  photos: allPhotos
+})
     .eq('id', id);
 
   if (error) {
@@ -11204,6 +11249,7 @@ if (localItem) {
   localItem.result = result;
   localItem.typ_priestupku = offence;
   localItem.poznamka = note;
+  localItem.disciplinarny_zaznam = disciplinarnyZaznam;
   localItem.photos = allPhotos;
 }
 
@@ -11835,10 +11881,26 @@ content.innerHTML = `
     <strong>Charakter:</strong> ${info.charakter || '-'}<br>
     <strong>Popis:</strong> ${info.popis || '-'}<br>
     <br>
-    <strong>Poznámka:</strong> ${info.poznamka || '-'}<br>
-    <strong>Lovná miera:</strong> ${info.lovnaMiera || '-'}<br>
-    <strong>Osobitné ustanovenia:</strong> ${info.ustanovenia || '-'}
-  </div>
+  <strong>Poznámka:</strong> ${info.poznamka || '-'}<br>
+<strong>Lovná miera:</strong> ${info.lovnaMiera || '-'}<br>
+<strong>Osobitné ustanovenia:</strong> ${info.ustanovenia || '-'}<br>
+
+<br>
+
+<div style="
+  padding:10px 12px;
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+  border-radius:10px;
+  font-size:13px;
+  line-height:1.45;
+">
+  <strong>⚠️ Aktuálne a dočasné obmedzenia</strong><br>
+  Dočasné pravidlá a obmedzenia sa môžu meniť najmä z dôvodu
+  zarybnenia, rybárskych pretekov alebo rozhodnutia užívateľa revíru.
+  Pred výkonom kontroly je potrebné overiť aktuálne platné oznamy
+  MsO SRZ Sereď.
+</div>
 `;
 
   modal.classList.remove('hidden');
