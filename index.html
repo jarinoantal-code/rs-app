@@ -2683,106 +2683,302 @@ renderAll();
       document.getElementById('loginCisloOdznaku').value = '';
     }
 
+const OFFLINE_SERVICES_KEY = 'rs_app_offline_services';
+
+function saveServiceToOfflineQueue(serviceData) {
+  let queue = [];
+
+  try {
+    queue = JSON.parse(
+      localStorage.getItem(OFFLINE_SERVICES_KEY) || '[]'
+    );
+
+    if (!Array.isArray(queue)) {
+      queue = [];
+    }
+  } catch (error) {
+    queue = [];
+  }
+
+  const offlineService = {
+    ...serviceData,
+    offline_id:
+      'offline_service_' +
+      Date.now() +
+      '_' +
+      Math.random().toString(36).substring(2),
+
+    offline_saved_at: new Date().toISOString(),
+    pending_sync: true
+  };
+
+  queue.push(offlineService);
+
+  localStorage.setItem(
+    OFFLINE_SERVICES_KEY,
+    JSON.stringify(queue)
+  );
+
+  return offlineService;
+}
+
 async function leaveRevir() {
 
-    if (!appState.activeRevir) {
-        alert('Nie je zvolený žiadny aktívny revír.');
-        return;
+  if (!appState.activeRevir) {
+    alert('Nie je zvolený žiadny aktívny revír.');
+    return;
+  }
+
+  const koniec = nowText();
+
+  let pocetKontrol = 0;
+
+  const zaciatokDate = new Date(appState.activeRevirStart);
+  const koniecDate = new Date();
+  const koniecIso = koniecDate.toISOString();
+
+  let trvanieText = '';
+  let trvanieMin = 0;
+
+  if (!isNaN(zaciatokDate.getTime())) {
+    const rozdielMs = koniecDate - zaciatokDate;
+    trvanieMin = Math.floor(rozdielMs / 60000);
+
+    const hodiny = Math.floor(trvanieMin / 60);
+    const minuty = trvanieMin % 60;
+
+    trvanieText = hodiny + ' h ' + minuty + ' min';
+  }
+
+
+  // =====================================================
+  // NÚDZOVÝ OFFLINE REŽIM
+  // =====================================================
+
+  if (appState.offlineMode === true) {
+
+    let offlineChecks = [];
+
+    try {
+      offlineChecks = JSON.parse(
+        localStorage.getItem(OFFLINE_CHECKS_KEY) || '[]'
+      );
+
+      if (!Array.isArray(offlineChecks)) {
+        offlineChecks = [];
+      }
+    } catch (error) {
+      offlineChecks = [];
     }
 
-    const koniec = nowText();
+    // Počítame iba kontroly:
+    // - na aktuálnom revíri
+    // - uložené počas tejto služby
+    pocetKontrol = offlineChecks.filter(item => {
+
+      if (item.location !== appState.activeRevir) {
+        return false;
+      }
+
+      const checkTime = new Date(item.offline_saved_at);
+
+      if (isNaN(checkTime.getTime())) {
+        return false;
+      }
+
+      return (
+        checkTime >= zaciatokDate &&
+        checkTime <= koniecDate
+      );
+
+    }).length;
 
 
-let pocetKontrol = 0;
+    const sprava =
+      '⚠️ NÚDZOVÝ OFFLINE REŽIM\n\n' +
+      'Revír: ' + appState.activeRevir + '\n\n' +
+      'Začiatok: ' +
+      new Date(appState.activeRevirStart).toLocaleString('sk-SK') +
+      '\n' +
+      'Koniec: ' + koniec + '\n' +
+      'Trvanie: ' + trvanieText + '\n\n' +
+      'Počet lokálne uložených kontrol: ' +
+      pocetKontrol +
+      '\n\n' +
+      'Služba bude uložená do zariadenia a bude čakať na synchronizáciu.\n\n' +
+      'Naozaj chceš ukončiť službu na tomto revíri?';
 
-const zaciatokDate = new Date(appState.activeRevirStart);
-const koniecDate = new Date();
-const koniecIso = koniecDate.toISOString();
+    if (!confirm(sprava)) {
+      return;
+    }
 
-const { count, error: countError } = await db
-  .from('checks')
-  .select('id', { count: 'exact', head: true })
-  .eq('location', appState.activeRevir)
-  .gte('created_at', appState.activeRevirStart)
-  .lte('created_at', koniecIso);
+    const currentMember = getCurrentUser();
 
-if (countError) {
-  console.error('Chyba pri počítaní kontrol:', countError);
-  alert('Nepodarilo sa načítať počet kontrol zo Supabase.');
-  return;
-}
+    try {
 
-pocetKontrol = count || 0;
+      const offlineService = saveServiceToOfflineQueue({
+        revir: appState.activeRevir,
+        zaciatok: appState.activeRevirStart,
+        koniec: koniecIso,
+        trvanie_min: trvanieMin,
+        pocet_kontrol: pocetKontrol,
+        clen_rs: currentMember ? currentMember.name : '',
+        clen_rs_id: appState.currentUserId || ''
+      });
 
-let trvanieText = '';
-let trvanieMin = 0;
 
-if (!isNaN(zaciatokDate.getTime())) {
-  const rozdielMs = koniecDate - zaciatokDate;
-  trvanieMin = Math.floor(rozdielMs / 60000);
-  const hodiny = Math.floor(trvanieMin / 60);
-  const minuty = trvanieMin % 60;
+      // Aby službu vedela aplikácia okamžite použiť aj lokálne.
+      if (!Array.isArray(appState.data.sluzbyReviry)) {
+        appState.data.sluzbyReviry = [];
+      }
 
-  trvanieText = hodiny + ' h ' + minuty + ' min';
-}
+      appState.data.sluzbyReviry.unshift(offlineService);
 
-if (pocetKontrol === 0) {
-  openServiceWithoutCheckModal();
-  return;
-}
 
-const isGroupAction = document.getElementById('isGroupCheck')?.checked;
+      // Ukončíme aktívny revír.
+      appState.activeRevir = '';
+      appState.activeRevirStart = '';
 
-if (isGroupAction) {
+      localStorage.removeItem(ACTIVE_REVIR_KEY);
+
+      const checkPlace =
+        document.getElementById('checkPlace');
+
+      if (checkPlace) {
+        checkPlace.value = '';
+      }
+
+      resetCheckForm();
+
+      renderStats();
+      updateDashboard();
+
+      alert(
+        '⚠️ Revír bol ukončený a služba bola uložená lokálne.\n\n' +
+        'Čaká na synchronizáciu so serverom.'
+      );
+
+      return;
+
+    } catch (offlineError) {
+
+      console.error(
+        'Offline uloženie služby zlyhalo:',
+        offlineError
+      );
+
+      alert(
+        'Službu sa nepodarilo uložiť do zariadenia.\n' +
+        'Revír preto NEBOL ukončený.'
+      );
+
+      return;
+    }
+  }
+
+
+  // =====================================================
+  // PÔVODNÝ ONLINE REŽIM
+  // =====================================================
+
+  const { count, error: countError } = await db
+    .from('checks')
+    .select('id', { count: 'exact', head: true })
+    .eq('location', appState.activeRevir)
+    .gte('created_at', appState.activeRevirStart)
+    .lte('created_at', koniecIso);
+
+  if (countError) {
+    console.error(
+      'Chyba pri počítaní kontrol:',
+      countError
+    );
+
+    alert(
+      'Nepodarilo sa načítať počet kontrol zo Supabase.'
+    );
+
+    return;
+  }
+
+  pocetKontrol = count || 0;
+
+
+  if (pocetKontrol === 0) {
+    openServiceWithoutCheckModal();
+    return;
+  }
+
+
+  const isGroupAction =
+    document.getElementById('isGroupCheck')?.checked;
+
+  if (isGroupAction) {
     openGroupActionModal();
     return;
-}
+  }
 
-const sprava =
-        'Revír: ' + appState.activeRevir + '\n\n' +
-        'Začiatok: ' + new Date(appState.activeRevirStart).toLocaleString('sk-SK') + '\n' +
-        'Koniec: ' + koniec + '\n' +
-        'Trvanie: ' + trvanieText + '\n\n' +
-        'Počet kontrol: ' + pocetKontrol + '\n\n' +
-        'Naozaj chceš ukončiť službu na tomto revíri?';
 
-if (!confirm(sprava)) return;
+  const sprava =
+    'Revír: ' + appState.activeRevir + '\n\n' +
+    'Začiatok: ' +
+    new Date(appState.activeRevirStart).toLocaleString('sk-SK') +
+    '\n' +
+    'Koniec: ' + koniec + '\n' +
+    'Trvanie: ' + trvanieText + '\n\n' +
+    'Počet kontrol: ' + pocetKontrol + '\n\n' +
+    'Naozaj chceš ukončiť službu na tomto revíri?';
 
-const currentMember = getCurrentUser();
+  if (!confirm(sprava)) {
+    return;
+  }
 
-const { error: sluzbaError } = await db
-  .from('sluzby_reviry')
-  .insert([{
-    revir: appState.activeRevir,
-    zaciatok: appState.activeRevirStart,
-    koniec: koniecIso,
-    trvanie_min: trvanieMin,
-    pocet_kontrol: pocetKontrol,
-    clen_rs: currentMember ? currentMember.name : '',
-    clen_rs_id: appState.currentUserId || ''
-  }]);
 
-if (sluzbaError) {
-  console.error('Chyba pri uložení služby revíru:', sluzbaError);
-  alert('Služba revíru sa neuložila do Supabase.');
-  return;
-}
+  const currentMember = getCurrentUser();
 
-await loadSluzbyReviry();
-renderStats();
-updateDashboard();
+  const { error: sluzbaError } = await db
+    .from('sluzby_reviry')
+    .insert([{
+      revir: appState.activeRevir,
+      zaciatok: appState.activeRevirStart,
+      koniec: koniecIso,
+      trvanie_min: trvanieMin,
+      pocet_kontrol: pocetKontrol,
+      clen_rs: currentMember ? currentMember.name : '',
+      clen_rs_id: appState.currentUserId || ''
+    }]);
 
-   appState.activeRevir = '';
-appState.activeRevirStart = '';
 
-localStorage.removeItem(ACTIVE_REVIR_KEY);
+  if (sluzbaError) {
+    console.error(
+      'Chyba pri uložení služby revíru:',
+      sluzbaError
+    );
 
-document.getElementById('checkPlace').value = '';
+    alert(
+      'Služba revíru sa neuložila do Supabase.'
+    );
 
-resetCheckForm();
+    return;
+  }
 
-alert('Revír bol ukončený.');
 
+  await loadSluzbyReviry();
+
+  renderStats();
+  updateDashboard();
+
+
+  appState.activeRevir = '';
+  appState.activeRevirStart = '';
+
+  localStorage.removeItem(ACTIVE_REVIR_KEY);
+
+  document.getElementById('checkPlace').value = '';
+
+  resetCheckForm();
+
+  alert('Revír bol ukončený.');
 }
 
     function ensureLogged() {
@@ -3687,6 +3883,31 @@ async function uploadCheckPhotos(check, files) {
   }
 
   checkSaveInProgress = true;
+
+if (appState.offlineMode) {
+  console.warn(
+    'RS App je v núdzovom režime – Storage nie je dostupný.'
+  );
+
+  if (files && files.length > 0) {
+    alert(
+      '⚠️ Supabase je momentálne nedostupný.\n\n' +
+      'Kontrola bude bezpečne uložená do zariadenia BEZ fotografií.\n\n' +
+      'Fotografie si zatiaľ ponechajte v telefóne a po obnovení služby ich bude možné doplniť ku kontrole.'
+    );
+  }
+
+  check.photos = [];
+
+  const saved = await finalizeCheckSave(check);
+
+  checkSaveInProgress = false;
+
+  return saved;
+}
+
+const uploadedPaths = [];
+
   setCheckSaveUi(true, 'Nahrávam fotografie...');
 
 let slowUploadTimer = setTimeout(() => {
@@ -3732,6 +3953,8 @@ let slowUploadTimer = setTimeout(() => {
   return;
 }
 
+uploadedPaths.push(filePath);
+
       const { data } = db.storage
         .from('check-photos')
         .getPublicUrl(filePath);
@@ -3748,13 +3971,59 @@ let slowUploadTimer = setTimeout(() => {
 
     clearTimeout(slowUploadTimer);
 
-    await finalizeCheckSave(check);
+    const saved = await finalizeCheckSave(check);
+
+if (!saved) {
+  if (uploadedPaths.length > 0) {
+    const { error: cleanupError } = await db.storage
+      .from('check-photos')
+      .remove(uploadedPaths);
+
+    if (cleanupError) {
+      console.error(
+        'Nepodarilo sa odstrániť nepoužité fotografie:',
+        cleanupError
+      );
+    } else {
+      console.log(
+        'Nepoužité fotografie po neúspešnom uložení boli odstránené.'
+      );
+    }
+  }
+
+  check.photos = [];
+
+  return;
+}
 
 } catch (error) {
 
   clearTimeout(slowUploadTimer);
 
   console.error('Chyba pri fotkách:', error);
+
+  if (uploadedPaths.length > 0) {
+    try {
+      const { error: cleanupError } = await db.storage
+        .from('check-photos')
+        .remove(uploadedPaths);
+
+      if (cleanupError) {
+        console.error(
+          'Cleanup fotografií po chybe zlyhal:',
+          cleanupError
+        );
+      }
+    } catch (cleanupError) {
+      console.error(
+        'Cleanup fotografií po chybe zlyhal:',
+        cleanupError
+      );
+    }
+  }
+
+  check.photos = [];
+
   alert('Chyba pri spracovaní fotiek.');
 
   showSaveError('Chyba pri spracovaní fotiek.');
@@ -3782,6 +4051,41 @@ function showSaveSuccess(message = 'Kontrola bola úspešne uložená.') {
   }, 1800);
 }
 
+const OFFLINE_CHECKS_KEY = 'rs_app_offline_checks';
+
+function saveCheckToOfflineQueue(checkData) {
+  let queue = [];
+
+  try {
+    queue = JSON.parse(
+      localStorage.getItem(OFFLINE_CHECKS_KEY) || '[]'
+    );
+
+    if (!Array.isArray(queue)) {
+      queue = [];
+    }
+  } catch (error) {
+    queue = [];
+  }
+
+  const offlineCheck = {
+    ...checkData,
+    offline_id: 'offline_' + Date.now() + '_' +
+      Math.random().toString(36).substring(2),
+    offline_saved_at: new Date().toISOString(),
+    pending_sync: true
+  };
+
+  queue.push(offlineCheck);
+
+  localStorage.setItem(
+    OFFLINE_CHECKS_KEY,
+    JSON.stringify(queue)
+  );
+
+  return offlineCheck;
+}
+
  async function finalizeCheckSave(check) {
   const saveBtn = document.getElementById('saveCheckBtn');
   const saveStatus = document.getElementById('saveCheckStatus');
@@ -3793,6 +4097,79 @@ function showSaveSuccess(message = 'Kontrola bola úspešne uložená.') {
 
   if (saveStatus) {
     saveStatus.textContent = 'Ukladám...';
+  }
+
+  // NÚDZOVÝ OFFLINE REŽIM
+  // Ak už vieme, že Supabase nie je dostupný,
+  // vôbec naň nečakáme a kontrolu uložíme okamžite lokálne.
+  if (appState.offlineMode === true) {
+    try {
+      const offlineCheck = saveCheckToOfflineQueue({
+        fisher_name: check.fisherName,
+        fisher_id_no: check.fisherIdNo,
+        member_name: getMemberName(check.memberId1),
+        clen_rs_1: getMemberName(check.memberId1),
+        clen_rs_2: getMemberName(check.memberId2),
+        location: check.place,
+        check_date: check.date || null,
+        time_from: check.timeFrom,
+        time_to: check.timeTo,
+        result: check.result,
+        disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
+        poznamka: check.note,
+        typ_priestupku: check.offenceType,
+        photos: check.photos || []
+      });
+
+      console.log(
+        'OFFLINE – kontrola uložená lokálne:',
+        offlineCheck.offline_id
+      );
+
+      resetCheckForm();
+
+      if (saveStatus) {
+        saveStatus.textContent =
+          '⚠️ Uložené lokálne – čaká na synchronizáciu';
+      }
+
+      showSaveSuccess(
+        'Kontrola bola uložená do zariadenia.'
+      );
+
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Uložiť kontrolu';
+      }
+
+      checkSaveInProgress = false;
+
+      return true;
+
+    } catch (offlineError) {
+      console.error(
+        'OFFLINE – lokálne uloženie zlyhalo:',
+        offlineError
+      );
+
+      showSaveError(
+        'Kontrolu sa nepodarilo uložiť do zariadenia.'
+      );
+
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Uložiť kontrolu';
+      }
+
+      if (saveStatus) {
+        saveStatus.textContent =
+          '❌ Kontrola nebola uložená';
+      }
+
+      checkSaveInProgress = false;
+
+      return false;
+    }
   }
 
   const { data, error } = await db
@@ -3816,10 +4193,64 @@ function showSaveSuccess(message = 'Kontrola bola úspešne uložená.') {
     .select()
     .single();
 
-  if (error) {
-    console.error('Chyba pri uložení kontroly:', error);
+if (error) {
+  console.warn(
+    'Supabase nedostupný – kontrolu ukladám do núdzovej lokálnej fronty:',
+    error
+  );
 
-    showSaveError('Kontrolu sa nepodarilo uložiť.');
+  try {
+    const offlineCheck = saveCheckToOfflineQueue({
+      fisher_name: check.fisherName,
+      fisher_id_no: check.fisherIdNo,
+      member_name: getMemberName(check.memberId1),
+      clen_rs_1: getMemberName(check.memberId1),
+      clen_rs_2: getMemberName(check.memberId2),
+      location: check.place,
+      check_date: check.date || null,
+      time_from: check.timeFrom,
+      time_to: check.timeTo,
+      result: check.result,
+      disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
+      poznamka: check.note,
+      typ_priestupku: check.offenceType,
+      photos: check.photos || []
+    });
+
+    console.log(
+      'Kontrola uložená lokálne:',
+      offlineCheck.offline_id
+    );
+
+    resetCheckForm();
+
+    if (saveStatus) {
+      saveStatus.textContent =
+        '⚠️ Uložené lokálne – čaká na synchronizáciu';
+    }
+
+    showSaveSuccess(
+      'Kontrola bola uložená do zariadenia. Po obnovení spojenia bude potrebná synchronizácia.'
+    );
+
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Uložiť kontrolu';
+    }
+
+    checkSaveInProgress = false;
+
+    return true;
+
+  } catch (offlineError) {
+    console.error(
+      'Nepodarilo sa uložiť kontrolu ani lokálne:',
+      offlineError
+    );
+
+    showSaveError(
+      'Kontrolu sa nepodarilo uložiť ani do zariadenia.'
+    );
 
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -3827,12 +4258,15 @@ function showSaveSuccess(message = 'Kontrola bola úspešne uložená.') {
     }
 
     if (saveStatus) {
-      saveStatus.textContent = 'Nepodarilo sa uložiť – slabý signál / skúste znova';
+      saveStatus.textContent =
+        '❌ Kontrola nebola uložená';
     }
 
     checkSaveInProgress = false;
+
     return;
   }
+}
 
   console.log('Kontrola uložená do Supabase:', data);
 
@@ -5159,6 +5593,669 @@ Pri plávanej a položenej sú povolené najviac dve udice. Pri prívlači je po
 },
 
 {
+  id: 'nastrahova_rybka',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Nástrahová rybka',
+
+  icon: '🐟',
+
+  law: 'Zákon č. 216/2018 Z. z. o rybárstve a Vyhláška MŽP SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 18 zákona č. 216/2018 Z. z.; § 12 a § 14 vyhlášky č. 381/2018 Z. z.',
+
+  quote: `
+Na kaprových vodách platia osobitné podmienky pre použitie živej rybky, mŕtvej rybky alebo jej častí ako nástrahy.
+
+Od 15. marca do 31. mája je lov na živú rybku, mŕtvu rybku alebo jej časti zakázaný.
+
+Nástrahová rybka použitá pri love na kaprovej vode musí mať celkovú dĺžku najmenej 10 cm.
+
+Ako nástrahu nemožno použiť invázny nepôvodný druh ryby ani jeho časti.
+
+Ak bola rybka ulovená a privlastnená na revíri, musí byť riadne zaevidovaná v zázname o dochádzke k vode a úlovkoch podľa pravidiel evidencie privlastnených rýb.
+`,
+
+  advice: `
+„Pán rybár, skontrolujeme druh a veľkosť nástrahovej rybky a jej evidenciu. Ak bola rybka ulovená a privlastnená na revíri, musí byť správne zapísaná. Na kaprovej vode zároveň platia podmienky pre obdobie, minimálnu veľkosť a zákaz použitia inváznych nepôvodných druhov ako nástrahy.“
+`,
+
+  note: `
+RS pri kontrole nástrahovej rybky preverí:
+
+• druh ryby,
+• veľkosť nástrahovej rybky,
+• obdobie, v ktorom je použitá,
+• či nejde o invázny nepôvodný druh,
+• spôsob evidencie, ak bola rybka ulovená a privlastnená na revíri.
+
+ZÁPIS ÚLOVKU:
+Ryba so stanovenou lovnou mierou → zapisuje sa samostatne podľa pravidiel evidencie.
+
+Ryby bez stanovenej lovnej miery → evidujú sa spôsobom určeným pre kategóriu „ostatné“.
+
+POZOR:
+„OSTATNÉ“ neznamená automaticky, že daný druh možno použiť ako nástrahovú rybku. Vždy treba preveriť konkrétny druh a prípadné zákazy.
+`
+},
+
+{
+  id: 'ryba_plotica_cervenooka',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Plotica červenooká',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Plotica červenooká patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Ak je plotica použitá ako nástrahová rybka na kaprovej vode, musí spĺňať podmienky použitia nástrahovej rybky.
+`,
+
+  advice: `
+„Pán rybár, plotica červenooká patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bola ulovená a privlastnená, jej evidencia sa vykonáva v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky pre použitie nástrahy.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• striebristé telo,
+• červenooranžové až červené plutvy,
+• červené až oranžové oko,
+• vysoké, mierne sploštené telo.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_cervenica_ostrobrucha',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Červenica ostrobruchá',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Červenica ostrobruchá patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Ak je červenica použitá ako nástrahová rybka na kaprovej vode, musí spĺňať podmienky použitia nástrahovej rybky.
+`,
+
+  advice: `
+„Pán rybár, červenica ostrobruchá patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bola ulovená a privlastnená, eviduje sa v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky pre jej použitie.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• striebristé až zlatisté telo,
+• výrazne červené plutvy,
+• oči skôr žltkasté až oranžové,
+• ústa smerujú mierne nahor.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_belicka_europska',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Belička európska',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Belička európska patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Ak je belička použitá ako nástrahová rybka na kaprovej vode, musí spĺňať podmienky použitia nástrahovej rybky.
+`,
+
+  advice: `
+„Pán rybár, belička európska patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bola ulovená a privlastnená, eviduje sa v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky pre jej použitie.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• malé, štíhle a zo strán sploštené telo,
+• striebristé sfarbenie,
+• tmavší chrbát,
+• ústa smerujú mierne nahor,
+• typická drobná ryba pohybujúca sa často pri hladine.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_hruz_skvrnity',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Hrúz škvrnitý',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Hrúz škvrnitý patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Ak je hrúz použitý ako nástrahová rybka na kaprovej vode, musí spĺňať podmienky použitia nástrahovej rybky.
+`,
+
+  advice: `
+„Pán rybár, hrúz škvrnitý patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bol ulovený a privlastnený, eviduje sa v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky pre jej použitie.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• menšie pretiahnuté telo,
+• hnedasté až sivohnedé sfarbenie,
+• po bokoch tela výraznejšie tmavé škvrny,
+• spodne postavené ústa,
+• pri kútikoch úst má jeden pár fúzikov.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_karas_prusky',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Karas pruský',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Karas pruský patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Pri použití karasa pruského ako nástrahovej rybky je potrebné dodržať podmienky použitia nástrahovej rybky na konkrétnom type vody.
+`,
+
+  advice: `
+„Pán rybár, karas pruský patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bol ulovený a privlastnený, eviduje sa v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky pre jej použitie.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• vyššie, zo strán sploštené telo,
+• striebristé až sivostrieborné sfarbenie,
+• chrbtová plutva je pomerne dlhá,
+• pri ústach nemá fúziky,
+• vzhľadom môže pripomínať menšieho kapra.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+POZOR:
+Nezamieňať automaticky s inými druhmi karasov. Pri neistote RS najskôr overí konkrétny druh ryby.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_slnecnica_pestra',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Slnečnica pestrá',
+
+  icon: '🐟',
+
+  law: 'Zákon č. 216/2018 Z. z. o rybárstve a Vyhláška MŽP SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 18 zákona č. 216/2018 Z. z.; § 10 ods. 3 vyhlášky č. 381/2018 Z. z.',
+
+  quote: `
+Slnečnica pestrá (Lepomis gibbosus) patrí medzi invázne nepôvodné druhy rýb.
+
+Na kaprových vodách je zakázané loviť na invázne nepôvodné druhy rýb alebo ich časti.
+`,
+
+  advice: `
+„Pán rybár, slnečnica pestrá patrí medzi invázne nepôvodné druhy rýb. Tento druh ryby ani jeho časti nie je dovolené používať ako nástrahu.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• vysoké a zo strán výrazne sploštené telo,
+• pestré zelenkasté až modrasté sfarbenie,
+• oranžové až červené sfarbenie na spodnej časti tela,
+• tmavá škvrna na zadnej časti žiabrového viečka,
+• vzhľadom je výrazne odlišná od bežných domácich druhov.
+
+STATUS:
+INVÁZNY NEPÔVODNÝ DRUH
+
+AKO NÁSTRAHA:
+ZAKÁZANÉ – rybu ani jej časti nemožno použiť ako nástrahu.
+
+RS pri kontrole preverí:
+• či ide skutočne o slnečnicu pestrú,
+• či je použitá ako nástraha alebo jej časť,
+• spôsob lovu a typ vody,
+• prípadné ďalšie okolnosti zistenia.
+
+RS do záznamu uvedie zistený skutkový stav. Konečné právne posúdenie disciplinárneho prípadu vykonáva disciplinárna komisia.
+`
+},
+
+{
+  id: 'ryba_ostriez_zelenkavy',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Ostriež zelenkavý',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Ostriež zelenkavý patrí medzi druhy bez ustanovenej najmenšej lovnej miery.
+
+Pri evidencii privlastnených rýb bez ustanovenej lovnej miery sa používa zápis v kategórii „ostatné“ podľa pravidiel evidencie.
+
+Ak je ostriež použitý ako nástrahová rybka na kaprovej vode, musia byť splnené všeobecné podmienky použitia nástrahovej rybky.
+`,
+
+  advice: `
+„Pán rybár, ostriež zelenkavý patrí medzi ryby bez ustanovenej najmenšej lovnej miery. Ak bol ulovený a privlastnený, eviduje sa v kategórii „ostatné“. Pri použití ako nástrahovej rybky musia byť zároveň splnené podmienky jej použitia.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• zelenkasté až žltozelené telo,
+• výrazné tmavé zvislé pásy na bokoch,
+• dve chrbtové plutvy,
+• predná chrbtová plutva má výrazné tvrdé lúče,
+• brušné a análna plutva bývajú oranžové až červenkasté.
+
+ZÁPIS:
+OSTATNÉ
+
+AKO NÁSTRAHA:
+Možné iba pri splnení podmienok pre použitie nástrahovej rybky na danom type vody a v danom období.
+
+RS pri kontrole preverí:
+• druh ryby,
+• spôsob evidencie,
+• veľkosť nástrahovej rybky,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_jalec_hlavaty',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Jalec hlavatý',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 a § 14',
+
+  quote: `
+Jalec hlavatý patrí medzi druhy rýb s ustanovenou najmenšou lovnou mierou.
+
+Najmenšia lovná miera jalca hlavatého je 25 cm.
+
+Ak si loviaci jalca hlavatého privlastní, zapisuje ho do záznamu o úlovkoch samostatne podľa pravidiel evidencie.
+
+Stanovená najmenšia lovná miera sa vzťahuje aj na rybu použitú ako nástrahu pri love na kaprových vodách.
+`,
+
+  advice: `
+„Pán rybár, jalec hlavatý má ustanovenú najmenšiu lovnú mieru 25 cm. Ak ste si rybu privlastnili, musí byť riadne zapísaná samostatne v zázname o úlovkoch. Lovná miera sa vzťahuje aj na rybu použitú ako nástrahu na kaprovej vode.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• pretiahnuté, robustnejšie telo,
+• väčšia široká hlava,
+• veľké šupiny s tmavším lemovaním,
+• ústa sú pomerne široké a koncové,
+• plutvy môžu mať oranžový až červenkastý nádych.
+
+NAJMENŠIA LOVNÁ MIERA:
+25 cm
+
+ZÁPIS:
+SAMOSTATNE
+
+AKO NÁSTRAHA:
+Ak je jalec hlavatý použitý ako nástrahová ryba na kaprovej vode, musí spĺňať jeho ustanovenú najmenšiu lovnú mieru a ostatné podmienky použitia nástrahovej rybky.
+
+RS pri kontrole preverí:
+• správnu identifikáciu druhu,
+• dĺžku ryby,
+• spôsob evidencie,
+• obdobie a typ vody,
+• prípadné miestne obmedzenia.
+`
+},
+
+{
+  id: 'ryba_kapor_rybnicny',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Kapor rybničný',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z. a miestny rybársky poriadok',
+
+  paragraph: '§ 12 a § 14 vyhlášky č. 381/2018 Z. z.',
+
+  quote: `
+Kapor rybničný patrí medzi druhy rýb s ustanovenou najmenšou lovnou mierou.
+
+Najmenšia lovná miera kapra rybničného je 40 cm.
+
+Ak si loviaci kapra privlastní, zapisuje ho do záznamu o úlovkoch samostatne podľa pravidiel evidencie.
+
+Na konkrétnom rybárskom revíri môže miestny rybársky poriadok ustanoviť prísnejšiu alebo aj najväčšiu lovnú mieru.
+`,
+
+  advice: `
+„Pán rybár, kapor rybničný má ustanovenú najmenšiu lovnú mieru. Zároveň je potrebné dodržať aj pravidlá konkrétneho revíru. Ak je na revíri ustanovená maximálna lovná miera K70, kapra nad 70 cm si nemožno privlastniť a musí byť vrátený späť do vody.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• robustné, mierne pretiahnuté telo,
+• pri ústach má dva páry fúzikov,
+• sfarbenie býva olivové až hnedozlaté,
+• existuje šupinatá aj lysá forma kapra.
+
+NAJMENŠIA LOVNÁ MIERA:
+40 cm podľa všeobecnej úpravy.
+
+ZÁPIS:
+SAMOSTATNE
+
+POZOR – MIESTNY RYBÁRSKY PORIADOK:
+Na niektorých revíroch MsO SRZ Sereď platí maximálna lovná miera kapra 70 cm – K70.
+
+K70 znamená:
+kapra s dĺžkou nad 70 cm si loviaci nesmie privlastniť a musí ho bezodkladne vrátiť späť do vody.
+
+RS preto pri kontrole vždy preverí pravidlá konkrétneho revíru.
+
+RS pri kontrole preverí:
+• dĺžku ryby,
+• správny zápis privlastneného kapra,
+• pravidlá konkrétneho revíru,
+• prípadnú maximálnu lovnú mieru K70,
+• ďalšie obmedzenia podľa miestneho rybárskeho poriadku.
+`
+},
+
+{
+  id: 'ryba_stuka_severna',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Šťuka severná',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 10, § 12 a § 14',
+
+  quote: `
+Šťuka severná patrí medzi druhy rýb s ustanovenou najmenšou lovnou mierou.
+
+Najmenšia lovná miera šťuky severnej je 60 cm.
+
+Šťuka severná má ustanovenú individuálnu dobu ochrany.
+
+Ak si loviaci šťuku privlastní, zapisuje ju do záznamu o úlovkoch samostatne podľa pravidiel evidencie.
+`,
+
+  advice: `
+„Pán rybár, šťuka severná má ustanovenú najmenšiu lovnú mieru 60 cm a vzťahuje sa na ňu aj individuálna doba ochrany. Pri privlastnení musí byť ryba riadne zapísaná samostatne v zázname o úlovkoch.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• dlhé pretiahnuté telo,
+• veľká sploštená hlava,
+• široké ústa s množstvom ostrých zubov,
+• chrbtová plutva je posunutá výrazne dozadu,
+• zelenkasté až olivové telo so svetlejšími škvrnami.
+
+NAJMENŠIA LOVNÁ MIERA:
+60 cm
+
+ZÁPIS:
+SAMOSTATNE
+
+DOBA OCHRANY:
+Šťuka severná má ustanovenú individuálnu dobu ochrany. RS pri kontrole overí aktuálne obdobie a pravidlá konkrétneho revíru.
+
+AKO NÁSTRAHA:
+Ak by bola šťuka použitá ako nástrahová ryba na kaprovej vode, musí spĺňať ustanovenú lovnú mieru a ostatné podmienky použitia nástrahovej rybky.
+
+RS pri kontrole preverí:
+• správnu identifikáciu druhu,
+• dĺžku ryby,
+• individuálnu dobu ochrany,
+• správny zápis privlastnenej ryby,
+• pravidlá konkrétneho revíru.
+`
+},
+
+{
+  id: 'ryba_zubac_velkousty',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Zubáč veľkoústy',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 10, § 12 a § 14',
+
+  quote: `
+Zubáč veľkoústy patrí medzi druhy rýb s ustanovenou najmenšou lovnou mierou.
+
+Najmenšia lovná miera zubáča veľkoústeho je 50 cm.
+
+Zubáč veľkoústy má ustanovenú individuálnu dobu ochrany.
+
+Ak si loviaci zubáča privlastní, zapisuje ho do záznamu o úlovkoch samostatne podľa pravidiel evidencie.
+`,
+
+  advice: `
+„Pán rybár, zubáč veľkoústy má ustanovenú najmenšiu lovnú mieru 50 cm a vzťahuje sa naň aj individuálna doba ochrany. Pri privlastnení musí byť ryba riadne zapísaná samostatne v zázname o úlovkoch.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• pretiahnuté telo,
+• dve chrbtové plutvy,
+• predná chrbtová plutva má výrazné tvrdé lúče,
+• veľké ústa s výraznými zubami,
+• sivasté až zelenkasté telo s tmavšími priečnymi pásmi.
+
+NAJMENŠIA LOVNÁ MIERA:
+50 cm
+
+ZÁPIS:
+SAMOSTATNE
+
+DOBA OCHRANY:
+Zubáč veľkoústy má ustanovenú individuálnu dobu ochrany. RS pri kontrole overí aktuálne obdobie a pravidlá konkrétneho revíru.
+
+AKO NÁSTRAHA:
+Ak by bol zubáč použitý ako nástrahová ryba na kaprovej vode, musí spĺňať ustanovenú lovnú mieru a ostatné podmienky použitia nástrahovej rybky.
+
+RS pri kontrole preverí:
+• správnu identifikáciu druhu,
+• dĺžku ryby,
+• individuálnu dobu ochrany,
+• správny zápis privlastnenej ryby,
+• pravidlá konkrétneho revíru.
+`
+},
+
+{
+  id: 'ryba_sumec_velky',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Sumec veľký',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 10, § 12 a § 14',
+
+  quote: `
+Sumec veľký patrí medzi druhy rýb s ustanovenou najmenšou lovnou mierou.
+
+Najmenšia lovná miera sumca veľkého je 70 cm.
+
+Sumec veľký má ustanovenú individuálnu dobu ochrany.
+
+Ak si loviaci sumca privlastní, zapisuje ho do záznamu o úlovkoch samostatne podľa pravidiel evidencie.
+`,
+
+  advice: `
+„Pán rybár, sumec veľký má ustanovenú najmenšiu lovnú mieru 70 cm a vzťahuje sa naň aj individuálna doba ochrany. Pri privlastnení musí byť ryba riadne zapísaná samostatne v zázname o úlovkoch.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• dlhé telo bez šupín,
+• široká sploštená hlava,
+• veľmi široké ústa,
+• charakteristické dlhé fúzy pri hornej čeľusti a kratšie fúziky na spodnej čeľusti,
+• dlhá análna plutva,
+• tmavé až olivovohnedé nepravidelné sfarbenie.
+
+NAJMENŠIA LOVNÁ MIERA:
+70 cm
+
+ZÁPIS:
+SAMOSTATNE
+
+DOBA OCHRANY:
+Sumec veľký má ustanovenú individuálnu dobu ochrany. RS pri kontrole overí aktuálne obdobie a pravidlá konkrétneho revíru.
+
+AKO NÁSTRAHA:
+Ak by bol sumec použitý ako nástrahová ryba na kaprovej vode, musí spĺňať ustanovenú lovnú mieru a ostatné podmienky použitia nástrahovej rybky.
+
+RS pri kontrole preverí:
+• správnu identifikáciu druhu,
+• dĺžku ryby,
+• individuálnu dobu ochrany,
+• správny zápis privlastnenej ryby,
+• pravidlá konkrétneho revíru.
+`
+},
+
+{
     id: 'porusenie_denneho_casu_lovu',
 
     category: 'ulovok_sposob_lovu',
@@ -5231,7 +6328,7 @@ RS do záznamu uvedie zistený skutkový stav. Konečné právne posúdenie disc
 
     category: 'ulovok_sposob_lovu',
 
-    title: 'Nástrahová rybka – evidencia a použitie',
+    title: 'Nezapísaná nástrahová rybka',
 
     icon: '🐠',
 
@@ -5240,7 +6337,7 @@ RS do záznamu uvedie zistený skutkový stav. Konečné právne posúdenie disc
     paragraph: '§ 14 ods. 9 až 11',
 
     quote: `
-Privlastnené nástrahové rybky sa zapisujú do záznamu o úlovkoch spôsobom ustanoveným vo vyhláške podľa druhu ryby.
+„Pán rybár, ak ste si nástrahovú rybku ulovili a privlastnili na tomto revíri, musí byť riadne zaevidovaná v zázname o úlovkoch podľa druhu ryby.“
 `,
 
     advice: `
@@ -5248,26 +6345,17 @@ Privlastnené nástrahové rybky sa zapisujú do záznamu o úlovkoch spôsobom 
 `,
 
 note: `
-RS pri kontrole rozlišuje dve veci:
+RS pri kontrole overí:
 
-• EVIDENCIA PRIVLASTNENEJ RYBKY
-Ak si loviaci rybku ulovil a privlastnil, jej zápis do záznamu sa riadi § 14 vyhlášky podľa konkrétneho druhu ryby.
+• druh nástrahovej rybky,
+• či bola rybka loviacim ulovená a privlastnená,
+• či je správne zaevidovaná v zázname o úlovkoch.
 
-• POUŽITIE RYBKY AKO NÁSTRAHY
-Samotné použitie živej alebo mŕtvej rybky ako nástrahy sa posudzuje podľa typu rybárskej vody, spôsobu lovu a pravidiel konkrétneho revíru.
+Ryba so stanovenou lovnou mierou → zapisuje sa samostatne podľa pravidiel evidencie.
 
-Na pstruhových vodách platia prísnejšie obmedzenia použitia živej alebo mŕtvej rybky ako nástrahy.
+Ryby bez stanovenej lovnej miery → evidujú sa spôsobom určeným pre kategóriu „ostatné“.
 
-Na revíroch s režimom Chyť a pusť je potrebné overiť osobitné pravidlá konkrétneho revíru.
-
-RS preto najskôr overí:
-
-• druh ryby,
-• či bola rybka loviacim privlastnená,
-• či je správne zapísaná,
-• typ rybárskej vody,
-• spôsob, akým je rybka použitá,
-• miestny rybársky poriadok konkrétneho revíru.
+Ak je problém v samotnom použití nástrahovej rybky, RS použije kartu „Nástrahová rybka“, kde sú uvedené podmienky jej použitia.
 
 RS do záznamu uvedie zistený skutkový stav. Konečné právne posúdenie disciplinárneho prípadu vykonáva disciplinárna komisia.
 `
@@ -7101,6 +8189,23 @@ function openAsistentMethod(methodId) {
 
     <h3>${item.icon} ${item.title}</h3>
 
+${item.image ? `
+<div style="margin:12px 0 18px 0;text-align:center;">
+  <img
+    src="${item.image}"
+    alt="${item.title}"
+    style="
+      max-width:320px;
+      width:100%;
+      height:auto;
+      border-radius:14px;
+      border:1px solid #d1d5db;
+      background:white;
+    "
+  >
+</div>
+` : ''}
+
 <div class="note" style="margin-bottom:18px;">
 
 <h4>⚖️ Právny základ</h4>
@@ -7522,6 +8627,18 @@ const rows = exportChecks.map(item => {
 
 const totalKontroly = rows.length;
 
+const bezPorusenia = exportChecks.filter(
+  item => (item.result || 'Bez porušenia') === 'Bez porušenia'
+).length;
+
+const poucenieRybara = exportChecks.filter(
+  item => item.result === 'Poučenie rybára'
+).length;
+
+const podozrenie = exportChecks.filter(
+  item => item.result === 'Podozrenie'
+).length;
+
 const priestupky = exportChecks.filter(
   item => item.result === 'Priestupok'
 ).length;
@@ -7530,7 +8647,11 @@ const pytliactvo = exportChecks.filter(
   item => item.result === 'Pytliactvo'
 ).length;
 
-const bezPorusenia = totalKontroly - priestupky - pytliactvo;
+const zistenia =
+  poucenieRybara +
+  podozrenie +
+  priestupky +
+  pytliactvo;
 
 const uspesnost = totalKontroly > 0
   ? ((bezPorusenia / totalKontroly) * 100).toFixed(1)
@@ -7811,9 +8932,13 @@ const celkovoHodinRS =
 
 <p><strong>Počet kontrol:</strong> ${totalKontroly}</p>
 <p><strong>Odslúžené hodiny RS:</strong> ${celkovoHodinRS} h</p>
+<p><strong>Zistenia:</strong> ${zistenia}</p>
 <p><strong>Bez porušenia:</strong> ${bezPorusenia}</p>
+<p><strong>Poučenie rybára:</strong> ${poucenieRybara}</p>
+<p><strong>Podozrenie:</strong> ${podozrenie}</p>
 <p><strong>Priestupky:</strong> ${priestupky}</p>
 <p><strong>Pytliactvo:</strong> ${pytliactvo}</p>
+
 <h3>Kontroly podľa revírov</h3>
 
 <table border="1">
@@ -9956,58 +11081,119 @@ async function init() {
   await loadMembersForLogin();
 }
 
+const EMERGENCY_RS_MEMBERS = [
+  { id: 1,  name: 'Jaroslav Antal',    cislo_odznaku: 'GA-0075', badge: 'RS-GA-0075', role: 'Clen RS', status: 'Aktívny' },
+  { id: 2,  name: 'Lukas Bojnansky',   cislo_odznaku: 'GA-0021', badge: 'RS-GA-0021', role: 'Clen RS', status: 'Aktívny' },
+  { id: 3,  name: 'Andrej Frano',      cislo_odznaku: 'GA-0056', badge: 'RS-GA-0056', role: 'Clen RS', status: 'Aktívny' },
+  { id: 4,  name: 'Stanislav Rojka',   cislo_odznaku: 'GA-0074', badge: 'RS-GA-0074', role: 'Clen RS', status: 'Aktívny' },
+  { id: 5,  name: 'Alexander Greman',  cislo_odznaku: 'GA-0057', badge: 'RS-GA-0057', role: 'Clen RS', status: 'Aktívny' },
+  { id: 6,  name: 'Marek Cicak',       cislo_odznaku: 'GA-0052', badge: 'RS-GA-0052', role: 'Clen RS', status: 'Aktívny' },
+  { id: 7,  name: 'Peter Strapac',     cislo_odznaku: 'GA-0068', badge: 'RS-GA-0068', role: 'Clen RS', status: 'Aktívny' },
+  { id: 8,  name: 'Marian Kohut',      cislo_odznaku: 'GA-0051', badge: 'RS-GA-0051', role: 'Clen RS', status: 'Aktívny' },
+  { id: 9,  name: 'Lukas Biro',        cislo_odznaku: 'GA-0059', badge: 'RS-GA-0059', role: 'Clen RS', status: 'Aktívny' },
+  { id: 13, name: 'Peter Zbojek',      cislo_odznaku: 'GA-0060', badge: 'RS-GA-0060', role: 'Clen RS', status: 'Aktívny' },
+  { id: 18, name: 'Marian Kuracina',   cislo_odznaku: 'GA-0062', badge: 'RS-GA-0062', role: 'Clen RS', status: 'Aktívny' },
+  { id: 19, name: 'Peter Pikna',       cislo_odznaku: 'GA-0053', badge: 'RS-GA-0053', role: 'Clen RS', status: 'Aktívny' },
+  { id: 20, name: 'Milan Toth',        cislo_odznaku: 'GA-0054', badge: 'RS-GA-0054', role: 'Clen RS', status: 'Aktívny' },
+  { id: 21, name: 'Tomas Svrbicky',    cislo_odznaku: 'GA-0070', badge: 'RS-GA-0070', role: 'Clen RS', status: 'Aktívny' },
+  { id: 22, name: 'Ing.Daniel Tulala', cislo_odznaku: 'GA-0065', badge: 'RS-GA-0065', role: 'Clen RS', status: 'Aktívny' },
+  { id: 23, name: 'Lukas Erodogh',     cislo_odznaku: 'GA-0013', badge: 'RS-GA-0013', role: 'Clen RS', status: 'Aktívny' }
+];
+
+
 async function loadMembersForLogin() {
-  const { data: membersData, error: membersError } = await db
-    .from('members')
-    .select('*')
-    .order('name', { ascending: true });
+  try {
+    const { data: membersData, error: membersError } = await db
+      .from('members')
+      .select('*')
+      .order('name', { ascending: true });
 
-  if (membersError) {
-    console.error('Chyba pri načítaní členov RS pre login:', membersError);
-    alert('Nepodarilo sa načítať členov RS pre prihlásenie.');
-    return;
+    if (membersError) {
+      throw membersError;
+    }
+
+    appState.data.members = membersData || [];
+    appState.offlineMode = false;
+
+    // Uložíme posledný funkčný snapshot pre ďalší výpadok.
+    try {
+      localStorage.setItem(
+        'rs_app_members_cache',
+        JSON.stringify(appState.data.members)
+      );
+    } catch (cacheError) {
+      console.warn('Members cache sa nepodarilo uložiť:', cacheError);
+    }
+
+    console.log(
+      'Členovia RS pre login načítaní:',
+      appState.data.members.length
+    );
+
+  } catch (error) {
+    console.warn(
+      'Supabase members nedostupní – aktivujem núdzový režim:',
+      error
+    );
+
+    let cachedMembers = [];
+
+    try {
+      cachedMembers = JSON.parse(
+        localStorage.getItem('rs_app_members_cache') || '[]'
+      );
+    } catch (cacheError) {
+      cachedMembers = [];
+    }
+
+    if (Array.isArray(cachedMembers) && cachedMembers.length > 0) {
+      appState.data.members = cachedMembers;
+    } else {
+      appState.data.members = EMERGENCY_RS_MEMBERS;
+    }
+
+    appState.offlineMode = true;
+
+    console.warn(
+      'RS App beží v núdzovom režime. Počet členov:',
+      appState.data.members.length
+    );
   }
-
-  appState.data.members = membersData || [];
-
-  console.log('Členovia RS pre login načítaní:', appState.data.members.length);
 }
 
     // init();
 async function loadKontroly() {
+  try {
     const datumOd = new Date();
-datumOd.setDate(datumOd.getDate() - 30);
+    datumOd.setDate(datumOd.getDate() - 30);
 
-const { data: checksData, error: checksError } = await db
-  .from('checks')
-  .select('*')
-  .gte('created_at', datumOd.toISOString())
-  .order('created_at', { ascending: false });
+    const { data: checksData, error: checksError } = await db
+      .from('checks')
+      .select('*')
+      .gte('created_at', datumOd.toISOString())
+      .order('created_at', { ascending: false });
 
     if (checksError) {
-        console.error('Chyba pri nacitani kontrol:', checksError);
-        throw checksError;
+      throw checksError;
     }
 
     const { data: membersData, error: membersError } = await db
-        .from('members')
-        .select('*')
-        .order('name', { ascending: true });
+      .from('members')
+      .select('*')
+      .order('name', { ascending: true });
 
     if (membersError) {
-        console.error('Chyba pri nacitani clenov RS:', membersError);
-        throw membersError;
+      throw membersError;
     }
 
-const { data: fishersData, error: fishersError } = await db
-  .from('fishers')
-  .select('*')
-  .order('name', { ascending: true });
+    const { data: fishersData, error: fishersError } = await db
+      .from('fishers')
+      .select('*')
+      .order('name', { ascending: true });
 
-if (fishersError) {
-  console.error('Chyba pri nacitani rybarov:', fishersError);
-  throw fishersError;
-}
+    if (fishersError) {
+      throw fishersError;
+    }
 
     console.log('Nacitane kontroly:', checksData);
     console.log('Nacitani rybari:', fishersData);
@@ -10015,58 +11201,157 @@ if (fishersError) {
 
     appState.data.checks = checksData || [];
     appState.data.members = membersData || [];
+
     appState.data.fishers = (fishersData || []).map(f => ({
-  id: f.id,
-  name: f.name,
-  memberId: f.member_id || '',
-  permitNumber: f.permit_number || '',
-  validFrom: f.permit_valid_from || '',
-  validTo: f.permit_valid_to || '',
-  localPermit: !!f.local_permit,
-  unionPermit: !!f.union_permit,
-  district: f.organizacia || '',
-  status: f.stav || 'Aktívny',
-  note: f.poznamka || '',
-  createdAt: f.created_at || '',
-  updatedAt: f.updated_at || ''
-}));
+      id: f.id,
+      name: f.name,
+      memberId: f.member_id || '',
+      permitNumber: f.permit_number || '',
+      validFrom: f.permit_valid_from || '',
+      validTo: f.permit_valid_to || '',
+      localPermit: !!f.local_permit,
+      unionPermit: !!f.union_permit,
+      district: f.organizacia || '',
+      status: f.stav || 'Aktívny',
+      note: f.poznamka || '',
+      createdAt: f.created_at || '',
+      updatedAt: f.updated_at || ''
+    }));
 
-    // populateLoginMembers();
-    renderAll();
-  }
+    appState.offlineMode = false;
 
-async function loadStatsChecksLite() {
-  const { data, error } = await db
-    .from('checks')
-    .select(`
-      id,
-      created_at,
-      check_date,
-      fisher_name,
-      fisher_id_no,
-      location,
-      result,
-      member_name,
-      clen_rs_1,
-      clen_rs_2
-    `)
-    .order('created_at', { ascending: false });
+    try {
+      localStorage.setItem(
+        'rs_app_checks_cache',
+        JSON.stringify(appState.data.checks)
+      );
 
-  if (error) {
-    console.error(
-      'Chyba pri načítaní ľahkých dát pre štatistiky:',
+      localStorage.setItem(
+        'rs_app_fishers_cache',
+        JSON.stringify(appState.data.fishers)
+      );
+
+      localStorage.setItem(
+        'rs_app_members_cache',
+        JSON.stringify(appState.data.members)
+      );
+    } catch (cacheError) {
+      console.warn('Cache dát sa nepodarilo uložiť:', cacheError);
+    }
+
+  } catch (error) {
+    console.warn(
+      'Supabase nedostupný – načítavam lokálnu cache:',
       error
     );
 
-    throw error;
+    appState.offlineMode = true;
+
+    try {
+      const cachedChecks = JSON.parse(
+        localStorage.getItem('rs_app_checks_cache') || '[]'
+      );
+
+      const cachedFishers = JSON.parse(
+        localStorage.getItem('rs_app_fishers_cache') || '[]'
+      );
+
+      const cachedMembers = JSON.parse(
+        localStorage.getItem('rs_app_members_cache') || '[]'
+      );
+
+      if (Array.isArray(cachedChecks)) {
+        appState.data.checks = cachedChecks;
+      }
+
+      if (Array.isArray(cachedFishers)) {
+        appState.data.fishers = cachedFishers;
+      }
+
+      if (Array.isArray(cachedMembers) && cachedMembers.length > 0) {
+        appState.data.members = cachedMembers;
+      } else if (
+        (!appState.data.members || appState.data.members.length === 0) &&
+        typeof EMERGENCY_RS_MEMBERS !== 'undefined'
+      ) {
+        appState.data.members = EMERGENCY_RS_MEMBERS;
+      }
+
+    } catch (cacheError) {
+      console.warn(
+        'Lokálna cache dát sa nepodarila načítať:',
+        cacheError
+      );
+    }
   }
 
-  appState.data.statsChecks = data || [];
+  renderAll();
+}
 
-  console.log(
-    'Štatistiky – ľahké dáta načítané:',
-    appState.data.statsChecks.length
-  );
+async function loadStatsChecksLite() {
+  try {
+    const { data, error } = await db
+      .from('checks')
+      .select(`
+        id,
+        created_at,
+        check_date,
+        fisher_name,
+        fisher_id_no,
+        location,
+        result,
+        member_name,
+        clen_rs_1,
+        clen_rs_2
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    appState.data.statsChecks = data || [];
+
+    try {
+      localStorage.setItem(
+        'rs_app_stats_checks_cache',
+        JSON.stringify(appState.data.statsChecks)
+      );
+    } catch (cacheError) {
+      console.warn(
+        'Cache štatistík sa nepodarilo uložiť:',
+        cacheError
+      );
+    }
+
+    console.log(
+      'Štatistiky – živé dáta načítané:',
+      appState.data.statsChecks.length
+    );
+
+  } catch (error) {
+    console.warn(
+      'Štatistiky – Supabase nedostupný, používam cache:',
+      error
+    );
+
+    try {
+      const cached = JSON.parse(
+        localStorage.getItem('rs_app_stats_checks_cache') || '[]'
+      );
+
+      if (Array.isArray(cached)) {
+        appState.data.statsChecks = cached;
+      }
+    } catch (cacheError) {
+      console.warn(
+        'Cache štatistík sa nepodarilo načítať:',
+        cacheError
+      );
+
+      appState.data.statsChecks = [];
+    }
+  }
 }
 
 async function loadStatsChecks() {
@@ -10198,29 +11483,60 @@ async function fixOldServiceCounts() {
   alert('Spätný prepočet hotový. Opravené služby: ' + opravene);
 }
 
-  async function loadSluzbyReviry() {
-  const { data, error } = await db
-    .from('sluzby_reviry')
-    .select('*')
-    .order('created_at', { ascending: false });
+async function loadSluzbyReviry() {
+  try {
+    const { data, error } = await db
+      .from('sluzby_reviry')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Chyba pri načítaní služieb revírov:', error);
-    throw error;
-  }
+    if (error) {
+      throw error;
+    }
 
-  appState.data.sluzbyReviry = data || [];
-  console.log('Nacítané služby revírov:', appState.data.sluzbyReviry);
-}
+    appState.data.sluzbyReviry = data || [];
 
-  </script>
+    try {
+      localStorage.setItem(
+        'rs_app_sluzby_cache',
+        JSON.stringify(appState.data.sluzbyReviry)
+      );
+    } catch (cacheError) {
+      console.warn(
+        'Cache služieb sa nepodarilo uložiť:',
+        cacheError
+      );
+    }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const db = window.supabase.createClient(
-      "https://jcxdlsoxgluuxifhzxxy.supabase.co",
-      "sb_publishable_mmO_V9BEccIq-tx2Er2ifQ_Fn7hwQg_"
+    console.log(
+      'Služby revírov – živé dáta načítané:',
+      appState.data.sluzbyReviry.length
     );
+
+  } catch (error) {
+    console.warn(
+      'Služby revírov – Supabase nedostupný, používam cache:',
+      error
+    );
+
+    try {
+      const cached = JSON.parse(
+        localStorage.getItem('rs_app_sluzby_cache') || '[]'
+      );
+
+      if (Array.isArray(cached)) {
+        appState.data.sluzbyReviry = cached;
+      }
+    } catch (cacheError) {
+      console.warn(
+        'Cache služieb sa nepodarilo načítať:',
+        cacheError
+      );
+
+      appState.data.sluzbyReviry = [];
+    }
+  }
+}
 
 init();
 
@@ -11100,48 +12416,77 @@ function removeEditPhoto(index) {
 
 async function uploadEditedCheckPhotos(checkId, files) {
   const uploadedPhotos = [];
+  const uploadedPaths = [];
 
-  for (const file of files) {
-    const uploadFile = await resizeImageForUpload(file);
+  try {
+    for (const file of files) {
+      const uploadFile = await resizeImageForUpload(file);
 
-    const fileName =
-      Date.now() +
-      '_' +
-      Math.random().toString(36).substring(2) +
-      '.jpg';
+      const fileName =
+        Date.now() +
+        '_' +
+        Math.random().toString(36).substring(2) +
+        '.jpg';
 
-    const filePath =
-      'checks/' +
-      checkId +
-      '/' +
-      fileName;
+      const filePath =
+        'checks/' +
+        checkId +
+        '/' +
+        fileName;
 
-    const { error } = await db.storage
-      .from('check-photos')
-      .upload(filePath, uploadFile);
+      const { error } = await db.storage
+        .from('check-photos')
+        .upload(filePath, uploadFile);
 
-    if (error) {
-      console.error(
-        'Chyba pri nahrávaní novej fotky pri úprave kontroly:',
-        error
-      );
+      if (error) {
+        console.error(
+          'Chyba pri nahrávaní novej fotky pri úprave kontroly:',
+          error
+        );
 
-      throw error;
+        throw error;
+      }
+
+      uploadedPaths.push(filePath);
+
+      const { data } = db.storage
+        .from('check-photos')
+        .getPublicUrl(filePath);
+
+      uploadedPhotos.push({
+        id: uid('photo'),
+        name: uploadFile.name,
+        dataUrl: data.publicUrl,
+        path: filePath
+      });
     }
 
-    const { data } = db.storage
-      .from('check-photos')
-      .getPublicUrl(filePath);
+    return uploadedPhotos;
 
-    uploadedPhotos.push({
-      id: uid('photo'),
-      name: uploadFile.name,
-      dataUrl: data.publicUrl,
-      path: filePath
-    });
+  } catch (error) {
+
+    if (uploadedPaths.length > 0) {
+      try {
+        const { error: cleanupError } = await db.storage
+          .from('check-photos')
+          .remove(uploadedPaths);
+
+        if (cleanupError) {
+          console.error(
+            'Cleanup nových fotiek po chybe uploadu zlyhal:',
+            cleanupError
+          );
+        }
+      } catch (cleanupError) {
+        console.error(
+          'Cleanup nových fotiek po chybe uploadu zlyhal:',
+          cleanupError
+        );
+      }
+    }
+
+    throw error;
   }
-
-  return uploadedPhotos;
 }
 
 async function saveEditedCheck() {
@@ -11216,7 +12561,22 @@ if (photoInput && photoInput.files && photoInput.files.length > 0) {
   }
 }
 
+const newPhotoPaths = newPhotos
+  .map(photo => photo && photo.path)
+  .filter(Boolean);
+
   const removedPhotos = window.editCheckRemovedPhotos || [];
+
+const removedPhotoPaths = removedPhotos
+  .map(index => existingPhotos[index])
+  .map(photo => {
+    if (photo && typeof photo === 'object' && photo.path) {
+      return photo.path;
+    }
+
+    return null;
+  })
+  .filter(Boolean);
 
 const keptPhotos = existingPhotos.filter((photo, index) =>
   !removedPhotos.includes(index)
@@ -11235,11 +12595,38 @@ const allPhotos = keptPhotos.concat(newPhotos);
 })
     .eq('id', id);
 
-  if (error) {
-    console.error('Chyba pri úprave kontroly:', error);
-    alert('Kontrolu sa nepodarilo upraviť.');
-    return;
+ if (error) {
+  console.error('Chyba pri úprave kontroly:', error);
+
+  if (newPhotoPaths.length > 0) {
+    const { error: cleanupError } = await db.storage
+      .from('check-photos')
+      .remove(newPhotoPaths);
+
+    if (cleanupError) {
+      console.error(
+        'Nepodarilo sa odstrániť nové nepoužité fotografie:',
+        cleanupError
+      );
+    }
   }
+
+  alert('Kontrolu sa nepodarilo upraviť.');
+  return;
+}
+
+if (removedPhotoPaths.length > 0) {
+  const { error: removeError } = await db.storage
+    .from('check-photos')
+    .remove(removedPhotoPaths);
+
+  if (removeError) {
+    console.error(
+      'Kontrola bola upravená, ale staré fotografie sa nepodarilo odstrániť zo Storage:',
+      removeError
+    );
+  }
+}
 
 const localItem = (appState.data.checks || []).find(
   k => String(k.id) === String(id)
@@ -11256,6 +12643,8 @@ if (localItem) {
   if (photoInput) {
     photoInput.value = '';
   }
+
+window.editCheckRemovedPhotos = [];
 
   renderChecks();
   closeEditCheckModal();
