@@ -862,6 +862,9 @@
 }
 
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 <body>
 
@@ -2130,6 +2133,18 @@
   </main>
 
   <script>
+
+const SUPABASE_URL =
+  'https://jcxdlsoxgluuxifhzxxy.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_mmO_V9BEccIq-tx2Er2ifQ_Fn7hwQg_';
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
     const STORAGE_KEY = 'rs_app_data_v2';
     const ACTIVE_REVIR_KEY = 'rs_active_revir';
 
@@ -2274,6 +2289,7 @@ const appState = {
   currentUserId: null,
   activeRevir: '',
   activeRevirStart: '',
+  activeServiceLocalId: '',
   kontrolyLoaded: false,
 
   data: {
@@ -2284,6 +2300,1107 @@ const appState = {
     changeLog: []
   }
 };
+
+// =====================================================
+// RS APP – LOCAL OFFLINE CORE / IndexedDB
+// FÁZA 1 – izolovaný základ
+// Zatiaľ NIE JE napojený na existujúcu produkčnú logiku.
+// =====================================================
+
+const RS_LOCAL_DB_NAME = 'rs_app_local_core';
+const RS_LOCAL_DB_VERSION = 1;
+
+const RS_LOCAL_STORES = {
+  services: 'services',
+  checks: 'checks',
+  photos: 'photos',
+  meta: 'meta'
+};
+
+let rsLocalDbPromise = null;
+
+function openRsLocalDb() {
+  if (rsLocalDbPromise) {
+    return rsLocalDbPromise;
+  }
+
+  rsLocalDbPromise = new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(
+        new Error('Tento prehliadač nepodporuje IndexedDB.')
+      );
+      return;
+    }
+
+    const request = indexedDB.open(
+      RS_LOCAL_DB_NAME,
+      RS_LOCAL_DB_VERSION
+    );
+
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains(RS_LOCAL_STORES.services)) {
+        const store = db.createObjectStore(
+          RS_LOCAL_STORES.services,
+          { keyPath: 'local_id' }
+        );
+
+        store.createIndex(
+          'sync_status',
+          'sync_status',
+          { unique: false }
+        );
+      }
+
+      if (!db.objectStoreNames.contains(RS_LOCAL_STORES.checks)) {
+        const store = db.createObjectStore(
+          RS_LOCAL_STORES.checks,
+          { keyPath: 'local_id' }
+        );
+
+        store.createIndex(
+          'service_local_id',
+          'service_local_id',
+          { unique: false }
+        );
+
+        store.createIndex(
+          'sync_status',
+          'sync_status',
+          { unique: false }
+        );
+      }
+
+      if (!db.objectStoreNames.contains(RS_LOCAL_STORES.photos)) {
+        const store = db.createObjectStore(
+          RS_LOCAL_STORES.photos,
+          { keyPath: 'local_id' }
+        );
+
+        store.createIndex(
+          'check_local_id',
+          'check_local_id',
+          { unique: false }
+        );
+
+        store.createIndex(
+          'sync_status',
+          'sync_status',
+          { unique: false }
+        );
+      }
+
+      if (!db.objectStoreNames.contains(RS_LOCAL_STORES.meta)) {
+        db.createObjectStore(
+          RS_LOCAL_STORES.meta,
+          { keyPath: 'key' }
+        );
+      }
+    };
+
+    request.onsuccess = event => {
+      const db = event.target.result;
+
+      db.onversionchange = () => {
+        db.close();
+        rsLocalDbPromise = null;
+      };
+
+      resolve(db);
+    };
+
+    request.onerror = () => {
+      rsLocalDbPromise = null;
+
+      reject(
+        request.error ||
+        new Error('IndexedDB sa nepodarilo otvoriť.')
+      );
+    };
+
+    request.onblocked = () => {
+      console.warn(
+        'RS Local DB – otvorenie databázy je blokované inou otvorenou verziou aplikácie.'
+      );
+    };
+  });
+
+  return rsLocalDbPromise;
+}
+
+
+// -----------------------------------------------------
+// GENERÁTOR STABILNÝCH LOKÁLNYCH ID
+// Použijeme neskôr pre službu, kontrolu a fotografiu.
+// -----------------------------------------------------
+
+function createLocalRecordId(prefix) {
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return prefix + '_' + window.crypto.randomUUID();
+  }
+
+  return (
+    prefix +
+    '_' +
+    Date.now() +
+    '_' +
+    Math.random().toString(36).substring(2, 12)
+  );
+}
+
+
+// -----------------------------------------------------
+// ZÁKLADNÉ INDEXEDDB OPERÁCIE
+// Zatiaľ ich existujúca aplikácia NEVOLÁ.
+// -----------------------------------------------------
+
+async function rsLocalPut(storeName, value) {
+  const db = await openRsLocalDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      storeName,
+      'readwrite'
+    );
+
+    const store = transaction.objectStore(storeName);
+
+    store.put(value);
+
+    transaction.oncomplete = () => {
+      resolve(value);
+    };
+
+    transaction.onerror = () => {
+      reject(
+        transaction.error ||
+        new Error(
+          'Lokálne uloženie zlyhalo: ' + storeName
+        )
+      );
+    };
+
+    transaction.onabort = () => {
+      reject(
+        transaction.error ||
+        new Error(
+          'Lokálne uloženie bolo prerušené: ' +
+          storeName
+        )
+      );
+    };
+  });
+}
+
+
+async function rsLocalGet(storeName, key) {
+  const db = await openRsLocalDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      storeName,
+      'readonly'
+    );
+
+    const store = transaction.objectStore(storeName);
+    const request = store.get(key);
+
+    request.onsuccess = () => {
+      resolve(request.result || null);
+    };
+
+    request.onerror = () => {
+      reject(
+        request.error ||
+        new Error(
+          'Lokálne načítanie zlyhalo: ' +
+          storeName
+        )
+      );
+    };
+  });
+}
+
+
+async function rsLocalGetAll(storeName) {
+  const db = await openRsLocalDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      storeName,
+      'readonly'
+    );
+
+    const store = transaction.objectStore(storeName);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      resolve(request.result || []);
+    };
+
+    request.onerror = () => {
+      reject(
+        request.error ||
+        new Error(
+          'Lokálne načítanie zoznamu zlyhalo: ' +
+          storeName
+        )
+      );
+    };
+  });
+}
+
+
+async function rsLocalDelete(storeName, key) {
+  const db = await openRsLocalDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      storeName,
+      'readwrite'
+    );
+
+    const store = transaction.objectStore(storeName);
+
+    store.delete(key);
+
+    transaction.oncomplete = () => {
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      reject(
+        transaction.error ||
+        new Error(
+          'Lokálne mazanie zlyhalo: ' +
+          storeName
+        )
+      );
+    };
+  });
+}
+
+
+// -----------------------------------------------------
+// DIAGNOSTIKA
+// Bez zápisu produkčných dát.
+// -----------------------------------------------------
+
+async function testRsLocalDb() {
+  try {
+    const db = await openRsLocalDb();
+
+    console.log(
+      'RS Local DB pripravená:',
+      db.name,
+      'version:',
+      db.version,
+      'stores:',
+      Array.from(db.objectStoreNames)
+    );
+
+    return true;
+
+  } catch (error) {
+    console.error(
+      'RS Local DB test zlyhal:',
+      error
+    );
+
+    return false;
+  }
+}
+
+// =====================================================
+// LEGACY OFFLINE DATA MIGRATION
+// localStorage -> IndexedDB
+//
+// Bezpečnostné pravidlá:
+// - pôvodné localStorage dáta sa NEMAŽÚ
+// - nič sa neposiela na Supabase
+// - legacy kontroly sa umelo nespájajú so službou
+// - pôvodné offline_id zostáva zachované
+// =====================================================
+
+async function migrateLegacyOfflineDataToIndexedDb() {
+  const CHECKS_KEY = 'rs_app_offline_checks';
+  const SERVICES_KEY = 'rs_app_offline_services';
+
+  let legacyChecks = [];
+  let legacyServices = [];
+
+  try {
+    legacyChecks = JSON.parse(
+      localStorage.getItem(CHECKS_KEY) || '[]'
+    );
+
+    legacyServices = JSON.parse(
+      localStorage.getItem(SERVICES_KEY) || '[]'
+    );
+  } catch (error) {
+    console.error(
+      'LEGACY MIGRATION – nepodarilo sa načítať localStorage:',
+      error
+    );
+
+    throw error;
+  }
+
+  if (!Array.isArray(legacyChecks)) {
+    throw new Error(
+      'Legacy offline checks nemajú očakávaný formát poľa.'
+    );
+  }
+
+  if (!Array.isArray(legacyServices)) {
+    throw new Error(
+      'Legacy offline services nemajú očakávaný formát poľa.'
+    );
+  }
+
+  let migratedChecks = 0;
+  let migratedServices = 0;
+
+  // ---------------------------------------------------
+  // KONTROLY
+  // ---------------------------------------------------
+
+  for (const check of legacyChecks) {
+    if (!check || typeof check !== 'object') {
+      continue;
+    }
+
+    const originalOfflineId =
+      check.offline_id ||
+      createLocalRecordId('legacy_check');
+
+    const localId =
+      'legacy_check_' + originalOfflineId;
+
+    const existing = await rsLocalGet(
+      RS_LOCAL_STORES.checks,
+      localId
+    );
+
+    if (existing) {
+      continue;
+    }
+
+    const migratedCheck = {
+      ...check,
+
+      local_id: localId,
+
+      legacy_offline_id:
+        check.offline_id || null,
+
+      service_local_id: null,
+
+      sync_status: 'LEGACY_PENDING_SYNC',
+
+      migrated_from: 'localStorage',
+
+      migrated_at: new Date().toISOString()
+    };
+
+    await rsLocalPut(
+      RS_LOCAL_STORES.checks,
+      migratedCheck
+    );
+
+    migratedChecks++;
+  }
+
+  // ---------------------------------------------------
+  // SLUŽBY
+  // ---------------------------------------------------
+
+  for (const service of legacyServices) {
+    if (!service || typeof service !== 'object') {
+      continue;
+    }
+
+    const originalOfflineId =
+      service.offline_id ||
+      createLocalRecordId('legacy_service');
+
+    const localId =
+      'legacy_service_' + originalOfflineId;
+
+    const existing = await rsLocalGet(
+      RS_LOCAL_STORES.services,
+      localId
+    );
+
+    if (existing) {
+      continue;
+    }
+
+    const migratedService = {
+      ...service,
+
+      local_id: localId,
+
+      legacy_offline_id:
+        service.offline_id || null,
+
+      sync_status: 'LEGACY_PENDING_SYNC',
+
+      migrated_from: 'localStorage',
+
+      migrated_at: new Date().toISOString()
+    };
+
+    await rsLocalPut(
+      RS_LOCAL_STORES.services,
+      migratedService
+    );
+
+    migratedServices++;
+  }
+
+  const result = {
+    source_checks: legacyChecks.length,
+    source_services: legacyServices.length,
+
+    migrated_checks: migratedChecks,
+    migrated_services: migratedServices,
+
+    original_localStorage_preserved: true
+  };
+
+  console.log(
+    'RS APP – LEGACY MIGRATION COMPLETE:',
+    result
+  );
+
+  return result;
+}
+
+// =====================================================
+// ACTIVE SERVICE – zápis rozpracovanej služby do IndexedDB
+// Zatiaľ sa volá iba ručne pri teste.
+// =====================================================
+
+async function saveCurrentActiveServiceToIndexedDb() {
+  if (
+    !appState.activeRevir ||
+    !appState.activeRevirStart ||
+    !appState.activeServiceLocalId
+  ) {
+    console.warn(
+      'ACTIVE SERVICE – nie je aktívna služba na uloženie.'
+    );
+
+    return null;
+  }
+
+  const localId = appState.activeServiceLocalId;
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    localId
+  );
+
+  const nowIso = new Date().toISOString();
+
+  const serviceRecord = {
+    ...(existing || {}),
+
+    local_id: localId,
+
+    revir: appState.activeRevir,
+
+    zaciatok: appState.activeRevirStart,
+
+    koniec: null,
+
+    sync_status: 'ACTIVE',
+
+    current_member_id:
+      appState.currentUserId || existing?.current_member_id || null,
+
+    created_at:
+      existing?.created_at ||
+      appState.activeRevirStart,
+
+    updated_at: nowIso,
+
+    pending_sync: true,
+
+    record_source:
+      existing?.record_source || 'rs_app_indexeddb_core'
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.services,
+    serviceRecord
+  );
+
+  console.log(
+    'ACTIVE SERVICE uložená do IndexedDB:',
+    serviceRecord
+  );
+
+  return serviceRecord;
+}
+
+// =====================================================
+// ACTIVE SERVICE – uzatvorenie lokálnej služby
+// =====================================================
+
+async function closeCurrentActiveServiceInIndexedDb({
+  koniecIso,
+  trvanieMin,
+  pocetKontrol,
+  clenRs,
+  clenRsId
+}) {
+  const localId = appState.activeServiceLocalId;
+
+  if (!localId) {
+    throw new Error(
+      'CLOSE SERVICE – chýba activeServiceLocalId.'
+    );
+  }
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    localId
+  );
+
+  if (!existing) {
+    throw new Error(
+      'CLOSE SERVICE – aktívna služba sa v IndexedDB nenašla.'
+    );
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const closedService = {
+    ...existing,
+
+    local_id: localId,
+
+    revir: appState.activeRevir,
+    zaciatok: appState.activeRevirStart,
+    koniec: koniecIso,
+
+    trvanie_min: trvanieMin,
+    pocet_kontrol: pocetKontrol,
+
+    clen_rs: clenRs || '',
+    clen_rs_id: clenRsId || '',
+
+    sync_status: 'CLOSED_PENDING_SYNC',
+    pending_sync: true,
+
+    closed_at: nowIso,
+    updated_at: nowIso
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.services,
+    closedService
+  );
+
+  console.log(
+    'SERVICE uzatvorená ako CLOSED_PENDING_SYNC:',
+    closedService
+  );
+
+  return closedService;
+}
+
+
+// =====================================================
+// SERVICE – potvrdenie úspešného centrálneho uloženia
+// =====================================================
+
+async function markLocalServiceAsSynced(
+  serviceLocalId,
+  centralId
+) {
+  if (!serviceLocalId) {
+    throw new Error(
+      'SERVICE SYNC – chýba serviceLocalId.'
+    );
+  }
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    serviceLocalId
+  );
+
+  if (!existing) {
+    throw new Error(
+      'SERVICE SYNC – lokálna služba sa nenašla.'
+    );
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const syncedService = {
+    ...existing,
+
+    central_id:
+      centralId || existing.central_id || null,
+
+    sync_status: 'SYNCED',
+    pending_sync: false,
+
+    synced_at: nowIso,
+    updated_at: nowIso
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.services,
+    syncedService
+  );
+
+  console.log(
+    'SERVICE označená ako SYNCED:',
+    syncedService
+  );
+
+  return syncedService;
+}
+
+// =====================================================
+// LOCAL CHECK – zápis kontroly do IndexedDB
+// Zatiaľ NIE JE napojený na produkčné uloženie.
+// =====================================================
+
+async function saveCheckToIndexedDb(check) {
+  if (!check || typeof check !== 'object') {
+    throw new Error(
+      'LOCAL CHECK – neplatné dáta kontroly.'
+    );
+  }
+
+  if (!check.checkLocalId) {
+    throw new Error(
+      'LOCAL CHECK – chýba checkLocalId.'
+    );
+  }
+
+  if (!check.serviceLocalId) {
+    throw new Error(
+      'LOCAL CHECK – chýba serviceLocalId.'
+    );
+  }
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.checks,
+    check.checkLocalId
+  );
+
+  const nowIso = new Date().toISOString();
+
+  const localCheck = {
+    ...(existing || {}),
+
+    local_id: check.checkLocalId,
+
+    service_local_id: check.serviceLocalId,
+
+    fisher_id: check.fisherId || null,
+    fisher_name: check.fisherName || '',
+    fisher_id_no: check.fisherIdNo || '',
+
+    member_id_1: check.memberId1 || null,
+    member_id_2: check.memberId2 || null,
+
+    check_date: check.date || null,
+    time_from: check.timeFrom || '',
+    time_to: check.timeTo || '',
+
+    location: check.place || '',
+
+    result: check.result || '',
+    disciplinarny_zaznam:
+      check.disciplinarnyZaznam || 'Nie',
+
+    typ_priestupku: check.offenceType || '',
+    poznamka: check.note || '',
+
+    photos: Array.isArray(check.photos)
+      ? check.photos
+      : [],
+
+    created_by:
+      check.createdBy ||
+      appState.currentUserId ||
+      null,
+
+    created_at:
+      existing?.created_at ||
+      nowIso,
+
+    updated_at: nowIso,
+
+    sync_status: 'ACTIVE_SERVICE_PENDING',
+
+    pending_sync: true,
+
+    record_source:
+      existing?.record_source ||
+      'rs_app_indexeddb_core'
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.checks,
+    localCheck
+  );
+
+  console.log(
+    'LOCAL CHECK uložená do IndexedDB:',
+    localCheck
+  );
+
+  return localCheck;
+}
+
+// =====================================================
+// LOCAL CHECK – potvrdenie úspešného uloženia v Supabase
+// =====================================================
+
+async function markLocalCheckAsSynced(
+  checkLocalId,
+  centralId
+) {
+  if (!checkLocalId) {
+    throw new Error(
+      'LOCAL CHECK SYNC – chýba checkLocalId.'
+    );
+  }
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.checks,
+    checkLocalId
+  );
+
+  if (!existing) {
+    throw new Error(
+      'LOCAL CHECK SYNC – lokálna kontrola sa nenašla.'
+    );
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const syncedCheck = {
+    ...existing,
+
+    central_id: centralId || existing.central_id || null,
+
+    sync_status: 'SYNCED',
+
+    pending_sync: false,
+
+    synced_at: nowIso,
+
+    updated_at: nowIso
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.checks,
+    syncedCheck
+  );
+
+  console.log(
+    'LOCAL CHECK označená ako SYNCED:',
+    syncedCheck
+  );
+
+return {
+  ok: true,
+  check: syncedCheck
+};
+}
+
+async function markLocalPhotoStorageUploaded(
+  photoLocalId,
+  storagePath,
+  publicUrl = null
+) {
+  if (!photoLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_PHOTO_LOCAL_ID'
+    };
+  }
+
+  const photo = await rsLocalGet(
+    RS_LOCAL_STORES.photos,
+    photoLocalId
+  );
+
+  if (!photo) {
+    return {
+      ok: false,
+      reason: 'LOCAL_PHOTO_NOT_FOUND'
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const updatedPhoto = {
+    ...photo,
+
+    sync_status: 'STORAGE_UPLOADED',
+    pending_sync: true,
+
+    storage_path:
+      storagePath || photo.storage_path || null,
+
+    public_url:
+      publicUrl || photo.public_url || null,
+
+    storage_uploaded_at: nowIso,
+    updated_at: nowIso,
+
+    sync_error: null
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.photos,
+    updatedPhoto
+  );
+
+  return {
+    ok: true,
+    photo: updatedPhoto
+  };
+}
+
+async function markLocalPhotoAsSynced(
+  photoLocalId,
+  storagePath,
+  publicUrl = null
+) {
+  if (!photoLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_PHOTO_LOCAL_ID'
+    };
+  }
+
+  const photo = await rsLocalGet(
+    RS_LOCAL_STORES.photos,
+    photoLocalId
+  );
+
+  if (!photo) {
+    return {
+      ok: false,
+      reason: 'LOCAL_PHOTO_NOT_FOUND'
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const updatedPhoto = {
+    ...photo,
+
+    sync_status: 'SYNCED',
+    pending_sync: false,
+
+    storage_path:
+      storagePath || photo.storage_path || null,
+
+    public_url:
+      publicUrl || photo.public_url || null,
+
+    synced_at: nowIso,
+    updated_at: nowIso,
+
+    sync_error: null
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.photos,
+    updatedPhoto
+  );
+
+  return {
+    ok: true,
+    photo: updatedPhoto
+  };
+}
+
+async function canMarkLocalServiceAsSynced(
+  serviceLocalId
+) {
+  if (!serviceLocalId) {
+    return {
+      allowed: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  const service = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    serviceLocalId
+  );
+
+  if (!service) {
+    return {
+      allowed: false,
+      reason: 'LOCAL_SERVICE_NOT_FOUND'
+    };
+  }
+
+  const checks = await rsLocalGetAll(
+    RS_LOCAL_STORES.checks
+  );
+
+  const photos = await rsLocalGetAll(
+    RS_LOCAL_STORES.photos
+  );
+
+  const serviceChecks = checks.filter(check =>
+    check.service_local_id === serviceLocalId &&
+    !String(check.local_id || '').startsWith(
+      'legacy_check_'
+    )
+  );
+
+  const checkIds = new Set(
+    serviceChecks.map(check => check.local_id)
+  );
+
+  const servicePhotos = photos.filter(photo =>
+    checkIds.has(photo.check_local_id)
+  );
+
+  const unsyncedChecks = serviceChecks.filter(
+    check =>
+      check.sync_status !== 'SYNCED' ||
+      check.pending_sync === true
+  );
+
+  const unsyncedPhotos = servicePhotos.filter(
+    photo =>
+      photo.sync_status !== 'SYNCED' ||
+      photo.pending_sync === true
+  );
+
+  if (
+    unsyncedChecks.length > 0 ||
+    unsyncedPhotos.length > 0
+  ) {
+    return {
+      allowed: false,
+      reason: 'PACKAGE_PARTS_NOT_SYNCED',
+
+      checks_total:
+        serviceChecks.length,
+
+      checks_unsynced:
+        unsyncedChecks.length,
+
+      photos_total:
+        servicePhotos.length,
+
+      photos_unsynced:
+        unsyncedPhotos.length,
+
+      unsynced_check_ids:
+        unsyncedChecks.map(
+          check => check.local_id
+        ),
+
+      unsynced_photo_ids:
+        unsyncedPhotos.map(
+          photo => photo.local_id
+        )
+    };
+  }
+
+  return {
+    allowed: true,
+    reason: 'ALL_PACKAGE_PARTS_SYNCED',
+
+    checks_total:
+      serviceChecks.length,
+
+    checks_unsynced: 0,
+
+    photos_total:
+      servicePhotos.length,
+
+    photos_unsynced: 0
+  };
+}
+
+async function finalizeLocalServiceSync(
+  serviceLocalId,
+  centralId = null
+) {
+  if (!serviceLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  const validation =
+    await canMarkLocalServiceAsSynced(
+      serviceLocalId
+    );
+
+  if (!validation.allowed) {
+    return {
+      ok: false,
+      reason: validation.reason,
+      validation
+    };
+  }
+
+  const service = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    serviceLocalId
+  );
+
+  if (!service) {
+    return {
+      ok: false,
+      reason: 'LOCAL_SERVICE_NOT_FOUND'
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const syncedService = {
+    ...service,
+
+    central_id:
+      centralId || service.central_id || null,
+
+    sync_status: 'SYNCED',
+    pending_sync: false,
+
+    sync_error: null,
+
+    synced_at: nowIso,
+    updated_at: nowIso
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.services,
+    syncedService
+  );
+
+  return {
+    ok: true,
+    reason: 'SERVICE_SYNC_FINALIZED',
+    service: syncedService
+  };
+}
 
     function uid(prefix) {
       return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -2300,7 +3417,8 @@ const appState = {
 function saveActiveRevir() {
   localStorage.setItem(ACTIVE_REVIR_KEY, JSON.stringify({
     revir: appState.activeRevir,
-    start: appState.activeRevirStart
+    start: appState.activeRevirStart,
+    service_local_id: appState.activeServiceLocalId || ''
   }));
 }
 
@@ -2331,6 +3449,9 @@ function loadActiveRevir() {
 
     const revir = data.revir || '';
     const start = data.start || '';
+const serviceLocalId =
+  data.service_local_id || '';
+
     const startDate = new Date(start);
 
     // Neplatný alebo poškodený uložený stav.
@@ -2361,7 +3482,12 @@ function loadActiveRevir() {
     }
 
     appState.activeRevir = revir;
-    appState.activeRevirStart = start;
+appState.activeRevirStart = start;
+
+appState.activeServiceLocalId =
+  serviceLocalId || createLocalRecordId('service');
+
+saveActiveRevir();
 
   } catch (error) {
     console.warn(
@@ -2386,7 +3512,20 @@ function setActiveRevirFromSelect() {
     appState.activeRevirStart = new Date().toISOString();
   }
 
+  if (!appState.activeServiceLocalId) {
+    appState.activeServiceLocalId =
+      createLocalRecordId('service');
+  }
+
   saveActiveRevir();
+
+  saveCurrentActiveServiceToIndexedDb()
+    .catch(error => {
+      console.error(
+        'ACTIVE SERVICE – IndexedDB zápis zlyhal:',
+        error
+      );
+    });
 }
 
     function escapeHtml(value) {
@@ -2655,6 +3794,19 @@ const member = appState.data.members.find(item => {
   }
 
   appState.currentUserId = member.id;
+if (
+  appState.activeRevir &&
+  appState.activeServiceLocalId
+) {
+  saveCurrentActiveServiceToIndexedDb()
+    .catch(error => {
+      console.error(
+        'ACTIVE SERVICE – obnovenie IndexedDB po prihlásení zlyhalo:',
+        error
+      );
+    });
+}
+
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('appSection').classList.add('hidden');
   document.getElementById('dashboardSection').classList.add('hidden');
@@ -2700,8 +3852,21 @@ function saveServiceToOfflineQueue(serviceData) {
     queue = [];
   }
 
+  // Ak už legacy mirror tejto IndexedDB služby existuje,
+  // nevytvárame druhú službu.
+  if (serviceData.local_service_id) {
+    const existing = queue.find(item =>
+      item.local_service_id === serviceData.local_service_id
+    );
+
+    if (existing) {
+      return existing;
+    }
+  }
+
   const offlineService = {
     ...serviceData,
+
     offline_id:
       'offline_service_' +
       Date.now() +
@@ -2709,7 +3874,12 @@ function saveServiceToOfflineQueue(serviceData) {
       Math.random().toString(36).substring(2),
 
     offline_saved_at: new Date().toISOString(),
-    pending_sync: true
+
+    pending_sync: true,
+
+    // Kompatibilná legacy kópia.
+    // Nový zdroj pravdy bude IndexedDB.
+    legacy_mirror: true
   };
 
   queue.push(offlineService);
@@ -2774,25 +3944,40 @@ async function leaveRevir() {
     // Počítame iba kontroly:
     // - na aktuálnom revíri
     // - uložené počas tejto služby
-    pocetKontrol = offlineChecks.filter(item => {
+pocetKontrol = offlineChecks.filter(item => {
 
-      if (item.location !== appState.activeRevir) {
-        return false;
-      }
+  // NOVÉ OFFLINE KONTROLY
+  // Majú presnú väzbu na službu.
+  if (
+    item.service_local_id &&
+    appState.activeServiceLocalId
+  ) {
+    return (
+      item.service_local_id ===
+      appState.activeServiceLocalId
+    );
+  }
 
-      const checkTime = new Date(item.offline_saved_at);
+  // LEGACY KONTROLY
+  // Staršie záznamy service_local_id ešte nemajú,
+  // preto zachovávame pôvodnú časovo-revírovú logiku.
+  if (item.location !== appState.activeRevir) {
+    return false;
+  }
 
-      if (isNaN(checkTime.getTime())) {
-        return false;
-      }
+  const checkTime =
+    new Date(item.offline_saved_at);
 
-      return (
-        checkTime >= zaciatokDate &&
-        checkTime <= koniecDate
-      );
+  if (isNaN(checkTime.getTime())) {
+    return false;
+  }
 
-    }).length;
+  return (
+    checkTime >= zaciatokDate &&
+    checkTime <= koniecDate
+  );
 
+}).length;
 
     const sprava =
       '⚠️ NÚDZOVÝ OFFLINE REŽIM\n\n' +
@@ -2816,16 +4001,25 @@ async function leaveRevir() {
 
     try {
 
-      const offlineService = saveServiceToOfflineQueue({
-        revir: appState.activeRevir,
-        zaciatok: appState.activeRevirStart,
-        koniec: koniecIso,
-        trvanie_min: trvanieMin,
-        pocet_kontrol: pocetKontrol,
-        clen_rs: currentMember ? currentMember.name : '',
-        clen_rs_id: appState.currentUserId || ''
-      });
+   const offlineService = saveServiceToOfflineQueue({
+  local_service_id: appState.activeServiceLocalId,
 
+  revir: appState.activeRevir,
+  zaciatok: appState.activeRevirStart,
+  koniec: koniecIso,
+  trvanie_min: trvanieMin,
+  pocet_kontrol: pocetKontrol,
+  clen_rs: currentMember ? currentMember.name : '',
+  clen_rs_id: appState.currentUserId || ''
+});
+
+await closeCurrentActiveServiceInIndexedDb({
+  koniecIso,
+  trvanieMin,
+  pocetKontrol,
+  clenRs: currentMember ? currentMember.name : '',
+  clenRsId: appState.currentUserId || ''
+});
 
       // Aby službu vedela aplikácia okamžite použiť aj lokálne.
       if (!Array.isArray(appState.data.sluzbyReviry)) {
@@ -2838,6 +4032,7 @@ async function leaveRevir() {
       // Ukončíme aktívny revír.
       appState.activeRevir = '';
       appState.activeRevirStart = '';
+      appState.activeServiceLocalId = '';
 
       localStorage.removeItem(ACTIVE_REVIR_KEY);
 
@@ -3779,25 +4974,32 @@ function resetCheckForm() {
   appState.data.fishers.find(f => f.id === fisherDbId) ||
   findLinkedFisher(fisherName, fisherIdNo);
 
-      const check = {
-        id: uid('check'),
-        fisherId: linkedFisher ? linkedFisher.id : null,
-        fisherName: fisherName || (linkedFisher ? linkedFisher.name : ''),
-        fisherIdNo: fisherIdNo || (linkedFisher ? linkedFisher.permitNumber : ''),
-        memberId1,
-        memberId2,
-        date,
-        timeFrom,
-        timeTo,
-        place,
-        result,
-        disciplinarnyZaznam,
-        offenceType,
-        note,
-        photos: [],
-        createdAt: nowText(),
-        createdBy: appState.currentUserId
-      };
+     const check = {
+  id: uid('check'),
+
+  // Stabilné lokálne ID kontroly
+  checkLocalId: createLocalRecordId('check'),
+
+  // Väzba na aktuálnu službu
+  serviceLocalId: appState.activeServiceLocalId || null,
+
+  fisherId: linkedFisher ? linkedFisher.id : null,
+  fisherName: fisherName || (linkedFisher ? linkedFisher.name : ''),
+  fisherIdNo: fisherIdNo || (linkedFisher ? linkedFisher.permitNumber : ''),
+  memberId1,
+  memberId2,
+  date,
+  timeFrom,
+  timeTo,
+  place,
+  result,
+  disciplinarnyZaznam,
+  offenceType,
+  note,
+  photos: [],
+  createdAt: nowText(),
+  createdBy: appState.currentUserId
+};
 
       if (files.length === 0) {
         finalizeCheckSave(check);
@@ -3886,24 +5088,73 @@ async function uploadCheckPhotos(check, files) {
 
 if (appState.offlineMode) {
   console.warn(
-    'RS App je v núdzovom režime – Storage nie je dostupný.'
+    'RS App je v offline režime – fotografie sa uložia lokálne do zariadenia.'
   );
 
-  if (files && files.length > 0) {
-    alert(
-      '⚠️ Supabase je momentálne nedostupný.\n\n' +
-      'Kontrola bude bezpečne uložená do zariadenia BEZ fotografií.\n\n' +
-      'Fotografie si zatiaľ ponechajte v telefóne a po obnovení služby ich bude možné doplniť ku kontrole.'
+  try {
+    check.photos = [];
+
+    const total = files.length;
+    let index = 0;
+
+    for (const file of files) {
+      index++;
+
+      setCheckSaveUi(
+        true,
+        'Ukladám fotografiu ' + index + ' z ' + total + ' do zariadenia...'
+      );
+
+      // Používame rovnakú kompresiu ako pri online uploade.
+      const resizedFile =
+        await resizeImageForUpload(file);
+
+      const photoLocalId =
+        createLocalRecordId('photo');
+
+      await savePhotoToIndexedDb({
+        photoLocalId,
+        checkLocalId: check.checkLocalId,
+        serviceLocalId: check.serviceLocalId,
+        blob: resizedFile,
+        fileName: resizedFile.name,
+        mimeType: resizedFile.type
+      });
+
+      // Do kontroly zatiaľ ukladáme iba lokálnu referenciu.
+      check.photos.push({
+        local_id: photoLocalId,
+        name: resizedFile.name,
+        local_only: true
+      });
+    }
+
+    const saved =
+      await finalizeCheckSave(check);
+
+    checkSaveInProgress = false;
+
+    return saved;
+
+  } catch (offlinePhotoError) {
+    console.error(
+      'OFFLINE PHOTO – lokálne uloženie fotografie zlyhalo:',
+      offlinePhotoError
     );
+
+    showSaveError(
+      'Fotografiu sa nepodarilo uložiť do zariadenia.'
+    );
+
+    checkSaveInProgress = false;
+
+    setCheckSaveUi(
+      false,
+      'Fotografia nebola uložená.'
+    );
+
+    return false;
   }
-
-  check.photos = [];
-
-  const saved = await finalizeCheckSave(check);
-
-  checkSaveInProgress = false;
-
-  return saved;
 }
 
 const uploadedPaths = [];
@@ -4068,12 +5319,34 @@ function saveCheckToOfflineQueue(checkData) {
     queue = [];
   }
 
+  // Ak už legacy mirror pre túto IndexedDB kontrolu existuje,
+  // nevytvárame ďalšiu kópiu.
+  if (checkData.local_check_id) {
+    const existing = queue.find(item =>
+      item.local_check_id === checkData.local_check_id
+    );
+
+    if (existing) {
+      return existing;
+    }
+  }
+
   const offlineCheck = {
     ...checkData,
-    offline_id: 'offline_' + Date.now() + '_' +
+
+    offline_id:
+      'offline_' +
+      Date.now() +
+      '_' +
       Math.random().toString(36).substring(2),
+
     offline_saved_at: new Date().toISOString(),
-    pending_sync: true
+
+    pending_sync: true,
+
+    // Tento záznam je už iba kompatibilná legacy kópia.
+    // Zdroj pravdy pre nové offline dáta bude IndexedDB.
+    legacy_mirror: true
   };
 
   queue.push(offlineCheck);
@@ -4086,7 +5359,2692 @@ function saveCheckToOfflineQueue(checkData) {
   return offlineCheck;
 }
 
+// =====================================================
+// LOCAL PHOTO – uloženie fotografie do IndexedDB
+// Zatiaľ NIE JE napojené na produkčný upload.
+// =====================================================
+
+async function savePhotoToIndexedDb({
+  photoLocalId,
+  checkLocalId,
+  serviceLocalId,
+  blob,
+  fileName,
+  mimeType
+}) {
+  if (!photoLocalId) {
+    throw new Error(
+      'LOCAL PHOTO – chýba photoLocalId.'
+    );
+  }
+
+  if (!checkLocalId) {
+    throw new Error(
+      'LOCAL PHOTO – chýba checkLocalId.'
+    );
+  }
+
+  if (!(blob instanceof Blob)) {
+    throw new Error(
+      'LOCAL PHOTO – fotografia nie je platný Blob.'
+    );
+  }
+
+  const existing = await rsLocalGet(
+    RS_LOCAL_STORES.photos,
+    photoLocalId
+  );
+
+  const nowIso = new Date().toISOString();
+
+  const photoRecord = {
+    ...(existing || {}),
+
+    local_id: photoLocalId,
+    check_local_id: checkLocalId,
+    service_local_id: serviceLocalId || null,
+
+    blob: blob,
+
+    file_name:
+      fileName ||
+      existing?.file_name ||
+      'photo.jpg',
+
+    mime_type:
+      mimeType ||
+      blob.type ||
+      existing?.mime_type ||
+      'image/jpeg',
+
+    size_bytes: blob.size,
+
+    sync_status: 'LOCAL_PENDING',
+    pending_sync: true,
+
+    created_at:
+      existing?.created_at ||
+      nowIso,
+
+    updated_at: nowIso,
+
+    record_source:
+      existing?.record_source ||
+      'rs_app_indexeddb_core'
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.photos,
+    photoRecord
+  );
+
+  console.log(
+    'LOCAL PHOTO uložená do IndexedDB:',
+    {
+      local_id: photoRecord.local_id,
+      check_local_id: photoRecord.check_local_id,
+      service_local_id: photoRecord.service_local_id,
+      file_name: photoRecord.file_name,
+      mime_type: photoRecord.mime_type,
+      size_bytes: photoRecord.size_bytes,
+      sync_status: photoRecord.sync_status
+    }
+  );
+
+  return photoRecord;
+}
+
+// =====================================================
+// SYNC PREVIEW – zostavenie balíkov pripravených na sync
+// READ-ONLY: nič nemení, nič neposiela na server.
+// =====================================================
+
+async function buildPendingSyncPackages() {
+  const services = await rsLocalGetAll(
+    RS_LOCAL_STORES.services
+  );
+
+  const checks = await rsLocalGetAll(
+    RS_LOCAL_STORES.checks
+  );
+
+  const photos = await rsLocalGetAll(
+    RS_LOCAL_STORES.photos
+  );
+
+  const pendingServices = services.filter(
+    service =>
+      service.sync_status === 'CLOSED_PENDING_SYNC' &&
+      service.pending_sync === true &&
+      service.local_id &&
+      !String(service.local_id).startsWith('legacy_service_')
+  );
+
+  const packages = pendingServices.map(service => {
+    const linkedChecks = checks.filter(
+      check =>
+        check.service_local_id === service.local_id &&
+        !String(check.local_id || '').startsWith('legacy_check_')
+    );
+
+    const checkPackages = linkedChecks.map(check => {
+      const linkedPhotos = photos.filter(
+        photo =>
+          photo.check_local_id === check.local_id
+      );
+
+      return {
+        check,
+        photos: linkedPhotos
+      };
+    });
+
+    return {
+      service,
+      checks: checkPackages
+    };
+  });
+
+  console.log(
+    'SYNC PREVIEW – pripravené balíky:',
+    packages.map(pkg => ({
+      service_local_id: pkg.service.local_id,
+      revir: pkg.service.revir,
+      service_status: pkg.service.sync_status,
+      checks_count: pkg.checks.length,
+      photos_count: pkg.checks.reduce(
+        (sum, item) => sum + item.photos.length,
+        0
+      )
+    }))
+  );
+
+  return packages;
+}
+
+// =====================================================
+// SYNC PAYLOAD PREVIEW
+// READ-ONLY – nič neposiela do Supabase.
+// Iba pripraví presný návrh dát pre budúci sync.
+// =====================================================
+
+async function buildSyncPayloadPreview() {
+  const packages =
+    await buildPendingSyncPackages();
+
+  const preview = packages.map(pkg => {
+
+    const service = pkg.service;
+
+    const servicePayload = {
+      service_local_id: service.local_id,
+      revir: service.revir || '',
+      zaciatok: service.zaciatok || null,
+      koniec: service.koniec || null,
+      trvanie_min: service.trvanie_min || 0,
+      pocet_kontrol: service.pocet_kontrol || 0,
+      clen_rs: service.clen_rs || '',
+      clen_rs_id: service.clen_rs_id || ''
+    };
+
+
+    const checksPayload = pkg.checks.map(item => {
+
+      const check = item.check;
+
+      const checkPayload = {
+         check_local_id: check.local_id,
+         service_local_id: check.service_local_id,
+
+        fisher_name: check.fisher_name || '',
+        fisher_id_no: check.fisher_id_no || '',
+
+        member_name:
+          getMemberName(check.member_id_1) || '',
+
+        clen_rs_1:
+          getMemberName(check.member_id_1) || '',
+
+        clen_rs_2:
+          getMemberName(check.member_id_2) || '',
+
+        location: check.location || '',
+
+        check_date: check.check_date || null,
+
+        time_from: check.time_from || '',
+        time_to: check.time_to || '',
+
+        result: check.result || '',
+
+        disciplinarny_zaznam:
+          check.disciplinarny_zaznam || 'Nie',
+
+        poznamka: check.poznamka || '',
+
+        typ_priestupku:
+          check.typ_priestupku || '',
+
+        // URL fotografií ešte nepoznáme.
+        // Tie vzniknú až po uploadnutí Blobov.
+        photos: []
+      };
+
+
+      const photosPayload = item.photos.map(photo => ({
+        photo_local_id: photo.local_id,
+        check_local_id: photo.check_local_id,
+        service_local_id: photo.service_local_id,
+
+        file_name: photo.file_name || 'photo.jpg',
+        mime_type: photo.mime_type || 'image/jpeg',
+        size_bytes: photo.size_bytes || 0,
+
+        is_blob:
+          photo.blob instanceof Blob,
+
+        target_bucket:
+          'check-photos',
+
+        // Skutočnú cestu vytvorí až sync engine,
+        // keď budeme poznať ID kontroly zo Supabase.
+        target_path:
+          'WAITING_FOR_CENTRAL_CHECK_ID',
+
+        sync_status:
+          photo.sync_status,
+
+        pending_sync:
+          photo.pending_sync
+      }));
+
+
+      return {
+        local_identity: {
+          check_local_id: check.local_id,
+          service_local_id: check.service_local_id
+        },
+
+        database_row: checkPayload,
+
+        photos: photosPayload
+      };
+    });
+
+
+    return {
+      local_identity: {
+        service_local_id: service.local_id
+      },
+
+      service_database_row:
+        servicePayload,
+
+      checks:
+        checksPayload
+    };
+  });
+
+
+  console.log(
+    'SYNC PAYLOAD PREVIEW:',
+    preview
+  );
+
+  return preview;
+}
+
+async function buildSyncExecutionPlan() {
+  const payloads = await buildSyncPayloadPreview();
+
+  const plans = payloads.map(pkg => {
+    const serviceLocalId =
+      pkg.local_identity?.service_local_id || null;
+
+    const steps = [];
+
+    // -------------------------------------------------
+    // 1. SLUŽBA
+    // -------------------------------------------------
+
+    steps.push({
+      order: steps.length + 1,
+      type: 'SERVICE',
+      action: 'ENSURE_CENTRAL_SERVICE',
+      service_local_id: serviceLocalId,
+      status: 'WAITING'
+    });
+
+    // -------------------------------------------------
+    // 2. KONTROLY
+    // -------------------------------------------------
+
+    (pkg.checks || []).forEach(checkItem => {
+      const checkLocalId =
+        checkItem.local_identity?.check_local_id || null;
+
+      steps.push({
+        order: steps.length + 1,
+        type: 'CHECK',
+        action: 'ENSURE_CENTRAL_CHECK',
+        service_local_id: serviceLocalId,
+        check_local_id: checkLocalId,
+        status: 'WAITING'
+      });
+
+      // -----------------------------------------------
+      // 3. FOTOGRAFIE DANEJ KONTROLY
+      // -----------------------------------------------
+
+      (checkItem.photos || []).forEach(photo => {
+        steps.push({
+          order: steps.length + 1,
+          type: 'PHOTO',
+          action: 'ENSURE_CENTRAL_PHOTO',
+          service_local_id: serviceLocalId,
+          check_local_id: checkLocalId,
+          photo_local_id: photo.photo_local_id || null,
+          file_name: photo.file_name || 'photo.jpg',
+          status: 'WAITING'
+        });
+      });
+    });
+
+    // -------------------------------------------------
+    // 4. FINÁLNE POTVRDENIE
+    // -------------------------------------------------
+
+    steps.push({
+      order: steps.length + 1,
+      type: 'FINALIZE',
+      action: 'MARK_PACKAGE_SYNCED',
+      service_local_id: serviceLocalId,
+      status: 'WAITING',
+      rule:
+        'Spustiť iba po potvrdení služby, všetkých kontrol a všetkých fotografií na serveri.'
+    });
+
+    return {
+      service_local_id: serviceLocalId,
+
+      checks_count:
+        Array.isArray(pkg.checks)
+          ? pkg.checks.length
+          : 0,
+
+      photos_count:
+        (pkg.checks || []).reduce(
+          (sum, item) =>
+            sum +
+            (
+              Array.isArray(item.photos)
+                ? item.photos.length
+                : 0
+            ),
+          0
+        ),
+
+      steps
+    };
+  });
+
+  console.log(
+    'SYNC EXECUTION PLAN – iba lokálny náhľad:',
+    plans
+  );
+
+  return plans;
+}
+
+function canFinalizeSyncPlan(plan) {
+  if (!plan || !Array.isArray(plan.steps)) {
+    return {
+      allowed: false,
+      reason: 'INVALID_PLAN'
+    };
+  }
+
+  const requiredSteps = plan.steps.filter(
+    step => step.type !== 'FINALIZE'
+  );
+
+  if (requiredSteps.length === 0) {
+    return {
+      allowed: false,
+      reason: 'NO_REQUIRED_STEPS'
+    };
+  }
+
+  const unfinishedSteps = requiredSteps.filter(
+    step => step.status !== 'SUCCESS'
+  );
+
+  if (unfinishedSteps.length > 0) {
+    return {
+      allowed: false,
+      reason: 'STEPS_NOT_CONFIRMED',
+      unfinished_steps: unfinishedSteps.map(step => ({
+        order: step.order,
+        type: step.type,
+        action: step.action,
+        status: step.status
+      }))
+    };
+  }
+
+  return {
+    allowed: true,
+    reason: 'ALL_REQUIRED_STEPS_CONFIRMED'
+  };
+}
+
+function updateSyncStepStatus(plan, stepOrder, newStatus, errorMessage = '') {
+  if (!plan || !Array.isArray(plan.steps)) {
+    return {
+      ok: false,
+      reason: 'INVALID_PLAN'
+    };
+  }
+
+  const allowedStatuses = [
+    'WAITING',
+    'RUNNING',
+    'SUCCESS',
+    'ERROR'
+  ];
+
+  if (!allowedStatuses.includes(newStatus)) {
+    return {
+      ok: false,
+      reason: 'INVALID_STATUS'
+    };
+  }
+
+  const step = plan.steps.find(
+    item => item.order === stepOrder
+  );
+
+  if (!step) {
+    return {
+      ok: false,
+      reason: 'STEP_NOT_FOUND'
+    };
+  }
+
+  const currentStatus = step.status || 'WAITING';
+
+  const allowedTransitions = {
+    WAITING: ['RUNNING'],
+    RUNNING: ['SUCCESS', 'ERROR'],
+    ERROR: ['RUNNING'],
+    SUCCESS: []
+  };
+
+  const possibleNext =
+    allowedTransitions[currentStatus] || [];
+
+  if (!possibleNext.includes(newStatus)) {
+    return {
+      ok: false,
+      reason: 'INVALID_TRANSITION',
+      current_status: currentStatus,
+      requested_status: newStatus
+    };
+  }
+
+  step.status = newStatus;
+  step.updated_at = new Date().toISOString();
+
+  if (newStatus === 'ERROR') {
+    step.error_message =
+      errorMessage || 'Neznáma chyba synchronizácie.';
+  } else {
+    delete step.error_message;
+  }
+
+  return {
+    ok: true,
+    step
+  };
+}
+
+async function simulateSyncPlanExecution(plan, failAtOrder = null) {
+  if (!plan || !Array.isArray(plan.steps)) {
+    return {
+      ok: false,
+      reason: 'INVALID_PLAN'
+    };
+  }
+
+  const executionLog = [];
+
+  for (const step of plan.steps) {
+    if (step.type === 'FINALIZE') {
+      const finalizeCheck = canFinalizeSyncPlan(plan);
+
+      if (!finalizeCheck.allowed) {
+        executionLog.push({
+          order: step.order,
+          type: step.type,
+          result: 'BLOCKED',
+          reason: finalizeCheck.reason
+        });
+
+        return {
+          ok: false,
+          reason: 'FINALIZE_BLOCKED',
+          plan,
+          executionLog
+        };
+      }
+
+      const runningResult = updateSyncStepStatus(
+        plan,
+        step.order,
+        'RUNNING'
+      );
+
+      if (!runningResult.ok) {
+        return {
+          ok: false,
+          reason: 'FINALIZE_START_FAILED',
+          plan,
+          executionLog
+        };
+      }
+
+      const successResult = updateSyncStepStatus(
+        plan,
+        step.order,
+        'SUCCESS'
+      );
+
+      if (!successResult.ok) {
+        return {
+          ok: false,
+          reason: 'FINALIZE_SUCCESS_FAILED',
+          plan,
+          executionLog
+        };
+      }
+
+      executionLog.push({
+        order: step.order,
+        type: step.type,
+        result: 'SUCCESS'
+      });
+
+      continue;
+    }
+
+    const runningResult = updateSyncStepStatus(
+      plan,
+      step.order,
+      'RUNNING'
+    );
+
+    if (!runningResult.ok) {
+      return {
+        ok: false,
+        reason: 'STEP_START_FAILED',
+        step,
+        plan,
+        executionLog
+      };
+    }
+
+    executionLog.push({
+      order: step.order,
+      type: step.type,
+      result: 'RUNNING'
+    });
+
+    if (
+      failAtOrder !== null &&
+      step.order === failAtOrder
+    ) {
+      updateSyncStepStatus(
+        plan,
+        step.order,
+        'ERROR',
+        'SIMULATED_SYNC_ERROR'
+      );
+
+      executionLog.push({
+        order: step.order,
+        type: step.type,
+        result: 'ERROR'
+      });
+
+      return {
+        ok: false,
+        reason: 'SIMULATED_FAILURE',
+        failed_step_order: step.order,
+        plan,
+        executionLog
+      };
+    }
+
+    const successResult = updateSyncStepStatus(
+      plan,
+      step.order,
+      'SUCCESS'
+    );
+
+    if (!successResult.ok) {
+      return {
+        ok: false,
+        reason: 'STEP_SUCCESS_FAILED',
+        step,
+        plan,
+        executionLog
+      };
+    }
+
+    executionLog.push({
+      order: step.order,
+      type: step.type,
+      result: 'SUCCESS'
+    });
+  }
+
+  return {
+    ok: true,
+    reason: 'SIMULATION_COMPLETED',
+    plan,
+    executionLog
+  };
+}
+
+async function findCentralServiceByLocalId(serviceLocalId) {
+  if (!serviceLocalId) {
+    return {
+      status: 'ERROR',
+      data: null,
+      error: new Error('Chýba service_local_id.')
+    };
+  }
+
+  try {
+    const { data, error } = await db
+      .from('sluzby_reviry')
+      .select('*')
+      .eq('service_local_id', serviceLocalId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(
+        'SYNC SERVICE LOOKUP – chyba Supabase:',
+        serviceLocalId,
+        error
+      );
+
+      return {
+        status: 'ERROR',
+        data: null,
+        error
+      };
+    }
+
+    if (data) {
+      console.log(
+        'SYNC SERVICE LOOKUP – FOUND:',
+        serviceLocalId,
+        data
+      );
+
+      return {
+        status: 'FOUND',
+        data,
+        error: null
+      };
+    }
+
+    console.log(
+      'SYNC SERVICE LOOKUP – NOT_FOUND:',
+      serviceLocalId
+    );
+
+    return {
+      status: 'NOT_FOUND',
+      data: null,
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'SYNC SERVICE LOOKUP – výnimka:',
+      serviceLocalId,
+      error
+    );
+
+    return {
+      status: 'ERROR',
+      data: null,
+      error
+    };
+  }
+}
+
+async function findCentralCheckByLocalId(checkLocalId) {
+  if (!checkLocalId) {
+    return {
+      status: 'ERROR',
+      data: null,
+      error: new Error('Chýba check_local_id.')
+    };
+  }
+
+  try {
+    const { data, error } = await db
+      .from('checks')
+      .select('*')
+      .eq('check_local_id', checkLocalId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(
+        'SYNC CHECK LOOKUP – chyba Supabase:',
+        checkLocalId,
+        error
+      );
+
+      return {
+        status: 'ERROR',
+        data: null,
+        error
+      };
+    }
+
+    if (data) {
+      console.log(
+        'SYNC CHECK LOOKUP – FOUND:',
+        checkLocalId,
+        data
+      );
+
+      return {
+        status: 'FOUND',
+        data,
+        error: null
+      };
+    }
+
+    console.log(
+      'SYNC CHECK LOOKUP – NOT_FOUND:',
+      checkLocalId
+    );
+
+    return {
+      status: 'NOT_FOUND',
+      data: null,
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'SYNC CHECK LOOKUP – výnimka:',
+      checkLocalId,
+      error
+    );
+
+    return {
+      status: 'ERROR',
+      data: null,
+      error
+    };
+  }
+}
+
+async function ensureCentralCheck(
+  checkPayload,
+  options = {}
+) {
+  const allowWrite =
+    options.allowWrite === true;
+
+  if (
+    !checkPayload ||
+    !checkPayload.check_local_id
+  ) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_CHECK_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!checkPayload.service_local_id) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_SERVICE_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  const checkLocalId =
+    checkPayload.check_local_id;
+
+  // 1. Najprv zistíme, či kontrola už existuje.
+  const lookup =
+    await findCentralCheckByLocalId(
+      checkLocalId
+    );
+
+  if (lookup.status === 'ERROR') {
+    return {
+      status: 'ERROR',
+      reason: 'LOOKUP_FAILED',
+      data: null,
+      error: lookup.error || null
+    };
+  }
+
+  // 2. Už existuje -> znovu nevkladáme.
+  if (lookup.status === 'FOUND') {
+    return {
+      status: 'FOUND',
+      reason: 'ALREADY_EXISTS',
+      data: lookup.data,
+      error: null
+    };
+  }
+
+  // 3. Neexistuje, ale zápis ešte nepovoľujeme.
+  if (!allowWrite) {
+    return {
+      status: 'NOT_FOUND',
+      reason: 'INSERT_REQUIRED',
+      data: null,
+      error: null,
+      prepared_insert: checkPayload
+    };
+  }
+
+  // 4. Reálny INSERT iba pri allowWrite: true.
+  try {
+    const { data, error } = await db
+      .from('checks')
+      .insert([checkPayload])
+      .select()
+      .single();
+
+    if (error) {
+      console.warn(
+        'SYNC CHECK INSERT – chyba:',
+        checkLocalId,
+        error
+      );
+
+      return {
+        status: 'ERROR',
+        reason: 'INSERT_FAILED',
+        data: null,
+        error
+      };
+    }
+
+    return {
+      status: 'INSERTED',
+      reason: 'CENTRAL_CHECK_CREATED',
+      data,
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'SYNC CHECK INSERT – výnimka:',
+      checkLocalId,
+      error
+    );
+
+    return {
+      status: 'ERROR',
+      reason: 'INSERT_EXCEPTION',
+      data: null,
+      error
+    };
+  }
+}
+
+function buildPhotoStoragePath(
+  centralCheckId,
+  photoLocalId,
+  fileName = 'photo.jpg'
+) {
+  if (!centralCheckId) {
+    throw new Error(
+      'Chýba centralCheckId pre fotografiu.'
+    );
+  }
+
+  if (!photoLocalId) {
+    throw new Error(
+      'Chýba photoLocalId pre fotografiu.'
+    );
+  }
+
+  const safeFileName =
+    String(fileName || 'photo.jpg')
+      .trim()
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+
+  const extensionMatch =
+    safeFileName.match(/(\.[a-zA-Z0-9]+)$/);
+
+  const extension =
+    extensionMatch
+      ? extensionMatch[1].toLowerCase()
+      : '.jpg';
+
+  return (
+    'checks/' +
+    String(centralCheckId) +
+    '/' +
+    String(photoLocalId) +
+    extension
+  );
+}
+
+async function uploadPhotoBlobToStorage(
+  photoRecord,
+  centralCheckId
+) {
+  if (!photoRecord?.local_id) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!(photoRecord.blob instanceof Blob)) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_BLOB',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!centralCheckId) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_CENTRAL_CHECK_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  const storagePath = buildPhotoStoragePath(
+    centralCheckId,
+    photoRecord.local_id,
+    photoRecord.file_name || 'photo.jpg'
+  );
+
+  try {
+    const { data, error } = await db.storage
+      .from('check-photos')
+      .upload(
+        storagePath,
+        photoRecord.blob,
+        {
+          contentType:
+            photoRecord.mime_type ||
+            photoRecord.blob.type ||
+            'image/jpeg',
+
+          /*
+            DÔLEŽITÉ:
+            rovnaké photo_local_id =
+            rovnaká cesta v Storage.
+
+            Retry teda nevytvorí ďalší náhodný súbor.
+          */
+          upsert: true
+        }
+      );
+
+    if (error) {
+      console.warn(
+        'SYNC PHOTO STORAGE – upload zlyhal:',
+        photoRecord.local_id,
+        error
+      );
+
+      return {
+        status: 'ERROR',
+        reason: 'STORAGE_UPLOAD_FAILED',
+        data: null,
+        error,
+        storage_path: storagePath
+      };
+    }
+
+    const publicUrlResult = db.storage
+      .from('check-photos')
+      .getPublicUrl(storagePath);
+
+    const publicUrl =
+      publicUrlResult?.data?.publicUrl || null;
+
+    return {
+      status: 'UPLOADED',
+      reason: 'STORAGE_UPLOAD_CONFIRMED',
+
+      data: data || null,
+
+      storage_path: storagePath,
+      public_url: publicUrl,
+
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'SYNC PHOTO STORAGE – výnimka:',
+      photoRecord.local_id,
+      error
+    );
+
+    return {
+      status: 'ERROR',
+      reason: 'STORAGE_UPLOAD_EXCEPTION',
+      data: null,
+      error,
+      storage_path: storagePath
+    };
+  }
+}
+
+async function ensureCentralPhoto(
+  photoRecord,
+  centralCheckId,
+  options = {}
+) {
+  const allowWrite =
+    options.allowWrite === true;
+
+  if (!photoRecord) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_RECORD',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!photoRecord.local_id) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!centralCheckId) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_CENTRAL_CHECK_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  // ===============================================
+  // RETRY:
+  // Ak bol Storage upload už potvrdený lokálne,
+  // fotografiu znovu nenahrávame.
+  // Pokračujeme rovno na naviazanie do checks.photos.
+  // ===============================================
+
+  if (
+    photoRecord.sync_status === 'STORAGE_UPLOADED' &&
+    photoRecord.storage_path
+  ) {
+    return {
+      status: 'UPLOADED',
+      reason: 'STORAGE_ALREADY_CONFIRMED',
+      data: null,
+      error: null,
+      storage_path: photoRecord.storage_path,
+      public_url: photoRecord.public_url || null,
+      reused_existing_upload: true
+    };
+  }
+
+  if (!(photoRecord.blob instanceof Blob)) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_BLOB',
+      data: null,
+      error: null
+    };
+  }
+
+  const storagePath = buildPhotoStoragePath(
+    centralCheckId,
+    photoRecord.local_id,
+    photoRecord.file_name || 'photo.jpg'
+  );
+
+  const preparedUpload = {
+    bucket: 'check-photos',
+    path: storagePath,
+    photo_local_id: photoRecord.local_id,
+    check_local_id:
+      photoRecord.check_local_id || null,
+    service_local_id:
+      photoRecord.service_local_id || null,
+    file_name:
+      photoRecord.file_name || 'photo.jpg',
+    mime_type:
+      photoRecord.mime_type ||
+      photoRecord.blob.type ||
+      'image/jpeg',
+    size_bytes:
+      photoRecord.blob.size,
+    is_blob:
+      photoRecord.blob instanceof Blob
+  };
+
+  // Zatiaľ nič neposielame.
+  if (!allowWrite) {
+    return {
+      status: 'READY',
+      reason: 'UPLOAD_REQUIRED',
+      data: null,
+      error: null,
+      prepared_upload: preparedUpload
+    };
+  }
+
+ const uploadResult =
+  await uploadPhotoBlobToStorage(
+    photoRecord,
+    centralCheckId
+  );
+
+if (uploadResult.status !== 'UPLOADED') {
+  return uploadResult;
+}
+
+const localStorageResult =
+  await markLocalPhotoStorageUploaded(
+    photoRecord.local_id,
+    uploadResult.storage_path,
+    uploadResult.public_url
+  );
+
+if (!localStorageResult.ok) {
+  return {
+    status: 'ERROR',
+    reason: 'LOCAL_STORAGE_CONFIRM_FAILED',
+    data: uploadResult.data,
+    error: null,
+    storage_path: uploadResult.storage_path,
+    public_url: uploadResult.public_url
+  };
+}
+
+return {
+  status: 'UPLOADED',
+  reason: 'STORAGE_UPLOAD_CONFIRMED',
+  data: uploadResult.data,
+  error: null,
+  storage_path: uploadResult.storage_path,
+  public_url: uploadResult.public_url
+};
+}
+
+async function linkPhotoToCentralCheck(
+  centralCheckId,
+  photoRecord,
+  storagePath,
+  publicUrl,
+  options = {}
+) {
+  const allowWrite =
+    options.allowWrite === true;
+
+  if (!centralCheckId) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_CENTRAL_CHECK_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!photoRecord?.local_id) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_PHOTO_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  if (!storagePath) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_STORAGE_PATH',
+      data: null,
+      error: null
+    };
+  }
+
+  const photoEntry = {
+    id: photoRecord.local_id,
+    local_id: photoRecord.local_id,
+    name: photoRecord.file_name || 'photo.jpg',
+    path: storagePath,
+    url: publicUrl || null
+  };
+
+  if (!allowWrite) {
+    return {
+      status: 'READY',
+      reason: 'CHECK_PHOTO_LINK_REQUIRED',
+      data: null,
+      error: null,
+      prepared_photo_entry: photoEntry
+    };
+  }
+
+  try {
+    // Najprv načítame aktuálne photos z centrálnej kontroly.
+    const { data: checkData, error: readError } =
+      await db
+        .from('checks')
+        .select('id, photos')
+        .eq('id', centralCheckId)
+        .single();
+
+    if (readError) {
+      return {
+        status: 'ERROR',
+        reason: 'CENTRAL_CHECK_READ_FAILED',
+        data: null,
+        error: readError
+      };
+    }
+
+    const currentPhotos =
+      Array.isArray(checkData?.photos)
+        ? checkData.photos
+        : [];
+
+    // Idempotencia:
+    // ak už photo_local_id v checks.photos existuje,
+    // nepridávame druhýkrát.
+    const alreadyLinked = currentPhotos.some(photo =>
+      String(photo?.local_id || photo?.id || '') ===
+      String(photoRecord.local_id)
+    );
+
+    if (alreadyLinked) {
+      return {
+        status: 'FOUND',
+        reason: 'PHOTO_ALREADY_LINKED',
+        data: checkData,
+        error: null,
+        photo_entry: photoEntry
+      };
+    }
+
+    const nextPhotos = [
+      ...currentPhotos,
+      photoEntry
+    ];
+
+    const { data: updatedCheck, error: updateError } =
+      await db
+        .from('checks')
+        .update({
+          photos: nextPhotos
+        })
+        .eq('id', centralCheckId)
+        .select()
+        .single();
+
+    if (updateError) {
+      return {
+        status: 'ERROR',
+        reason: 'CHECK_PHOTO_LINK_FAILED',
+        data: null,
+        error: updateError
+      };
+    }
+
+    return {
+      status: 'LINKED',
+      reason: 'PHOTO_LINK_CONFIRMED',
+      data: updatedCheck,
+      error: null,
+      photo_entry: photoEntry
+    };
+
+  } catch (error) {
+    return {
+      status: 'ERROR',
+      reason: 'CHECK_PHOTO_LINK_EXCEPTION',
+      data: null,
+      error
+    };
+  }
+}
+
+async function runSyncPackageDryRun(packageIndex = 0) {
+  const payloads = await buildSyncPayloadPreview();
+
+  const pkg = payloads[packageIndex];
+
+  if (!pkg) {
+    return {
+      ok: false,
+      reason: 'PACKAGE_NOT_FOUND'
+    };
+  }
+
+  const log = [];
+
+  // -------------------------------------------------
+  // 1. SERVICE
+  // -------------------------------------------------
+
+  const serviceResult = await ensureCentralService(
+    pkg.service_database_row,
+    { allowWrite: false }
+  );
+
+  log.push({
+    step: 'SERVICE',
+    result: serviceResult
+  });
+
+  if (
+    serviceResult.status === 'ERROR'
+  ) {
+    return {
+      ok: false,
+      reason: 'SERVICE_FAILED',
+      stopped_at: 'SERVICE',
+      log
+    };
+  }
+
+  if (
+    serviceResult.status === 'NOT_FOUND'
+  ) {
+    return {
+      ok: false,
+      reason: 'SERVICE_INSERT_REQUIRED',
+      stopped_at: 'SERVICE',
+      log
+    };
+  }
+
+  const centralService =
+    serviceResult.data || null;
+
+  // -------------------------------------------------
+  // 2. CHECKS
+  // -------------------------------------------------
+
+  for (const checkItem of pkg.checks || []) {
+
+    const checkResult = await ensureCentralCheck(
+      checkItem.database_row,
+      { allowWrite: false }
+    );
+
+    log.push({
+      step: 'CHECK',
+      check_local_id:
+        checkItem.local_identity?.check_local_id || null,
+      result: checkResult
+    });
+
+    if (
+      checkResult.status === 'ERROR'
+    ) {
+      return {
+        ok: false,
+        reason: 'CHECK_FAILED',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    if (
+      checkResult.status === 'NOT_FOUND'
+    ) {
+      return {
+        ok: false,
+        reason: 'CHECK_INSERT_REQUIRED',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    const centralCheck =
+      checkResult.data || null;
+
+    if (
+      !centralCheck ||
+      !centralCheck.id
+    ) {
+      return {
+        ok: false,
+        reason: 'MISSING_CENTRAL_CHECK_ID',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    // -----------------------------------------------
+    // 3. PHOTOS
+    // -----------------------------------------------
+
+    for (const photoPreview of checkItem.photos || []) {
+
+      const photoRecord = await rsLocalGet(
+        RS_LOCAL_STORES.photos,
+        photoPreview.photo_local_id
+      );
+
+      if (!photoRecord) {
+        return {
+          ok: false,
+          reason: 'LOCAL_PHOTO_NOT_FOUND',
+          stopped_at: 'PHOTO',
+          photo_local_id:
+            photoPreview.photo_local_id,
+          log
+        };
+      }
+
+      const photoResult = await ensureCentralPhoto(
+        photoRecord,
+        centralCheck.id,
+        { allowWrite: false }
+      );
+
+      log.push({
+        step: 'PHOTO',
+        photo_local_id:
+          photoPreview.photo_local_id,
+        result: photoResult
+      });
+
+      if (
+        photoResult.status === 'ERROR'
+      ) {
+        return {
+          ok: false,
+          reason: 'PHOTO_FAILED',
+          stopped_at: 'PHOTO',
+          log
+        };
+      }
+
+      if (
+        photoResult.status === 'READY'
+      ) {
+        return {
+          ok: false,
+          reason: 'PHOTO_UPLOAD_REQUIRED',
+          stopped_at: 'PHOTO',
+          log
+        };
+      }
+    }
+  }
+
+  // -------------------------------------------------
+  // 4. FINALIZE
+  // -------------------------------------------------
+
+  return {
+    ok: true,
+    reason: 'DRY_RUN_COMPLETE',
+    stopped_at: null,
+    central_service_id:
+      centralService?.id || null,
+    log
+  };
+}
+
+async function runSyncPackageDryRunForPayload(pkg) {
+  if (!pkg) {
+    return {
+      ok: false,
+      reason: 'PACKAGE_NOT_FOUND'
+    };
+  }
+
+  const log = [];
+
+  // -------------------------------------------------
+  // 1. SERVICE
+  // -------------------------------------------------
+
+  const serviceResult = await ensureCentralService(
+    pkg.service_database_row,
+    { allowWrite: false }
+  );
+
+  log.push({
+    step: 'SERVICE',
+    service_local_id:
+      pkg.local_identity?.service_local_id || null,
+    result: serviceResult
+  });
+
+  if (serviceResult.status === 'ERROR') {
+    return {
+      ok: false,
+      reason: 'SERVICE_FAILED',
+      stopped_at: 'SERVICE',
+      log
+    };
+  }
+
+  if (serviceResult.status === 'NOT_FOUND') {
+    return {
+      ok: false,
+      reason: 'SERVICE_INSERT_REQUIRED',
+      stopped_at: 'SERVICE',
+      log
+    };
+  }
+
+  const centralService =
+    serviceResult.data || null;
+
+  // -------------------------------------------------
+  // 2. CHECKS
+  // -------------------------------------------------
+
+  for (const checkItem of pkg.checks || []) {
+
+    const checkResult = await ensureCentralCheck(
+      checkItem.database_row,
+      { allowWrite: false }
+    );
+
+    log.push({
+      step: 'CHECK',
+      check_local_id:
+        checkItem.local_identity?.check_local_id || null,
+      result: checkResult
+    });
+
+    if (checkResult.status === 'ERROR') {
+      return {
+        ok: false,
+        reason: 'CHECK_FAILED',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    if (checkResult.status === 'NOT_FOUND') {
+      return {
+        ok: false,
+        reason: 'CHECK_INSERT_REQUIRED',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    const centralCheck =
+      checkResult.data || null;
+
+    if (
+      !centralCheck ||
+      !centralCheck.id
+    ) {
+      return {
+        ok: false,
+        reason: 'MISSING_CENTRAL_CHECK_ID',
+        stopped_at: 'CHECK',
+        log
+      };
+    }
+
+    // -----------------------------------------------
+    // 3. PHOTOS
+    // -----------------------------------------------
+
+    for (const photoPreview of checkItem.photos || []) {
+
+      const photoRecord = await rsLocalGet(
+        RS_LOCAL_STORES.photos,
+        photoPreview.photo_local_id
+      );
+
+      if (!photoRecord) {
+        return {
+          ok: false,
+          reason: 'LOCAL_PHOTO_NOT_FOUND',
+          stopped_at: 'PHOTO',
+          photo_local_id:
+            photoPreview.photo_local_id,
+          log
+        };
+      }
+
+      const photoResult = await ensureCentralPhoto(
+        photoRecord,
+        centralCheck.id,
+        { allowWrite: false }
+      );
+
+      log.push({
+        step: 'PHOTO',
+        photo_local_id:
+          photoPreview.photo_local_id,
+        result: photoResult
+      });
+
+      if (photoResult.status === 'ERROR') {
+        return {
+          ok: false,
+          reason: 'PHOTO_FAILED',
+          stopped_at: 'PHOTO',
+          log
+        };
+      }
+
+      if (photoResult.status === 'READY') {
+        return {
+          ok: false,
+          reason: 'PHOTO_UPLOAD_REQUIRED',
+          stopped_at: 'PHOTO',
+          log
+        };
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    reason: 'DRY_RUN_COMPLETE',
+    stopped_at: null,
+    central_service_id:
+      centralService?.id || null,
+    log
+  };
+}
+
+async function runTrackedSyncPackageDryRun(packageIndex = 0) {
+  const payloads = await buildSyncPayloadPreview();
+
+  const pkg = payloads[packageIndex];
+
+  if (!pkg) {
+    return {
+      ok: false,
+      reason: 'PACKAGE_NOT_FOUND'
+    };
+  }
+
+  const serviceLocalId =
+    pkg.local_identity?.service_local_id || null;
+
+  if (!serviceLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  // Balík je od tejto chvíle pevne identifikovaný.
+  // Už ho znova nehľadáme podľa indexu.
+
+  const startState =
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_RUNNING'
+    );
+
+  if (!startState.ok) {
+    return {
+      ok: false,
+      reason: 'SYNC_STATE_START_FAILED',
+      state_result: startState
+    };
+  }
+
+  const result =
+    await runSyncPackageDryRunForPayload(pkg);
+
+  if (!result.ok) {
+    const errorMessage =
+      result.reason +
+      (
+        result.stopped_at
+          ? ' @ ' + result.stopped_at
+          : ''
+      );
+
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_ERROR',
+      {
+        errorMessage
+      }
+    );
+
+    return {
+      ...result,
+      service_local_id: serviceLocalId,
+      tracked_status: 'SYNC_ERROR'
+    };
+  }
+
+  // Dry-run nesmie označiť dáta ako reálne SYNCED.
+  await updateLocalServiceSyncState(
+    serviceLocalId,
+    'CLOSED_PENDING_SYNC'
+  );
+
+  return {
+    ...result,
+    service_local_id: serviceLocalId,
+    tracked_status: 'CLOSED_PENDING_SYNC'
+  };
+}
+
+async function runTrackedSyncPackageDryRunByServiceId(serviceLocalId) {
+  if (!serviceLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  const payloads = await buildSyncPayloadPreview();
+
+  const pkg = payloads.find(item =>
+    item.local_identity?.service_local_id === serviceLocalId
+  );
+
+  if (!pkg) {
+    return {
+      ok: false,
+      reason: 'PACKAGE_NOT_FOUND',
+      service_local_id: serviceLocalId
+    };
+  }
+
+  const startState =
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_RUNNING'
+    );
+
+  if (!startState.ok) {
+    return {
+      ok: false,
+      reason: 'SYNC_STATE_START_FAILED',
+      service_local_id: serviceLocalId,
+      state_result: startState
+    };
+  }
+
+  const result =
+    await runSyncPackageDryRunForPayload(pkg);
+
+  if (!result.ok) {
+    const errorMessage =
+      result.reason +
+      (
+        result.stopped_at
+          ? ' @ ' + result.stopped_at
+          : ''
+      );
+
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_ERROR',
+      {
+        errorMessage
+      }
+    );
+
+    return {
+      ...result,
+      service_local_id: serviceLocalId,
+      tracked_status: 'SYNC_ERROR'
+    };
+  }
+
+  // Dry-run nikdy nesmie označiť reálny balík ako SYNCED.
+  await updateLocalServiceSyncState(
+    serviceLocalId,
+    'CLOSED_PENDING_SYNC'
+  );
+
+  return {
+    ...result,
+    service_local_id: serviceLocalId,
+    tracked_status: 'CLOSED_PENDING_SYNC'
+  };
+}
+
+async function getPendingSyncSummary() {
+  const services = await rsLocalGetAll(
+    RS_LOCAL_STORES.services
+  );
+
+  const checks = await rsLocalGetAll(
+    RS_LOCAL_STORES.checks
+  );
+
+  const photos = await rsLocalGetAll(
+    RS_LOCAL_STORES.photos
+  );
+
+  const pendingServices = services.filter(service =>
+    service &&
+    service.local_id &&
+    !String(service.local_id).startsWith('legacy_service_') &&
+    (
+      service.sync_status === 'CLOSED_PENDING_SYNC' ||
+      service.sync_status === 'SYNC_ERROR' ||
+      service.sync_status === 'SYNC_RUNNING'
+    )
+  );
+
+  const items = pendingServices.map(service => {
+    const serviceChecks = checks.filter(check =>
+      check.service_local_id === service.local_id &&
+      !String(check.local_id || '').startsWith('legacy_check_')
+    );
+
+    const checkIds = new Set(
+      serviceChecks.map(check => check.local_id)
+    );
+
+    const servicePhotos = photos.filter(photo =>
+      checkIds.has(photo.check_local_id)
+    );
+
+    return {
+      service_local_id: service.local_id,
+      revir: service.revir || '',
+      sync_status: service.sync_status || '',
+      pending_sync: service.pending_sync === true,
+
+      checks_count: serviceChecks.length,
+      photos_count: servicePhotos.length,
+
+      last_sync_attempt_at:
+        service.last_sync_attempt_at || null,
+
+      sync_error:
+        service.sync_error || null
+    };
+  });
+
+  const summary = {
+    total_pending: items.length,
+
+    waiting: items.filter(
+      item => item.sync_status === 'CLOSED_PENDING_SYNC'
+    ).length,
+
+    running: items.filter(
+      item => item.sync_status === 'SYNC_RUNNING'
+    ).length,
+
+    errors: items.filter(
+      item => item.sync_status === 'SYNC_ERROR'
+    ).length,
+
+    total_checks: items.reduce(
+      (sum, item) => sum + item.checks_count,
+      0
+    ),
+
+    total_photos: items.reduce(
+      (sum, item) => sum + item.photos_count,
+      0
+    ),
+
+    items
+  };
+
+  console.log(
+    'PENDING SYNC SUMMARY:',
+    summary
+  );
+
+  return summary;
+}
+
+async function checkCentralSyncAvailability() {
+  if (!navigator.onLine) {
+    return {
+      available: false,
+      reason: 'BROWSER_OFFLINE',
+      error: null
+    };
+  }
+
+  try {
+    const { data, error } = await db
+      .from('sluzby_reviry')
+      .select('id')
+      .limit(1);
+
+    if (error) {
+      console.warn(
+        'CENTRAL SYNC AVAILABILITY – Supabase nedostupný:',
+        error
+      );
+
+      return {
+        available: false,
+        reason: 'SUPABASE_UNAVAILABLE',
+        error
+      };
+    }
+
+    console.log(
+      'CENTRAL SYNC AVAILABILITY – Supabase dostupný.'
+    );
+
+    return {
+      available: true,
+      reason: 'AVAILABLE',
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'CENTRAL SYNC AVAILABILITY – výnimka:',
+      error
+    );
+
+    return {
+      available: false,
+      reason: 'NETWORK_OR_CLIENT_ERROR',
+      error
+    };
+  }
+}
+
+async function runPendingSyncQueueSafeDryRun(options = {}) {
+  const availability =
+    await checkCentralSyncAvailability();
+
+  if (!availability.available) {
+    const result = {
+      ok: false,
+      started: false,
+      reason: availability.reason,
+      availability
+    };
+
+    console.log(
+      'SAFE SYNC DRY RUN – synchronizácia nespustená:',
+      result
+    );
+
+    return result;
+  }
+
+  const result =
+    await runPendingSyncQueueDryRun(options);
+
+  return {
+    ...result,
+    started: true
+  };
+}
+
+async function runRealSyncPackageByServiceId(
+  serviceLocalId,
+  options = {}
+) {
+  const allowWrite =
+    options.allowWrite === true;
+
+  const writeConfirmed =
+    options.confirmWrite ===
+    'RS_SYNC_WRITE_CONFIRMED';
+
+  // =================================================
+  // 0. DVOJITÁ POISTKA PROTI NÁHODNÉMU ZÁPISU
+  // =================================================
+
+  if (!allowWrite || !writeConfirmed) {
+    return {
+      ok: false,
+      started: false,
+      reason: 'WRITE_NOT_CONFIRMED',
+      service_local_id: serviceLocalId || null
+    };
+  }
+
+  if (!serviceLocalId) {
+    return {
+      ok: false,
+      started: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  // =================================================
+  // 1. NAJPRV DOSTUPNOSŤ CENTRÁLNEHO SERVERA
+  // =================================================
+
+  const availability =
+    await checkCentralSyncAvailability();
+
+  if (!availability.available) {
+    return {
+      ok: false,
+      started: false,
+      reason: availability.reason,
+      service_local_id: serviceLocalId,
+      availability
+    };
+  }
+
+  // =================================================
+  // 2. BALÍK SI VEZMEME RAZ PODĽA STABILNÉHO ID
+  // =================================================
+
+  const payloads =
+    await buildSyncPayloadPreview();
+
+  const pkg = payloads.find(item =>
+    item.local_identity?.service_local_id ===
+    serviceLocalId
+  );
+
+  if (!pkg) {
+    return {
+      ok: false,
+      started: false,
+      reason: 'PACKAGE_NOT_FOUND',
+      service_local_id: serviceLocalId
+    };
+  }
+
+  // =================================================
+  // 3. OZNAČENIE ZAČIATKU SYNC POKUSU
+  // =================================================
+
+  const startState =
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_RUNNING'
+    );
+
+  if (!startState.ok) {
+    return {
+      ok: false,
+      started: false,
+      reason: 'SYNC_STATE_START_FAILED',
+      service_local_id: serviceLocalId,
+      state_result: startState
+    };
+  }
+
+  const log = [];
+
+  try {
+
+    // =================================================
+    // 4. SERVICE
+    // =================================================
+
+    const serviceResult =
+      await ensureCentralService(
+        pkg.service_database_row,
+        { allowWrite: true }
+      );
+
+    log.push({
+      step: 'SERVICE',
+      result: serviceResult
+    });
+
+    if (
+      serviceResult.status !== 'FOUND' &&
+      serviceResult.status !== 'INSERTED'
+    ) {
+      throw {
+        sync_reason: 'SERVICE_FAILED',
+        sync_step: 'SERVICE',
+        sync_result: serviceResult
+      };
+    }
+
+    const centralService =
+      serviceResult.data;
+
+    if (
+      !centralService ||
+      !centralService.id
+    ) {
+      throw {
+        sync_reason: 'MISSING_CENTRAL_SERVICE_ID',
+        sync_step: 'SERVICE'
+      };
+    }
+
+    // =================================================
+    // 5. CHECKS
+    // =================================================
+
+    for (const checkItem of pkg.checks || []) {
+
+      const checkResult =
+        await ensureCentralCheck(
+          checkItem.database_row,
+          { allowWrite: true }
+        );
+
+      log.push({
+        step: 'CHECK',
+        check_local_id:
+          checkItem.local_identity?.check_local_id ||
+          null,
+        result: checkResult
+      });
+
+      if (
+        checkResult.status !== 'FOUND' &&
+        checkResult.status !== 'INSERTED'
+      ) {
+        throw {
+          sync_reason: 'CHECK_FAILED',
+          sync_step: 'CHECK',
+          sync_result: checkResult
+        };
+      }
+
+      const centralCheck =
+        checkResult.data;
+
+      if (
+        !centralCheck ||
+        !centralCheck.id
+      ) {
+        throw {
+          sync_reason: 'MISSING_CENTRAL_CHECK_ID',
+          sync_step: 'CHECK'
+        };
+      }
+
+      // ===============================================
+      // 6. PHOTOS
+      // ===============================================
+
+    for (const photoPreview of
+  checkItem.photos || []) {
+
+  const photoRecord =
+    await rsLocalGet(
+      RS_LOCAL_STORES.photos,
+      photoPreview.photo_local_id
+    );
+
+  if (!photoRecord) {
+    throw {
+      sync_reason: 'LOCAL_PHOTO_NOT_FOUND',
+      sync_step: 'PHOTO',
+      photo_local_id:
+        photoPreview.photo_local_id
+    };
+  }
+
+  // ===============================================
+  // A. UPLOAD DO STORAGE
+  // ===============================================
+
+  const photoResult =
+    await ensureCentralPhoto(
+      photoRecord,
+      centralCheck.id,
+      { allowWrite: true }
+    );
+
+  log.push({
+    step: 'PHOTO_STORAGE',
+    photo_local_id:
+      photoPreview.photo_local_id,
+    result: photoResult
+  });
+
+  if (
+    photoResult.status !== 'UPLOADED'
+  ) {
+    throw {
+      sync_reason: 'PHOTO_UPLOAD_FAILED',
+      sync_step: 'PHOTO_STORAGE',
+      sync_result: photoResult
+    };
+  }
+
+  // ===============================================
+  // B. NAVIAZANIE FOTOGRAFIE NA checks.photos
+  // ===============================================
+
+  const linkResult =
+    await linkPhotoToCentralCheck(
+      centralCheck.id,
+      photoRecord,
+      photoResult.storage_path,
+      photoResult.public_url,
+      { allowWrite: true }
+    );
+
+  log.push({
+    step: 'PHOTO_LINK',
+    photo_local_id:
+      photoPreview.photo_local_id,
+    result: linkResult
+  });
+
+  if (
+    linkResult.status !== 'LINKED' &&
+    linkResult.status !== 'FOUND'
+  ) {
+    throw {
+      sync_reason: 'PHOTO_LINK_FAILED',
+      sync_step: 'PHOTO_LINK',
+      sync_result: linkResult
+    };
+  }
+
+  // ===============================================
+  // C. AŽ TERAZ JE FOTO KOMPLETNE SYNCED
+  // ===============================================
+
+  const localPhotoResult =
+    await markLocalPhotoAsSynced(
+      photoRecord.local_id,
+      photoResult.storage_path,
+      photoResult.public_url
+    );
+
+  if (!localPhotoResult.ok) {
+    throw {
+      sync_reason: 'LOCAL_PHOTO_FINALIZE_FAILED',
+      sync_step: 'PHOTO_FINALIZE',
+      sync_result: localPhotoResult
+    };
+  }
+
+  log.push({
+    step: 'PHOTO_FINALIZE',
+    photo_local_id:
+      photoPreview.photo_local_id,
+    result: localPhotoResult
+  });
+}
+
+// ===============================================
+// D. AŽ PO ÚSPEŠNOM SYNCU VŠETKÝCH FOTO
+//    OZNAČÍME KONTROLU AKO SYNCED
+// ===============================================
+
+const checkLocalId =
+  checkItem.local_identity?.check_local_id ||
+  checkItem.database_row?.check_local_id ||
+  null;
+
+if (!checkLocalId) {
+  throw {
+    sync_reason: 'MISSING_LOCAL_CHECK_ID',
+    sync_step: 'CHECK_FINALIZE'
+  };
+}
+
+const localCheckResult =
+  await markLocalCheckAsSynced(
+    checkLocalId,
+    centralCheck.id
+  );
+
+if (!localCheckResult.ok) {
+  throw {
+    sync_reason: 'LOCAL_CHECK_FINALIZE_FAILED',
+    sync_step: 'CHECK_FINALIZE',
+    sync_result: localCheckResult
+  };
+}
+
+log.push({
+  step: 'CHECK_FINALIZE',
+  check_local_id: checkLocalId,
+  central_check_id: centralCheck.id,
+  result: localCheckResult
+});
+
+}
+
+    // =================================================
+    // 7. FINALIZE
+    //
+    // Sem sa nesmieme dostať, pokiaľ nie je potvrdená
+    // služba + všetky kontroly + všetky fotografie.
+    // =================================================
+
+  const finalizeResult =
+  await finalizeLocalServiceSync(
+    serviceLocalId,
+    centralService.id
+  );
+
+if (!finalizeResult.ok) {
+  throw {
+    sync_reason: 'FINALIZE_BLOCKED',
+    sync_step: 'FINALIZE',
+    sync_result: finalizeResult
+  };
+}
+
+    return {
+      ok: true,
+      started: true,
+      reason: 'PACKAGE_SYNCED',
+      service_local_id: serviceLocalId,
+      central_service_id: centralService.id,
+      log
+    };
+
+  } catch (syncError) {
+
+    const reason =
+      syncError?.sync_reason ||
+      'SYNC_EXCEPTION';
+
+    const step =
+      syncError?.sync_step ||
+      'UNKNOWN';
+
+    await updateLocalServiceSyncState(
+      serviceLocalId,
+      'SYNC_ERROR',
+      {
+        errorMessage:
+          reason + ' @ ' + step
+      }
+    );
+
+    return {
+      ok: false,
+      started: true,
+      reason,
+      stopped_at: step,
+      service_local_id: serviceLocalId,
+      error: syncError,
+      log
+    };
+  }
+}
+
+async function runPendingSyncQueueDryRun(options = {}) {
+  const stopOnFirstError =
+    options.stopOnFirstError !== false;
+
+  const maxPackages =
+    Number.isFinite(options.maxPackages)
+      ? Math.max(1, Number(options.maxPackages))
+      : Infinity;
+
+  const services = await rsLocalGetAll(
+    RS_LOCAL_STORES.services
+  );
+
+  const serviceIds = services
+    .filter(service =>
+      service &&
+      service.local_id &&
+      service.pending_sync === true &&
+      service.sync_status === 'CLOSED_PENDING_SYNC' &&
+      !String(service.local_id).startsWith(
+        'legacy_service_'
+      )
+    )
+    .map(service => service.local_id)
+    .slice(0, maxPackages);
+
+  const results = [];
+
+  for (const serviceLocalId of serviceIds) {
+
+    const result =
+      await runTrackedSyncPackageDryRunByServiceId(
+        serviceLocalId
+      );
+
+    results.push({
+      service_local_id: serviceLocalId,
+      result
+    });
+
+    if (
+      !result.ok &&
+      stopOnFirstError
+    ) {
+      break;
+    }
+  }
+
+  const summary = {
+    ok:
+      results.length > 0 &&
+      results.every(item => item.result.ok),
+
+    queued_count:
+      serviceIds.length,
+
+    processed_count:
+      results.length,
+
+    successful_count:
+      results.filter(
+        item => item.result.ok
+      ).length,
+
+    failed_count:
+      results.filter(
+        item => !item.result.ok
+      ).length,
+
+    stopped_early:
+      results.length < serviceIds.length,
+
+    results
+  };
+
+  console.log(
+    'SYNC QUEUE DRY RUN:',
+    summary
+  );
+
+  return summary;
+}
+
+async function updateLocalServiceSyncState(
+  serviceLocalId,
+  newStatus,
+  options = {}
+) {
+  if (!serviceLocalId) {
+    return {
+      ok: false,
+      reason: 'MISSING_SERVICE_LOCAL_ID'
+    };
+  }
+
+  const allowedStatuses = [
+    'CLOSED_PENDING_SYNC',
+    'SYNC_RUNNING',
+    'SYNC_ERROR',
+    'SYNCED'
+  ];
+
+  if (!allowedStatuses.includes(newStatus)) {
+    return {
+      ok: false,
+      reason: 'INVALID_SYNC_STATUS'
+    };
+  }
+
+  const service = await rsLocalGet(
+    RS_LOCAL_STORES.services,
+    serviceLocalId
+  );
+
+  if (!service) {
+    return {
+      ok: false,
+      reason: 'LOCAL_SERVICE_NOT_FOUND'
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const updatedService = {
+    ...service,
+
+    sync_status: newStatus,
+    updated_at: nowIso,
+    last_sync_attempt_at:
+      newStatus === 'SYNC_RUNNING'
+        ? nowIso
+        : service.last_sync_attempt_at || null,
+
+    sync_error:
+      newStatus === 'SYNC_ERROR'
+        ? (
+            options.errorMessage ||
+            'Neznáma chyba synchronizácie.'
+          )
+        : null,
+
+    pending_sync:
+      newStatus !== 'SYNCED'
+  };
+
+  if (newStatus === 'SYNCED') {
+    updatedService.synced_at = nowIso;
+  }
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.services,
+    updatedService
+  );
+
+  return {
+    ok: true,
+    service: updatedService
+  };
+}
+
+async function ensureCentralService(
+  servicePayload,
+  options = {}
+) {
+  const allowWrite =
+    options.allowWrite === true;
+
+  if (
+    !servicePayload ||
+    !servicePayload.service_local_id
+  ) {
+    return {
+      status: 'ERROR',
+      reason: 'MISSING_SERVICE_LOCAL_ID',
+      data: null,
+      error: null
+    };
+  }
+
+  const serviceLocalId =
+    servicePayload.service_local_id;
+
+  // -----------------------------------------------
+  // 1. Najprv vždy overíme, či služba už existuje.
+  // -----------------------------------------------
+
+  const lookup =
+    await findCentralServiceByLocalId(
+      serviceLocalId
+    );
+
+  if (lookup.status === 'ERROR') {
+    return {
+      status: 'ERROR',
+      reason: 'LOOKUP_FAILED',
+      data: null,
+      error: lookup.error || null
+    };
+  }
+
+  // -----------------------------------------------
+  // 2. Už existuje -> nič znovu nevkladáme.
+  // -----------------------------------------------
+
+  if (lookup.status === 'FOUND') {
+    return {
+      status: 'FOUND',
+      reason: 'ALREADY_EXISTS',
+      data: lookup.data,
+      error: null
+    };
+  }
+
+  // -----------------------------------------------
+  // 3. Neexistuje, ale zápis zatiaľ nie je povolený.
+  // -----------------------------------------------
+
+  if (!allowWrite) {
+    return {
+      status: 'NOT_FOUND',
+      reason: 'INSERT_REQUIRED',
+      data: null,
+      error: null,
+      prepared_insert: servicePayload
+    };
+  }
+
+  // -----------------------------------------------
+  // 4. Reálny INSERT
+  // Tento blok sa vykoná LEN pri allowWrite: true.
+  // -----------------------------------------------
+
+  try {
+    const { data, error } = await db
+      .from('sluzby_reviry')
+      .insert([servicePayload])
+      .select()
+      .single();
+
+    if (error) {
+      console.warn(
+        'SYNC SERVICE INSERT – chyba:',
+        serviceLocalId,
+        error
+      );
+
+      return {
+        status: 'ERROR',
+        reason: 'INSERT_FAILED',
+        data: null,
+        error
+      };
+    }
+
+    return {
+      status: 'INSERTED',
+      reason: 'CENTRAL_SERVICE_CREATED',
+      data,
+      error: null
+    };
+
+  } catch (error) {
+    console.warn(
+      'SYNC SERVICE INSERT – výnimka:',
+      serviceLocalId,
+      error
+    );
+
+    return {
+      status: 'ERROR',
+      reason: 'INSERT_EXCEPTION',
+      data: null,
+      error
+    };
+  }
+}
+
  async function finalizeCheckSave(check) {
+
+ try {
+    await saveCheckToIndexedDb(check);
+  } catch (localDbError) {
+    console.error(
+      'LOCAL CHECK – IndexedDB zápis zlyhal:',
+      localDbError
+    );
+  }
+
   const saveBtn = document.getElementById('saveCheckBtn');
   const saveStatus = document.getElementById('saveCheckStatus');
 
@@ -4105,6 +8063,9 @@ function saveCheckToOfflineQueue(checkData) {
   if (appState.offlineMode === true) {
     try {
       const offlineCheck = saveCheckToOfflineQueue({
+      local_check_id: check.checkLocalId,
+      service_local_id: check.serviceLocalId,
+
         fisher_name: check.fisherName,
         fisher_id_no: check.fisherIdNo,
         member_name: getMemberName(check.memberId1),
@@ -4201,6 +8162,9 @@ if (error) {
 
   try {
     const offlineCheck = saveCheckToOfflineQueue({
+    local_check_id: check.checkLocalId,
+    service_local_id: check.serviceLocalId,
+
       fisher_name: check.fisherName,
       fisher_id_no: check.fisherIdNo,
       member_name: getMemberName(check.memberId1),
@@ -4266,6 +8230,18 @@ if (error) {
 
     return;
   }
+}
+
+try {
+  await markLocalCheckAsSynced(
+    check.checkLocalId,
+    data?.id || null
+  );
+} catch (localSyncError) {
+  console.error(
+    'Kontrola je uložená v Supabase, ale lokálny SYNCED stav sa nepodarilo zapísať:',
+    localSyncError
+  );
 }
 
   console.log('Kontrola uložená do Supabase:', data);
@@ -8305,6 +12281,17 @@ if (!appState.kontrolyLoaded) {
   document.getElementById('filterSection').classList.add('hidden');
 
   switchTab('kontroly');
+
+  // Obnovenie aktívneho revíru po refreshi / návrate do modulu
+  const checkPlace = document.getElementById('checkPlace');
+
+  if (
+    checkPlace &&
+    appState.activeRevir &&
+    REVIRS.includes(appState.activeRevir)
+  ) {
+    checkPlace.value = appState.activeRevir;
+  }
 
   document.getElementById('appSection').scrollIntoView({ behavior: 'smooth' });
 }
