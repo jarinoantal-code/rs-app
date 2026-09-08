@@ -678,6 +678,38 @@
   }
 }
 
+
+/* =====================================================
+   EVIDENCIA KONTROLY – transparentný vonkajší obal
+   ===================================================== */
+
+#tab-kontroly {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+#tab-kontroly > .grid {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+
+/* =====================================================
+   PRACOVNÁ ČASŤ APP – transparentný vonkajší obal
+   ===================================================== */
+
+#legacyWorkspaceCard {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  padding-left: 0;
+  padding-right: 0;
+}
+
+
 /* =====================================================
    EVIDENCIA KONTROLY – SUMÁR RYBÁRA
    ===================================================== */
@@ -861,7 +893,2052 @@
   line-height: 1.35;
 }
 
-  </style>
+/* =====================================================
+   RS APP – MAIN MENU 2026 V2
+   Moderný izolovaný vzhľad hlavného menu
+   ===================================================== */
+
+#mainMenuSection {
+  position: relative;
+
+  margin: 190px auto 0 auto;
+  padding: 0 10px 24px 10px;
+
+  max-width: 1180px;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+/* =====================================================
+   HLAVNÝ NADPIS
+   ===================================================== */
+
+#mainMenuSection > h2 {
+  position: relative;
+
+  margin: 0 0 18px 0;
+  padding: 13px 18px 13px 54px;
+
+  min-height: 34px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 25px;
+  line-height: 1.15;
+  font-weight: 850;
+
+  color: #123d23;
+  letter-spacing: -0.025em;
+
+  background: rgba(255, 255, 255, 0.78);
+
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+
+  box-shadow:
+    0 8px 24px rgba(20, 55, 32, 0.08);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+#mainMenuSection > h2::after {
+  content: "";
+
+  position: absolute;
+
+  left: 18px;
+  top: 50%;
+
+  width: 24px;
+  height: 24px;
+
+  transform: translateY(-50%);
+
+  background:
+    linear-gradient(
+      90deg,
+      #0b7a3e 0 42%,
+      transparent 42% 58%,
+      #0b7a3e 58%
+    ),
+    linear-gradient(
+      0deg,
+      #0b7a3e 0 42%,
+      transparent 42% 58%,
+      #0b7a3e 58%
+    );
+
+  border-radius: 4px;
+}
+
+/* =====================================================
+   GRID
+   ===================================================== */
+
+#mainMenuSection .main-menu-cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(12, minmax(0, 1fr));
+
+  gap: 16px;
+
+  align-items: stretch;
+}
+
+
+/* =====================================================
+   SPOLOČNÝ VZHĽAD KARIET
+   ===================================================== */
+
+#mainMenuSection .main-menu-cards .card {
+  position: relative;
+
+  box-sizing: border-box;
+
+  flex: none;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  text-align: left;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  border-radius: 22px;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+
+#mainMenuSection .main-menu-cards .card:hover {
+  transform: translateY(-4px);
+}
+
+
+/* =====================================================
+   TOP 3 – HLAVNÉ NÁSTROJE RS
+   ===================================================== */
+
+#mainMenuSection .card-kontroly,
+#mainMenuSection .card-reviry,
+#mainMenuSection .card-asistent {
+  grid-column: span 4;
+
+  min-height: 220px;
+
+  padding: 24px;
+
+  border: 1px solid;
+
+  box-shadow:
+    0 12px 30px rgba(20, 60, 35, 0.10);
+}
+
+
+/* dekorácia karty */
+
+#mainMenuSection .card-kontroly::before,
+#mainMenuSection .card-reviry::before,
+#mainMenuSection .card-asistent::before {
+  content: "";
+
+  position: absolute;
+
+  width: 160px;
+  height: 160px;
+
+  right: -55px;
+  top: -55px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.42);
+
+  pointer-events: none;
+}
+
+
+/* šípka vpravo dole */
+
+#mainMenuSection .card-kontroly::after,
+#mainMenuSection .card-reviry::after,
+#mainMenuSection .card-asistent::after {
+  content: "→";
+
+  position: absolute;
+
+  right: 22px;
+  bottom: 20px;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.70);
+
+  font-size: 19px;
+  font-weight: 800;
+
+  color: #17492a;
+}
+
+
+/* TOP ikony */
+
+#mainMenuSection .card-kontroly .card-icon,
+#mainMenuSection .card-reviry .card-icon,
+#mainMenuSection .card-asistent .card-icon {
+  position: relative;
+
+  z-index: 2;
+
+  width: 58px;
+  height: 58px;
+
+  margin: 0 0 25px 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 17px;
+
+  font-size: 28px;
+
+  color: white;
+
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+
+/* TOP nadpis */
+
+#mainMenuSection .card-kontroly h3,
+#mainMenuSection .card-reviry h3,
+#mainMenuSection .card-asistent h3 {
+  position: relative;
+
+  z-index: 2;
+
+  margin: 0 0 7px 0;
+
+  font-size: 21px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  color: #102b1a;
+}
+
+
+/* TOP popis */
+
+#mainMenuSection .card-kontroly .muted,
+#mainMenuSection .card-reviry .muted,
+#mainMenuSection .card-asistent .muted {
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 78%;
+
+  color: #456050;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+
+/* =====================================================
+   EVIDENCIA KONTROLY
+   ===================================================== */
+
+#mainMenuSection .card-kontroly {
+  background:
+    linear-gradient(
+      145deg,
+      #e7f8ec 0%,
+      #ccefd8 100%
+    );
+
+  border-color: #a9ddba;
+}
+
+#mainMenuSection .card-kontroly .card-icon {
+  background:
+    linear-gradient(
+      145deg,
+      #0b8948,
+      #08713c
+    );
+}
+
+#mainMenuSection .card-kontroly:hover {
+  box-shadow:
+    0 18px 38px rgba(11, 122, 62, 0.20);
+}
+
+
+/* =====================================================
+   REVÍRY
+   ===================================================== */
+
+#mainMenuSection .card-reviry {
+  background:
+    linear-gradient(
+      145deg,
+      #eaf5ff 0%,
+      #cfe8ff 100%
+    );
+
+  border-color: #afd4f4;
+}
+
+#mainMenuSection .card-reviry .card-icon {
+  background:
+    linear-gradient(
+      145deg,
+      #2688d8,
+      #176cb4
+    );
+}
+
+#mainMenuSection .card-reviry:hover {
+  box-shadow:
+    0 18px 38px rgba(23, 108, 180, 0.18);
+}
+
+
+/* =====================================================
+   ASISTENT RS
+   ===================================================== */
+
+#mainMenuSection .card-asistent {
+  background:
+    linear-gradient(
+      145deg,
+      #e7f9f6 0%,
+      #c8eee7 100%
+    );
+
+  border-color: #a7ddd5;
+}
+
+#mainMenuSection .card-asistent .card-icon {
+  background:
+    linear-gradient(
+      145deg,
+      #16a293,
+      #087f72
+    );
+}
+
+#mainMenuSection .card-asistent:hover {
+  box-shadow:
+    0 18px 38px rgba(8, 127, 114, 0.18);
+}
+
+
+/* =====================================================
+   SEKUNDÁRNE MODULY
+   ===================================================== */
+
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-dk {
+  grid-column: span 3;
+
+  min-height: 125px;
+
+  padding: 17px 18px;
+
+  background: rgba(255,255,255,0.96);
+
+  border: 1px solid #e2e9e4;
+
+  box-shadow:
+    0 8px 22px rgba(20, 55, 32, 0.06);
+}
+
+
+#mainMenuSection .card-rybari:hover,
+#mainMenuSection .card-statistiky:hover,
+#mainMenuSection .card-reporty:hover,
+#mainMenuSection .card-dk:hover {
+  border-color: #bcd2c2;
+
+  box-shadow:
+    0 13px 28px rgba(20, 55, 32, 0.11);
+}
+
+
+/* sekundárne ikony */
+
+#mainMenuSection .card-rybari .card-icon,
+#mainMenuSection .card-statistiky .card-icon,
+#mainMenuSection .card-reporty .card-icon,
+#mainMenuSection .card-dk .card-icon {
+  width: 40px;
+  height: 40px;
+
+  margin: 0 0 13px 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #edf6ef;
+
+  font-size: 21px;
+}
+
+
+/* sekundárny nadpis */
+
+#mainMenuSection .card-rybari h3,
+#mainMenuSection .card-statistiky h3,
+#mainMenuSection .card-reporty h3,
+#mainMenuSection .card-dk h3 {
+  margin: 0;
+
+  color: #17261c;
+
+  font-size: 15px;
+  line-height: 1.25;
+
+  font-weight: 800;
+}
+
+
+/* DK poznámka */
+
+#mainMenuSection .card-dk .muted {
+  margin-top: 4px;
+
+  font-size: 11px;
+
+  line-height: 1.3;
+}
+
+
+/* =====================================================
+   MOBIL
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+  #mainMenuSection {
+    margin-top: 14px;
+
+    padding: 16px;
+
+    border-radius: 20px;
+  }
+
+
+ #mainMenuSection > h2 {
+  margin-bottom: 14px;
+
+  padding: 11px 14px 11px 46px;
+
+  min-height: 30px;
+
+  font-size: 20px;
+
+  border-radius: 14px;
+}
+
+
+  #mainMenuSection .main-menu-cards {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 11px;
+  }
+
+
+  /* TOP tri na celú šírku */
+
+  #mainMenuSection .card-kontroly,
+  #mainMenuSection .card-reviry,
+  #mainMenuSection .card-asistent {
+    grid-column: span 2;
+
+    min-height: 108px;
+
+    padding: 15px 52px 15px 15px;
+
+    justify-content: center;
+
+    border-radius: 17px;
+  }
+
+
+  #mainMenuSection .card-kontroly .card-icon,
+  #mainMenuSection .card-reviry .card-icon,
+  #mainMenuSection .card-asistent .card-icon {
+    width: 42px;
+    height: 42px;
+
+    margin-bottom: 9px;
+
+    border-radius: 12px;
+
+    font-size: 21px;
+  }
+
+
+  #mainMenuSection .card-kontroly h3,
+  #mainMenuSection .card-reviry h3,
+  #mainMenuSection .card-asistent h3 {
+    margin-bottom: 3px;
+
+    font-size: 16px;
+  }
+
+
+  #mainMenuSection .card-kontroly .muted,
+  #mainMenuSection .card-reviry .muted,
+  #mainMenuSection .card-asistent .muted {
+    max-width: 90%;
+
+    font-size: 11px;
+  }
+
+
+  #mainMenuSection .card-kontroly::after,
+  #mainMenuSection .card-reviry::after,
+  #mainMenuSection .card-asistent::after {
+    right: 14px;
+    bottom: 50%;
+
+    transform: translateY(50%);
+
+    width: 30px;
+    height: 30px;
+
+    font-size: 16px;
+  }
+
+
+  /* spodné 4 – dva vedľa seba */
+
+  #mainMenuSection .card-rybari,
+  #mainMenuSection .card-statistiky,
+  #mainMenuSection .card-reporty,
+  #mainMenuSection .card-dk {
+    grid-column: span 1;
+
+    min-height: 106px;
+
+    padding: 14px;
+
+    border-radius: 15px;
+  }
+
+
+  #mainMenuSection .card-rybari .card-icon,
+  #mainMenuSection .card-statistiky .card-icon,
+  #mainMenuSection .card-reporty .card-icon,
+  #mainMenuSection .card-dk .card-icon {
+    width: 34px;
+    height: 34px;
+
+    margin-bottom: 9px;
+
+    font-size: 17px;
+  }
+
+
+  #mainMenuSection .card-rybari h3,
+  #mainMenuSection .card-statistiky h3,
+  #mainMenuSection .card-reporty h3,
+  #mainMenuSection .card-dk h3 {
+    font-size: 13px;
+  }
+
+
+  #mainMenuSection .card-dk .muted {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   RS APP – LOGIN 2026 V1
+   Izolovaná vizuálna vrstva prihlasovacej obrazovky
+   ===================================================== */
+
+#loginSection {
+  position: relative;
+
+  width: min(520px, calc(100% - 40px));
+
+  margin: 54px auto 0 auto;
+  padding: 34px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(27, 139, 76, 0.10),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f8fbf9 100%
+    );
+
+  border: 1px solid #dce8df;
+  border-radius: 26px;
+
+  box-shadow:
+    0 18px 50px rgba(19, 62, 34, 0.10);
+
+  overflow: hidden;
+}
+
+
+/* zelený horný akcent */
+
+#loginSection::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 5px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #0a733b,
+      #17a45c,
+      #48c985
+    );
+}
+
+
+/* nadpis */
+
+#loginSection > h2 {
+  margin: 4px 0 28px 0;
+
+  text-align: center;
+
+  color: #123d23;
+
+  font-size: 26px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  letter-spacing: -0.025em;
+}
+
+
+/* pole – iba jeden stĺpec */
+
+#loginSection .row {
+  display: block;
+
+  margin: 0;
+}
+
+
+/* field */
+
+#loginSection .field {
+  margin-bottom: 20px;
+}
+
+
+/* label */
+
+#loginSection label {
+  margin-bottom: 8px;
+
+  color: #36513e;
+
+  font-size: 13px;
+
+  font-weight: 750;
+}
+
+
+/* input */
+
+#loginSection #loginCisloOdznaku {
+  width: 100%;
+  height: 50px;
+
+  box-sizing: border-box;
+
+  padding: 0 16px;
+
+  background: #ffffff;
+
+  border: 1px solid #cbdcd0;
+  border-radius: 14px;
+
+  color: #17251c;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+
+/* focus input */
+
+#loginSection #loginCisloOdznaku:focus {
+  border-color: #24945a;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(36, 148, 90, 0.12);
+}
+
+
+/* placeholder */
+
+#loginSection #loginCisloOdznaku::placeholder {
+  color: #8b9990;
+}
+
+
+/* tlačidlá */
+
+#loginSection .actions {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 4px;
+}
+
+
+/* hlavné prihlásenie */
+
+#loginSection .btn-primary {
+  flex: 1;
+
+  min-height: 48px;
+
+  padding: 12px 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0b8547,
+      #086f3b
+    );
+
+  color: white;
+
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  box-shadow:
+    0 8px 20px rgba(11, 133, 71, 0.20);
+}
+
+
+#loginSection .btn-primary:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 24px rgba(11, 133, 71, 0.25);
+}
+
+
+/* ukážkové dáta – zámerne sekundárne */
+
+#loginSection .btn-secondary {
+  min-height: 48px;
+
+  padding: 12px 16px;
+
+  background: #edf4ef;
+
+  color: #4a6453;
+
+  border-radius: 14px;
+
+  box-shadow: none;
+}
+
+
+/* prototypová poznámka */
+
+#loginSection .note {
+  margin-top: 18px !important;
+
+  padding: 11px 13px;
+
+  background: #f5f8f6;
+
+  border: 1px dashed #d0ddd3;
+
+  border-radius: 12px;
+
+  color: #6b7d70;
+
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+
+/* =====================================================
+   MOBIL
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+  #loginSection {
+    width: calc(100% - 24px);
+
+    margin-top: 22px;
+
+    padding: 26px 20px;
+
+    border-radius: 22px;
+  }
+
+
+  #loginSection > h2 {
+    margin-bottom: 24px;
+
+    font-size: 22px;
+  }
+
+
+  #loginSection #loginCisloOdznaku {
+    height: 52px;
+
+    font-size: 16px;
+  }
+
+
+  #loginSection .actions {
+    flex-direction: column;
+  }
+
+
+  #loginSection .btn-primary,
+  #loginSection .btn-secondary {
+    width: 100%;
+  }
+}
+
+
+/* =====================================================
+   RS APP – HEADER 2026 V1
+   Moderná izolovaná hlavička aplikácie
+   ===================================================== */
+
+header {
+  position: relative;
+  z-index: 20;
+
+  background:
+    linear-gradient(
+      135deg,
+      #17662d 0%,
+      #1d7134 55%,
+      #17662d 100%
+    );
+
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+
+  box-shadow:
+    0 6px 22px rgba(17, 60, 31, 0.12);
+}
+
+
+/* vnútorné rozloženie */
+
+header .header-inner {
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 28px;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+
+/* =====================================================
+   ĽAVÁ ČASŤ – IDENTITA
+   ===================================================== */
+
+header .brand-wrap {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+}
+
+
+/* logá */
+
+header .brand-logos {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+header .brand-logo {
+  display: block;
+
+  width: 56px;
+  height: 56px;
+
+  box-sizing: border-box;
+
+  object-fit: contain;
+
+  padding: 5px;
+
+  background: rgba(255,255,255,0.96);
+
+  border: 1px solid rgba(255,255,255,0.65);
+  border-radius: 15px;
+
+  box-shadow:
+    0 5px 14px rgba(0,0,0,0.12);
+}
+
+
+/* textová časť */
+
+header .title-wrap {
+  min-width: 0;
+}
+
+
+header .title-wrap h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 23px;
+  line-height: 1.15;
+
+  font-weight: 850;
+
+  letter-spacing: -0.025em;
+}
+
+
+header .title-wrap p {
+  margin: 5px 0 0 0;
+
+  color: rgba(255,255,255,0.82);
+
+  font-size: 11px;
+  line-height: 1.35;
+
+  font-weight: 500;
+}
+
+
+/* =====================================================
+   PRAVÁ ČASŤ – USER / SYNC / LOGOUT
+   ===================================================== */
+
+header .login-info {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+/* spoločný vzhľad badge */
+
+header .login-info .badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 30px;
+
+  box-sizing: border-box;
+
+  padding: 6px 11px;
+
+  background: rgba(255,255,255,0.94);
+
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 999px;
+
+  color: #17632e;
+
+  font-size: 11px;
+  line-height: 1;
+
+  font-weight: 750;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.08);
+}
+
+
+/* sync status */
+
+header #syncStatusIndicator {
+  background: transparent;
+
+  border: none;
+
+  color: rgba(255,255,255,0.95);
+
+  box-shadow: none;
+
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+
+/* odhlásiť */
+
+header #logoutBtn {
+  min-height: 34px;
+
+  padding: 7px 14px;
+
+  background: rgba(255,255,255,0.94);
+
+  border: 1px solid rgba(255,255,255,0.60);
+  border-radius: 11px;
+
+  color: #17632e;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.08);
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+header #logoutBtn:hover {
+  transform: translateY(-1px);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 14px rgba(0,0,0,0.13);
+}
+
+
+/* =====================================================
+   MOBIL
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+  header .header-inner {
+    min-height: auto;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 10px;
+
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+
+  header .brand-wrap {
+    gap: 10px;
+  }
+
+
+  header .brand-logos {
+    gap: 5px;
+  }
+
+
+  header .brand-logo {
+    width: 43px;
+    height: 43px;
+
+    padding: 4px;
+
+    border-radius: 11px;
+  }
+
+
+  header .title-wrap h1 {
+    font-size: 17px;
+  }
+
+
+  header .title-wrap p {
+    margin-top: 3px;
+
+    font-size: 9px;
+  }
+
+
+  header .login-info {
+    width: 100%;
+
+    gap: 7px;
+
+    flex-wrap: wrap;
+  }
+
+
+  header .login-info .badge {
+    min-height: 27px;
+
+    padding: 5px 9px;
+
+    font-size: 10px;
+  }
+
+
+  header #syncStatusIndicator {
+    flex: 1;
+
+    min-width: 150px;
+
+    padding-left: 0;
+
+    font-size: 9px;
+  }
+
+
+  header #logoutBtn {
+    min-height: 30px;
+
+    padding: 6px 11px;
+
+    font-size: 10px;
+  }
+}
+
+
+/* =====================================================
+   RS APP – NEW CHECK CARD 2026 V1
+   Izolovaný vzhľad formulára novej kontroly
+   ===================================================== */
+
+#newCheckCard {
+  position: relative;
+
+  padding: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfdfb 100%
+    );
+
+  border: 1px solid #dce7df;
+  border-radius: 22px;
+
+  box-shadow:
+    0 10px 28px rgba(20, 55, 32, 0.07);
+
+  overflow: hidden;
+}
+
+
+/* horný akcent */
+
+#newCheckCard::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #0b7a3e,
+      #22a85a,
+      #6ed39a
+    );
+}
+
+
+/* nadpis */
+
+#newCheckCard > h3 {
+  margin: 0 0 22px 0;
+
+  color: #123d23;
+
+  font-size: 20px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  letter-spacing: -0.02em;
+}
+
+
+/* riadky formulára */
+
+#newCheckCard .row {
+  gap: 14px;
+}
+
+
+/* jednotlivé polia */
+
+#newCheckCard .field {
+  margin-bottom: 14px;
+}
+
+
+/* label */
+
+#newCheckCard label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #314c39;
+
+  font-size: 12px;
+
+  font-weight: 750;
+}
+
+
+/* inputy, selecty, textarea */
+
+#newCheckCard input[type="text"],
+#newCheckCard input[type="date"],
+#newCheckCard input[type="time"],
+#newCheckCard input[type="file"],
+#newCheckCard select,
+#newCheckCard textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #ccdcd0;
+  border-radius: 13px;
+
+  color: #17251c;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+
+/* výška polí */
+
+#newCheckCard input[type="text"],
+#newCheckCard input[type="date"],
+#newCheckCard input[type="time"],
+#newCheckCard select {
+  min-height: 42px;
+
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+
+/* file input */
+
+#newCheckCard input[type="file"] {
+  min-height: 42px;
+
+  padding: 7px 9px;
+}
+
+
+/* textarea */
+
+#newCheckCard textarea {
+  min-height: 96px !important;
+
+  padding: 11px 12px;
+
+  line-height: 1.45;
+
+  resize: vertical;
+}
+
+
+/* focus */
+
+#newCheckCard input:focus,
+#newCheckCard select:focus,
+#newCheckCard textarea:focus {
+  border-color: #2c9b5d;
+
+  box-shadow:
+    0 0 0 3px rgba(44, 155, 93, 0.11);
+}
+
+
+/* spoločná akcia */
+
+#newCheckCard #isGroupCheck {
+  width: 17px;
+  height: 17px;
+
+  accent-color: #0b7a3e;
+}
+
+
+/* tlačidlá dole */
+
+#newCheckCard .actions {
+  display: flex;
+
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-top: 16px;
+}
+
+
+/* uložiť kontrolu */
+
+#newCheckCard #saveCheckBtn {
+  min-height: 42px;
+
+  padding: 10px 17px;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0b8547,
+      #08713c
+    );
+
+  box-shadow:
+    0 6px 15px rgba(11, 133, 71, 0.18);
+
+  font-weight: 800;
+}
+
+
+/* sekundárne tlačidlá */
+
+#newCheckCard .btn-muted {
+  min-height: 42px;
+
+  padding: 10px 15px;
+
+  background: #eef3ef;
+
+  border-radius: 12px;
+
+  color: #405548;
+
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   MOBIL
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+  #newCheckCard {
+    padding: 17px;
+
+    border-radius: 18px;
+  }
+
+  #newCheckCard > h3 {
+    margin-bottom: 18px;
+
+    font-size: 18px;
+  }
+
+  #newCheckCard .row {
+    gap: 10px;
+  }
+
+  #newCheckCard .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #newCheckCard #saveCheckBtn,
+  #newCheckCard .btn-muted {
+    width: 100%;
+  }
+}
+
+
+/* =====================================================
+   RS APP – CHECK HISTORY CARD 2026 V1
+   Izolovaný vzhľad histórie kontrol
+   ===================================================== */
+
+#historiaKontrolCard {
+  position: relative;
+
+  padding: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfdfb 100%
+    );
+
+  border: 1px solid #dce7df;
+  border-radius: 22px;
+
+  box-shadow:
+    0 10px 28px rgba(20, 55, 32, 0.07);
+
+  overflow: hidden;
+}
+
+
+/* modrozelený horný akcent */
+
+#historiaKontrolCard::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #1886c7,
+      #18a59a,
+      #61cdb3
+    );
+}
+
+
+/* horná toolbar */
+
+#historiaKontrolCard > .toolbar {
+  margin: 0;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+}
+
+
+/* nadpis */
+
+#historiaKontrolCard h3 {
+  color: #123d23;
+
+  font-size: 20px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  letter-spacing: -0.02em;
+}
+
+
+/* podnadpis */
+
+#historiaKontrolCard .muted.small {
+  color: #687a6d;
+
+  font-size: 11px;
+}
+
+
+/* sumár */
+
+#historiaKontrolCard #checksSummary {
+  box-sizing: border-box;
+
+  margin-top: 14px !important;
+  margin-bottom: 16px !important;
+
+  padding: 12px 14px;
+
+  background: #f4f8f5;
+
+  border: 1px solid #dce8df;
+  border-radius: 13px;
+
+  color: #5d7163;
+
+  font-size: 12px;
+}
+
+
+/* zoznam / obsah histórie */
+
+#historiaKontrolCard .list {
+  border-radius: 15px;
+}
+
+
+/* prázdny stav */
+
+#historiaKontrolCard .empty {
+  color: #66776c;
+}
+
+
+/* =====================================================
+   MOBIL
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+  #historiaKontrolCard {
+    padding: 17px;
+
+    border-radius: 18px;
+  }
+
+  #historiaKontrolCard h3 {
+    font-size: 18px;
+  }
+
+  #historiaKontrolCard #checksSummary {
+    padding: 10px 12px;
+  }
+}
+
+
+/* =====================================================
+   RS APP – REVÍRY LIST 2026 V1
+   Moderný zoznam revírov
+   ===================================================== */
+
+#reviryInfoList .revir-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding: 16px 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f9fcfa 100%
+    );
+
+  border: 1px solid #dbe7df;
+  border-radius: 16px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+#reviryInfoList .revir-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #b9d8c2;
+
+  box-shadow:
+    0 8px 20px rgba(20, 55, 32, 0.09);
+}
+
+
+#reviryInfoList .revir-card-main {
+  min-width: 0;
+
+  flex: 1;
+}
+
+
+#reviryInfoList .revir-card-title {
+  margin-bottom: 7px;
+
+  color: #163d25;
+
+  font-size: 15px;
+  line-height: 1.25;
+
+  font-weight: 850;
+}
+
+
+#reviryInfoList .revir-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px 12px;
+
+  margin-bottom: 7px;
+
+  color: #5f7466;
+
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+
+#reviryInfoList .revir-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 8px;
+
+  background: #e8f4eb;
+
+  border-radius: 999px;
+
+  color: #176b35;
+
+  font-weight: 800;
+}
+
+
+#reviryInfoList .revir-card-description {
+  color: #53665a;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+#reviryInfoList .revir-card-arrow {
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #edf6ef;
+
+  border-radius: 50%;
+
+  color: #176b35;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+
+/* mobil */
+
+@media (max-width: 760px) {
+
+  #reviryInfoList .revir-card {
+    padding: 14px;
+
+    gap: 10px;
+  }
+
+  #reviryInfoList .revir-card-title {
+    font-size: 14px;
+  }
+
+  #reviryInfoList .revir-card-meta {
+    gap: 5px 8px;
+
+    font-size: 10px;
+  }
+
+  #reviryInfoList .revir-card-description {
+    font-size: 11px;
+  }
+
+  #reviryInfoList .revir-card-arrow {
+    width: 30px;
+    height: 30px;
+
+    font-size: 15px;
+  }
+}
+
+
+/* =========================================================
+   ASISTENT RS – GRID METODICKÝCH KARIET
+   Izolované iba na vnútorné metodické karty Asistenta
+   ========================================================= */
+
+/* ASISTENT RS – transparentný detailný pracovný priestor */
+#asistentDetailBox {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.asistent-method-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.asistent-method-grid .asistent-method-card {
+    margin: 0;
+    min-height: 74px;
+    padding: 12px 14px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 12px;
+    text-align: left;
+
+    background: #ffffff;
+    border: 1px solid #d9e7dd;
+    border-radius: 14px;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.asistent-method-grid .asistent-method-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.08);
+    border-color: #b7d8bf;
+}
+
+.asistent-method-grid .asistent-method-card .card-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+
+    background: #eef7f0;
+    border-radius: 11px;
+
+    font-size: 21px;
+}
+
+/* Obrázok ryby v karte Atlasu */
+.asistent-method-grid .asistent-method-card .card-icon.fish-image {
+    width: 64px;
+    height: 42px;
+    min-width: 64px;
+
+    padding: 2px;
+    margin: 0;
+
+    background: #f4f8f5;
+    border-radius: 9px;
+
+    overflow: hidden;
+}
+
+.asistent-method-grid .asistent-method-card .card-icon.fish-image img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+}
+
+.asistent-method-grid .asistent-method-card h3 {
+    margin: 0;
+
+    flex: 1;
+
+    font-size: 14px;
+    line-height: 1.25;
+    font-weight: 700;
+
+    color: #173b22;
+}
+
+.asistent-method-grid .asistent-method-card::after {
+    content: '›';
+
+    flex-shrink: 0;
+    margin-left: auto;
+
+    color: #6c8f76;
+
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+
+/* Nadpisy sekcií v metodikách Asistenta RS */
+.asistent-method-section h4 {
+    margin: 18px 0 10px 0;
+    padding: 11px 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    background: rgba(8, 105, 67, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    border-radius: 12px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 850;
+    line-height: 1.2;
+
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.asistent-method-section:first-child h4 {
+    margin-top: 10px;
+}
+
+
+/* Detail metodiky Asistenta RS */
+#asistentDetailBox .note {
+    background: #ffffff;
+    border: 1px solid #d9e7dd;
+    border-radius: 14px;
+
+    padding: 16px 18px;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+#asistentDetailBox .note h4 {
+    margin: 0 0 12px 0;
+
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+
+    color: #174c2b;
+}
+
+#asistentDetailBox .note p {
+    margin: 8px 0;
+
+    line-height: 1.45;
+}
+
+#asistentDetailBox .note blockquote {
+    margin-top: 12px;
+    margin-bottom: 0;
+
+    padding: 10px 12px;
+
+    background: #f7faf8;
+    border-left: 4px solid #b7d8bf !important;
+    border-radius: 8px;
+
+    line-height: 1.45;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .asistent-method-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobil */
+@media (max-width: 520px) {
+    .asistent-method-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+   .asistent-method-grid .asistent-method-card {
+    min-height: 66px;
+    padding: 10px 12px;
+}
+}
+
+
+/* =====================================================
+   GLOBÁLNE POZADIE RS APP
+   ===================================================== */
+
+body {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(244, 249, 246, 0.05) 0%,
+            rgba(244, 249, 246, 0.12) 55%,
+            rgba(244, 249, 246, 0.28) 100%
+        ),
+        url('rs-app-background.jpg');
+
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+
+/* =====================================================
+   RS APP – MODERNÁ PLÁVAJÚCA HLAVIČKA
+   ===================================================== */
+
+header {
+  background: transparent;
+  padding: 14px 18px 0 18px;
+  box-shadow: none;
+}
+
+header .header-inner {
+  width: 100%;
+  max-width: 1180px;
+  box-sizing: border-box;
+
+  margin: 0 auto;
+  padding: 12px 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(4, 82, 50, 0.96),
+      rgba(7, 103, 63, 0.92)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 28px rgba(0, 45, 28, 0.18);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+/* Mobil */
+@media (max-width: 760px) {
+
+  header {
+    padding: 8px 8px 0 8px;
+  }
+
+  header .header-inner {
+    padding: 9px 10px;
+    border-radius: 16px;
+  }
+}
+
+</style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -892,6 +2969,9 @@
       </div>
       <div class="login-info">
         <span id="loggedUserText" class="badge badge-green">Neprihlásený</span>
+
+        <span id="syncStatusIndicator" class="badge badge-green hidden">Všetky údaje synchronizované</span>
+
         <button id="logoutBtn" class="btn-secondary hidden" onclick="logoutRS()">Odhlásiť</button>
       </div>
     </div>
@@ -911,12 +2991,8 @@
         </div>
       </div>
       <div class="actions">
-        <button class="btn-primary" onclick="loginRS()">Prihlásiť</button>
-        <button class="btn-secondary" onclick="resetDemoDataConfirm()">Obnoviť ukážkové dáta</button>
-      </div>
-      <div class="note" style="margin-top: 12px;">
-        Pri prototypovaní sú dáta ukladané lokálne do prehliadača cez localStorage.
-      </div>
+  <button class="btn-primary" onclick="loginRS()">Prihlásiť</button>
+</div>
     </section>
 
     <div id="filterSection" class="card hidden" style="margin:20px 0;">
@@ -954,47 +3030,191 @@
     </div>
 
 <div id="mainMenuSection" class="dashboard hidden">
+
   <h2>Hlavné menu</h2>
 
 <div class="main-menu-cards">
 
-  <div class="card card-rybari" onclick="openRybariModule()">
-    <div class="card-icon">👥</div>
-    <h3>Evidencia rybára</h3>
-</div>
+  <!-- TOP 3 – hlavné nástroje RS -->
 
-   <div class="card card-kontroly" onclick="openKontrolyModule()">
-    <div class="card-icon">✅</div>
-    <h3>Evidencia kontroly</h3>
-</div>
+  <div class="card card-kontroly" onclick="openKontrolyModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="28"
+      height="28"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <path d="m9 14 2 2 4-4"/>
+    </svg>
+  </div>
 
-    <div class="card card-statistiky" onclick="openStatistikyModule()">
-    <div class="card-icon">📊</div>
-    <h3>Štatistiky</h3>
-</div>
+  <h3>Evidencia kontroly</h3>
 
-    <div class="card card-reviry" onclick="showReviryInfo()">
-    <div class="card-icon">📍</div>
-    <h3>Revíry</h3>
-</div>
-
-<div class="card card-reporty" onclick="openReportyModule()">
-    <div class="card-icon">📈</div>
-    <h3>Reporty</h3>
-</div>
-
-<div class="card card-dk" onclick="openDisciplinarnaKomisiaModule()">
-    <div class="card-icon">⚖️</div>
-    <h3>Disciplinárna komisia</h3>
-    <div class="muted small">Riešenie disciplinárnych prípadov</div>
-</div>
-
-<div class="card card-asistent" onclick="openAsistentRSModule()">
-    <div class="card-icon">📘</div>
-    <h3>Asistent RS</h3>
-</div>
+  <div class="muted small">
+    Zaznamenanie kontroly v teréne
   </div>
 </div>
+
+  <div class="card card-reviry" onclick="showReviryInfo()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="28"
+      height="28"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
+      <circle cx="12" cy="10" r="2.5"/>
+    </svg>
+  </div>
+
+  <h3>Revíry</h3>
+
+  <div class="muted small">
+    Prehľad revírov a pravidiel
+  </div>
+</div>
+
+  <div class="card card-asistent" onclick="openAsistentRSModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="28"
+      height="28"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
+      <path d="M8 7h8"/>
+      <path d="M8 11h6"/>
+    </svg>
+  </div>
+
+  <h3>Asistent RS</h3>
+
+  <div class="muted small">
+    Pomoc pri výkone kontroly
+  </div>
+</div>
+
+  <!-- OSTATNÉ FUNKCIE -->
+
+  <div class="card card-rybari" onclick="openRybariModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  </div>
+  <h3>Evidencia rybára</h3>
+</div>
+
+
+<div class="card card-statistiky" onclick="openStatistikyModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 3v18h18"/>
+      <path d="M7 16v-5"/>
+      <path d="M12 16V7"/>
+      <path d="M17 16v-8"/>
+    </svg>
+  </div>
+  <h3>Štatistiky</h3>
+</div>
+
+
+<div class="card card-reporty" onclick="openReportyModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 3v18h18"/>
+      <path d="m7 15 4-4 3 3 5-6"/>
+      <path d="M15 8h4v4"/>
+    </svg>
+  </div>
+  <h3>Reporty</h3>
+</div>
+
+
+<div class="card card-dk" onclick="openDisciplinarnaKomisiaModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18"/>
+      <path d="M5 7h14"/>
+      <path d="m5 7-3 6h6L5 7Z"/>
+      <path d="m19 7-3 6h6l-3-6Z"/>
+      <path d="M8 21h8"/>
+    </svg>
+  </div>
+
+  <h3>Disciplinárna komisia</h3>
+
+  <div class="muted small">
+    Riešenie disciplinárnych prípadov
+  </div>
+</div>
+
+</div>
+  </div>
 
 <div id="backToMenuSection" class="hidden" style="margin-bottom:15px;">
     <button class="btn-secondary" onclick="showMainMenu()">
@@ -1120,10 +3340,6 @@
     </div>
   </div>
 
- <div class="note">
-  Vyberte modelovú situáciu. Modul slúži ako rýchla metodická pomôcka pri výkone rybárskej stráže.
-</div>
-
 <div id="asistentCategoryMenu" class="main-menu-cards">
   <div class="card card-kontroly" onclick="openAsistentCategory('kontrola_rybara')">
     <div class="card-icon">🎣</div>
@@ -1231,6 +3447,8 @@
     <option value="grafHodinyReviry">Odslúžené hodiny podľa revírov</option>
     <option value="grafVysledkyKontrol">Výsledky kontrol</option>
     <option value="grafMesacnyTarget">Mesačný TGT členov RS</option>
+    <option value="grafSluzbyRs">Služby RS</option>
+    <option value="grafUcastniciSluzieb">Účastníci služieb</option>
   </select>
 </div>
 
@@ -1288,6 +3506,26 @@
   </div>
 </div>
 
+<div class="card graph-card" data-graph-id="grafSluzbyRs">
+
+  <h3>Služby RS</h3>
+
+  <div id="grafSluzbyRs">
+    Prehľad služieb bude doplnený v ďalšom kroku.
+  </div>
+
+</div>
+
+<div class="card graph-card" data-graph-id="grafUcastniciSluzieb">
+
+  <h3>Účastníci služieb</h3>
+
+  <div id="grafUcastniciSluzieb">
+    Prehľad účastníkov služieb bude doplnený v ďalšom kroku.
+  </div>
+
+</div>
+
         </div>
       </div>
     </div>
@@ -1330,7 +3568,7 @@
           </div>
         </div>
 
-        <div class="card span-12">
+        <div class="card span-12" id="legacyWorkspaceCard">
           <div class="tabs" id="legacyTabs">
             <button class="tab-btn btn-secondary active" data-tab="rybari" onclick="switchTab('rybari', this)">Rybári</button>
             <button class="tab-btn btn-secondary" data-tab="clenovia" onclick="switchTab('clenovia', this)">Členovia RS</button>
@@ -1521,10 +3759,11 @@
 
           <div id="tab-kontroly" class="tab-panel hidden">
             <div class="grid">
-              <div class="card span-5">
-                <h3>Zapísať kontrolu</h3>
+              <div class="card span-5" id="newCheckCard">
+               <h3>Zapísať kontrolu</h3>
 
-                <div class="row">
+               <div class="row">
+
                  <div class="field">
   <label for="checkFisherName">Meno rybára</label>
   <input id="checkFisherName" type="text" placeholder="Zadaj meno rybára" oninput="suggestFishers(); renderChecks()" autocomplete="off" />
@@ -1747,6 +3986,52 @@
     </div>
 </div>
 
+<div id="checksModal" class="modal hidden"> 
+    <div class="modal-content"> 
+        <div class="toolbar"> 
+            <div> 
+                <h3 style="margin:0;">Zoznam kontrolovaných rybárov</h3> 
+                <div class="muted small">Prehľad všetkých kontrol</div> 
+            </div> 
+ 
+            <button class="btn-muted" onclick="closeChecksModal()"> 
+                Zavrieť 
+            </button> 
+        </div> 
+ 
+        <div id="checksModalList" class="list"></div> 
+    </div> 
+</div> 
+
+<div id="serviceStatsDetailModal" class="modal hidden">
+  <div class="modal-content">
+
+    <div class="toolbar">
+      <div>
+        <h3 id="serviceStatsDetailTitle" style="margin:0;">
+          Detail služby
+        </h3>
+
+        <div class="muted small">
+          Prehľad konkrétnych služieb a účastníkov
+        </div>
+      </div>
+
+      <button
+        class="btn-muted"
+        onclick="closeServiceStatsDetailModal()"
+      >
+        Zavrieť
+      </button>
+    </div>
+
+    <div id="serviceStatsDetailList" class="list">
+      Detail služby bude doplnený v ďalšom kroku.
+    </div>
+
+  </div>
+</div>
+
 <div id="checkDetailModal" class="modal hidden">
   <div class="modal-content">
 
@@ -1908,39 +4193,33 @@
 
       <label>Typ služby</label>
 
-      <select id="serviceType">
-        <option value="">
-          Vyber typ služby
-        </option>
+ <select id="serviceType">
+  <option value="">Vyber typ služby</option>
+  <option>Kontrola revíru</option>
+  <option>Zákaz lovu</option>
+  <option>Nočná kontrola</option>
+  <option>Proti pytliactvu</option>
+  <option>Úhyn rýb</option>
+  <option>Obhliadka</option>
+  <option>Iné</option>
+</select>
 
-        <option>
-          Bežná kontrola rybárov
-        </option>
+<div style="margin-top:12px;">
+  <label>Dátum služby</label>
+  <input type="date" id="serviceDate">
+</div>
 
-        <option>
-          Kontrola revíru počas zákazu lovu
-        </option>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+  <div>
+    <label>Čas od</label>
+    <input type="time" id="serviceTimeFrom">
+  </div>
 
-        <option>
-          Nočná obchôdzka revíru
-        </option>
-
-        <option>
-          Protipytliacka služba
-        </option>
-
-        <option>
-          Obhliadka revíru
-        </option>
-
-        <option>
-          Na revíri nebol zistený žiadny rybár
-        </option>
-
-        <option>
-          Iné
-        </option>
-      </select>
+  <div>
+    <label>Čas do</label>
+    <input type="time" id="serviceTimeTo">
+  </div>
+</div>
 
       <label style="margin-top:12px;">
         Poznámka
@@ -3821,6 +6100,9 @@ document.getElementById('checkTimeFrom').value = teraz;
 document.getElementById('checkTimeTo').value = teraz;
 
 renderAll();
+
+updateSyncStatusIndicator();
+
 }
 
     function logoutRS() {
@@ -4047,6 +6329,8 @@ await closeCurrentActiveServiceInIndexedDb({
 
       renderStats();
       updateDashboard();
+
+await updateSyncStatusIndicator();
 
       alert(
         '⚠️ Revír bol ukončený a služba bola uložená lokálne.\n\n' +
@@ -7199,6 +9483,71 @@ async function runTrackedSyncPackageDryRunByServiceId(serviceLocalId) {
   };
 }
 
+async function updateSyncStatusIndicator() {
+  const indicator =
+    document.getElementById('syncStatusIndicator');
+
+  if (!indicator) {
+    return;
+  }
+
+  try {
+    const summary =
+      await getPendingSyncSummary();
+
+    const pending =
+      Number(summary?.total_pending) || 0;
+
+    const checks =
+      Number(summary?.total_checks) || 0;
+
+    const photos =
+      Number(summary?.total_photos) || 0;
+
+    const errors =
+      Number(summary?.errors) || 0;
+
+    indicator.classList.remove(
+      'hidden',
+      'badge-green'
+    );
+
+    if (errors > 0) {
+      indicator.textContent =
+        '🔴 Chyba synchronizácie';
+
+      return;
+    }
+
+    if (pending > 0) {
+      indicator.textContent =
+        '🟠 Čaká na synchronizáciu: ' +
+        pending + ' služba' +
+        (pending === 1 ? '' : 'y') +
+        ' · ' +
+        checks + ' kontrol' +
+        (checks === 1 ? 'a' : '') +
+        ' · ' +
+        photos + ' foto';
+
+      return;
+    }
+
+    indicator.textContent =
+      '🟢 Všetky údaje synchronizované';
+
+  } catch (error) {
+    console.error(
+      'SYNC STATUS INDICATOR – chyba:',
+      error
+    );
+
+    indicator.classList.remove('hidden');
+    indicator.textContent =
+      '⚪ Stav synchronizácie neznámy';
+  }
+}
+
 async function getPendingSyncSummary() {
   const services = await rsLocalGetAll(
     RS_LOCAL_STORES.services
@@ -10063,6 +12412,49 @@ RS pri kontrole preverí:
 },
 
 {
+  id: 'ryba_amur_biely',
+
+  category: 'ulovok_sposob_lovu',
+
+  title: 'Amur biely',
+
+  icon: '🐟',
+
+  law: 'Vyhláška Ministerstva životného prostredia SR č. 381/2018 Z. z.',
+
+  paragraph: '§ 12 ods. 1 písm. a)',
+
+  quote: `
+Amur biely (Ctenopharyngodon idella) má ustanovenú najmenšiu lovnú mieru 60 cm.
+
+Najmenšia lovná miera sa vzťahuje aj na rybu použitú ako nástraha pri love rýb v kaprových vodách.
+`,
+
+  advice: `
+„Pán rybár, amur biely má podľa § 12 vyhlášky č. 381/2018 Z. z. ustanovenú najmenšiu lovnú mieru 60 cm. Pri privlastnení ryby je preto potrebné dodržať ustanovenú lovnú mieru a pravidlá evidencie úlovku.“
+`,
+
+  note: `
+ROZPOZNANIE:
+• pretiahnuté, valcovité telo,
+• veľké šupiny s tmavším lemovaním,
+• široká hlava,
+• koncové ústa bez fúzikov,
+• sivasté až olivové sfarbenie chrbta,
+• svetlejšie boky a brucho.
+
+NAJMENŠIA LOVNÁ MIERA:
+60 cm
+
+RS pri kontrole preverí:
+• druh ryby,
+• dĺžku ryby,
+• spôsob evidencie privlastneného úlovku,
+• prípadné miestne obmedzenia alebo pravidlá užívateľa revíru.
+`
+},
+
+{
   id: 'ryba_stuka_severna',
 
   category: 'ulovok_sposob_lovu',
@@ -10821,6 +13213,23 @@ vykon_sluzby_rs: {
   title: 'Výkon služby RS',
   icon: '🛡️'
 },
+};
+
+/* OBRÁZKY RÝB PRE ATLAS */
+const ASISTENT_RS_FISH_IMAGES = {
+  ryba_plotica_cervenooka: 'plotica_cervenooka.jpg',
+  ryba_cervenica_ostrobrucha: 'scardinius_erythrophthalmus.jpg',
+  ryba_belicka_europska: 'alburnus_alburnus.jpg',
+  ryba_hruz_skvrnity: 'gobio_gobio.jpg',
+  ryba_karas_prusky: 'karas_prusky.png',
+  ryba_slnecnica_pestra: 'lepomis_gibbosus.jpg',
+  ryba_ostriez_zelenkavy: 'perca_fluviatilis.jpg',
+  ryba_jalec_hlavaty: 'leuciscus_cephalus.jpg',
+  ryba_kapor_rybnicny: 'cyprinus-carpio-l_1.jpg',
+  ryba_amur_biely: 'ctenopharyngodon_idella.jpg',
+  ryba_stuka_severna: 'esox_lucius_0.jpg',
+  ryba_zubac_velkousty: 'stizostedion_lucioperca.jpg',
+  ryba_sumec_velky: 'silurus_glanis.jpg'
 };
 
 function openAsistentRSModule() {
@@ -12121,31 +14530,88 @@ function openAsistentCategory(categoryId) {
 
   if (!box || !category) return;
 
- const categoryMenu = document.getElementById('asistentCategoryMenu');
+  const categoryMenu = document.getElementById('asistentCategoryMenu');
 
   if (categoryMenu) {
     categoryMenu.classList.add('hidden');
   }
 
-  const metodiky = ASISTENT_RS_METODIKY.filter(item => item.category === categoryId);
+  const metodiky = ASISTENT_RS_METODIKY.filter(
+    item => item.category === categoryId
+  );
+
+const renderMethodIcon = (item) => {
+  const fishImage = ASISTENT_RS_FISH_IMAGES[item.id];
+
+  if (fishImage) {
+    return `
+      <div class="card-icon fish-image">
+        <img src="${fishImage}" alt="${item.title}">
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card-icon">${item.icon}</div>
+  `;
+};
+
+const renderMethodGrid = (items) => `
+  <div class="asistent-method-grid">
+
+    ${items.map(item => `
+      <div
+        class="card card-reviry asistent-method-card"
+        onclick="openAsistentMethod('${item.id}')"
+      >
+        ${renderMethodIcon(item)}
+        <h3>${item.title}</h3>
+      </div>
+    `).join('')}
+
+  </div>
+`;
+
+  let metodikyHtml = '';
+
+  if (categoryId === 'ulovok_sposob_lovu') {
+
+    const kontrolneSituacie = metodiky.filter(
+      item => !item.id.startsWith('ryba_')
+    );
+
+    const atlasRyb = metodiky.filter(
+      item => item.id.startsWith('ryba_')
+    );
+
+    metodikyHtml = `
+      <div class="asistent-method-section">
+        <h4>🎣 Kontrolné situácie a spôsob lovu</h4>
+        ${renderMethodGrid(kontrolneSituacie)}
+      </div>
+
+      <div class="asistent-method-section" style="margin-top:24px;">
+        <h4>🐟 Atlas rýb</h4>
+        ${renderMethodGrid(atlasRyb)}
+      </div>
+    `;
+
+  } else {
+
+    metodikyHtml = renderMethodGrid(metodiky);
+
+  }
 
   box.innerHTML = `
-    <button class="btn-secondary" onclick="closeAsistentDetail()" style="margin-bottom:12px;">
+    <button
+      class="btn-secondary"
+      onclick="closeAsistentDetail()"
+      style="margin-bottom:12px;"
+    >
       ← Späť na hlavné kategórie
     </button>
 
-    <h3>${category.icon} ${category.title}</h3>
-
-    ${metodiky.map(item => `
-      <div class="card card-reviry"
-           style="margin-bottom:10px;cursor:pointer;"
-           onclick="openAsistentMethod('${item.id}')">
-
-        <div class="card-icon">${item.icon}</div>
-        <h3>${item.title}</h3>
-
-      </div>
-    `).join('')}
+    ${metodikyHtml}
   `;
 
   box.classList.remove('hidden');
@@ -13109,6 +15575,339 @@ function aktualnyCas() {
   return new Date().toTimeString().slice(0, 5);
 }
 
+function renderGrafSluzbyRs(sluzby) {
+  const box =
+    document.getElementById('grafSluzbyRs');
+
+  if (!box) return;
+
+  box._serviceStatsData = sluzby || [];
+
+  const stats = {};
+
+  (sluzby || []).forEach(service => {
+    const typ = safeText(
+      service.typ_sluzby ||
+      'Staršie služby / bez typu'
+    );
+
+    if (!stats[typ]) {
+      stats[typ] = {
+        count: 0,
+        minutes: 0
+      };
+    }
+
+    stats[typ].count += 1;
+
+    const zaciatok = new Date(
+      service.zaciatok || ''
+    );
+
+    const koniec = new Date(
+      service.koniec || ''
+    );
+
+    let minutes = 0;
+
+    if (
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime()) &&
+      koniec >= zaciatok
+    ) {
+      minutes = Math.round(
+        (
+          koniec.getTime() -
+          zaciatok.getTime()
+        ) / 60000
+      );
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    stats[typ].minutes += minutes;
+  });
+
+ const rows = Object.entries(stats)
+  .filter(([typ]) =>
+    typ !== 'Staršie služby / bez typu'
+  )
+  .sort((a, b) =>
+    b[1].count - a[1].count
+  );
+
+  if (rows.length === 0) {
+    box.innerHTML =
+      '<p>Žiadne služby pre zvolený filter.</p>';
+
+    return;
+  }
+
+ box.innerHTML = rows.map(
+  ([typ, data]) => {
+    const hours =
+      Math.floor(data.minutes / 60);
+
+    const minutes =
+      data.minutes % 60;
+
+    const serviceText =
+      data.count === 1
+        ? '1 služba'
+        : `${data.count} služby`;
+
+    const maxCount = Math.max(
+      ...rows.map(([, item]) => item.count)
+    );
+
+    const width = Math.max(
+      8,
+      Math.round(
+        (data.count / maxCount) * 100
+      )
+    );
+
+    return `
+      <div style="margin:8px 0 12px 0;">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          gap:12px;
+          font-size:13px;
+          margin-bottom:3px;
+        ">
+          <strong>${escapeHtml(typ)}</strong>
+          <span>${serviceText}</span>
+        </div>
+
+        <div style="
+          background:#e5e7eb;
+          border-radius:8px;
+          overflow:hidden;
+          height:14px;
+        ">
+          <div style="
+            width:${width}%;
+            background:#166534;
+            height:14px;
+          "></div>
+        </div>
+
+        <div style="
+          text-align:right;
+          font-size:12px;
+          margin-top:3px;
+        ">
+          ${hours} h ${minutes} min
+        </div>
+
+      </div>
+    `;
+  }
+).join('');
+
+}
+
+function renderGrafUcastniciSluzieb(sluzby) {
+  const box =
+    document.getElementById('grafUcastniciSluzieb');
+
+  if (!box) return;
+
+  const stats = {};
+
+  (sluzby || []).forEach(service => {
+    /*
+      Zatiaľ berieme iba nové typované služby.
+      Staršie služby bez typ_sluzby do tejto karty nevstupujú.
+    */
+    const typSluzby = safeText(
+      service.typ_sluzby || ''
+    );
+
+    if (!typSluzby) {
+      return;
+    }
+
+    const zaciatok = new Date(
+      service.zaciatok || ''
+    );
+
+    const koniec = new Date(
+      service.koniec || ''
+    );
+
+    let minutes = 0;
+
+    if (
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime()) &&
+      koniec >= zaciatok
+    ) {
+      minutes = Math.round(
+        (
+          koniec.getTime() -
+          zaciatok.getTime()
+        ) / 60000
+      );
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    let members = [];
+
+    if (
+      Array.isArray(service.clenovia_rs) &&
+      service.clenovia_rs.length > 0
+    ) {
+      members = service.clenovia_rs;
+    } else {
+      members = [
+        service.clen_rs ||
+        service.clenRs ||
+        ''
+      ];
+    }
+
+    const names = members
+      .map(member =>
+        safeText(
+          typeof member === 'string'
+            ? member
+            : (
+                member?.name ||
+                member?.meno ||
+                ''
+              )
+        )
+      )
+      .filter(name =>
+        name &&
+        name !== '-' &&
+        name !== 'null' &&
+        name !== 'undefined'
+      )
+      .filter((name, index, array) =>
+        array.indexOf(name) === index
+      );
+
+    names.forEach(name => {
+      if (!stats[name]) {
+        stats[name] = {
+          count: 0,
+          minutes: 0
+        };
+      }
+
+      stats[name].count += 1;
+      stats[name].minutes += minutes;
+    });
+  });
+
+  const rows = Object.entries(stats)
+    .sort((a, b) =>
+      b[1].count - a[1].count ||
+      b[1].minutes - a[1].minutes
+    );
+
+  if (rows.length === 0) {
+    box.innerHTML =
+      '<p>Žiadni účastníci pre zvolený filter.</p>';
+
+    return;
+  }
+
+  const maxCount = Math.max(
+    ...rows.map(([, data]) => data.count)
+  );
+
+  box.innerHTML = rows.map(
+    ([name, data]) => {
+      const hours =
+        Math.floor(data.minutes / 60);
+
+      const minutes =
+        data.minutes % 60;
+
+      const serviceText =
+        data.count === 1
+          ? '1 služba'
+          : `${data.count} služby`;
+
+      const width = Math.max(
+        8,
+        Math.round(
+          (data.count / maxCount) * 100
+        )
+      );
+
+ return `
+  <div style="margin:8px 0 12px 0;">
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            gap:12px;
+            font-size:13px;
+            margin-bottom:3px;
+          ">
+            <strong>${escapeHtml(name)}</strong>
+            <span>${serviceText}</span>
+          </div>
+
+          <div style="
+            background:#e5e7eb;
+            border-radius:8px;
+            overflow:hidden;
+            height:14px;
+          ">
+            <div style="
+              width:${width}%;
+              background:#2563eb;
+              height:14px;
+            "></div>
+          </div>
+
+          <div style="
+            text-align:right;
+            font-size:12px;
+            margin-top:3px;
+          ">
+            ${hours} h ${minutes} min
+          </div>
+
+        </div>
+      `;
+    }
+  ).join('');
+
+box
+  .querySelectorAll('.service-stats-row')
+  .forEach(row => {
+    row.onclick = () => {
+      const serviceType = decodeURIComponent(
+        row.dataset.serviceType || ''
+      );
+
+      openServiceStatsDetailModal(serviceType);
+    };
+  });
+
+}
+
 function renderGrafKontrolyReviry(kontroly) {
   const box = document.getElementById("grafKontrolyReviry");
   if (!box) return;
@@ -13417,16 +16216,30 @@ function calculateMemberServiceStats(kontroly, sluzby) {
       ];
     }
 
-    return members
-      .filter(name =>
-        name &&
-        name !== '-' &&
-        name !== 'null' &&
-        name !== 'undefined'
-      )
-      .filter((name, index, array) =>
-        array.indexOf(name) === index
-      );
+   return members
+  .filter(name =>
+    name &&
+    name !== '-' &&
+    name !== 'null' &&
+    name !== 'undefined'
+  )
+  .filter((name, index, array) =>
+    array.indexOf(name) === index
+  )
+  .filter(name => {
+    const knownMember = (appState.data.members || []).find(member =>
+      normalize(member.name || '') === normalize(name)
+    );
+
+    // Starší / neznámy historický záznam zachováme.
+    if (!knownMember) {
+      return true;
+    }
+
+    // Do štatistík RS patria iba členovia RS.
+    return normalize(knownMember.role || '')
+      .includes(normalize('Clen RS'));
+  });
   }
 
   function ensureMember(memberName) {
@@ -13574,6 +16387,28 @@ function calculateMonthlyTargetStats(kontroly, sluzby, datumOd, datumDo) {
       return;
     }
 
+  const knownMember =
+    (appState.data.members || []).find(member =>
+      normalize(member.name || '') ===
+      normalize(cleanName)
+    );
+
+  /*
+    Mesačný TGT patrí iba členom RS.
+    Známeho používateľa, ktorý nie je člen RS,
+    do TGT nezaradíme.
+
+    Neznámy historický záznam ponecháme,
+    aby sme neprišli o staršie dáta.
+  */
+  if (
+    knownMember &&
+    !normalize(knownMember.role || '')
+      .includes(normalize('Clen RS'))
+  ) {
+    return;
+  }
+
     const monthKey = dateKey.slice(0, 7);
 
     if (!memberDaysByMonth[cleanName]) {
@@ -13615,36 +16450,74 @@ function calculateMonthlyTargetStats(kontroly, sluzby, datumOd, datumDo) {
     });
   }
 
-  function addMembersFromService(service) {
-    const dateKey = getServiceDateKey(service);
+function addMembersFromService(service) {
+  const dateKey = getServiceDateKey(service);
 
-    if (!dateKey) return;
+  if (!dateKey) return;
 
-    if (
-      Array.isArray(service.clenovia_rs) &&
-      service.clenovia_rs.length > 0
-    ) {
-      service.clenovia_rs.forEach(member => {
-        if (typeof member === 'string') {
-          addMemberDay(member, dateKey);
-        } else {
-          addMemberDay(
-            member?.name ||
-            member?.meno ||
-            '',
-            dateKey
-          );
-        }
-      });
-    } else {
-      addMemberDay(
-        service.clen_rs ||
-        service.clenRs ||
-        '',
-        dateKey
-      );
-    }
+  const serviceRevir = safeText(
+    service.revir || ''
+  );
+
+  /*
+    Služba sa do Mesačného TGT započíta
+    iba vtedy, ak na rovnakom revíri
+    v rovnaký deň existovala aspoň jedna kontrola.
+  */
+  const hasCheck = (kontroly || []).some(check => {
+    const checkDateKey = localDateKey(
+      check.created_at ||
+      check.date ||
+      ''
+    );
+
+    const checkRevir = safeText(
+      check.location ||
+      check.place ||
+      ''
+    );
+
+    return (
+      checkDateKey === dateKey &&
+      normalize(checkRevir) ===
+        normalize(serviceRevir)
+    );
+  });
+
+  /*
+    Obhliadka, úhyn rýb, kontrola revíru
+    alebo iná služba bez kontroly
+    sa do TGT kontrol nezapočítava.
+  */
+  if (!hasCheck) {
+    return;
   }
+
+  if (
+    Array.isArray(service.clenovia_rs) &&
+    service.clenovia_rs.length > 0
+  ) {
+    service.clenovia_rs.forEach(member => {
+      if (typeof member === 'string') {
+        addMemberDay(member, dateKey);
+      } else {
+        addMemberDay(
+          member?.name ||
+          member?.meno ||
+          '',
+          dateKey
+        );
+      }
+    });
+  } else {
+    addMemberDay(
+      service.clen_rs ||
+      service.clenRs ||
+      '',
+      dateKey
+    );
+  }
+}
 
   (kontroly || []).forEach(addMembersFromCheck);
   (sluzby || []).forEach(addMembersFromService);
@@ -14005,6 +16878,183 @@ function buildMemberCheckSessionsWithServices(
       }
     }
   );
+
+ /*
+    Služby bez kontroly:
+    ak pre rovnaký dátum + revír neexistuje žiadna kontrola,
+    čas služby doplníme priamo členom RS.
+
+    Existujúcu logiku výkonov s kontrolami nemeníme.
+  */
+  const checkKeys = new Set();
+
+  (kontroly || []).forEach(check => {
+    const dateKey = localDateKey(
+      check.created_at ||
+      check.date ||
+      ''
+    );
+
+    const revir = safeText(
+      check.location ||
+      check.place ||
+      ''
+    );
+
+    if (!dateKey || !revir) return;
+
+    checkKeys.add(
+      dateKey +
+      '|' +
+      normalize(revir)
+    );
+  });
+
+  const serviceOnlyGroups = {};
+
+  (sluzby || []).forEach(service => {
+    const dateKey =
+      getServiceDateKey(service);
+
+    const revir = safeText(
+      service.revir ||
+      ''
+    );
+
+    if (!dateKey || !revir) return;
+
+    const key =
+      dateKey +
+      '|' +
+      normalize(revir);
+
+    // Ak na tomto revíri v tento deň existovala kontrola,
+    // zostáva pôvodný výpočet z kontrol.
+    if (checkKeys.has(key)) {
+      return;
+    }
+
+    const startDate = new Date(
+      service.zaciatok ||
+      service.start ||
+      ''
+    );
+
+    const endDate = new Date(
+      service.koniec ||
+      service.end ||
+      ''
+    );
+
+    if (
+      isNaN(startDate.getTime()) ||
+      isNaN(endDate.getTime()) ||
+      endDate < startDate
+    ) {
+      return;
+    }
+
+    let minutes = Math.round(
+      (
+        endDate.getTime() -
+        startDate.getTime()
+      ) / 60000
+    );
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    if (minutes <= 0) {
+      return;
+    }
+
+    if (!serviceOnlyGroups[key]) {
+      serviceOnlyGroups[key] = {
+        firstTimestamp: startDate.getTime(),
+        lastTimestamp: endDate.getTime(),
+        minutes,
+        revir,
+        members: new Set()
+      };
+    } else {
+      /*
+        Rovnaký deň + revír nezdvojujeme.
+        Zachováme najdlhší evidovaný čas služby.
+      */
+      if (minutes > serviceOnlyGroups[key].minutes) {
+        serviceOnlyGroups[key].firstTimestamp =
+          startDate.getTime();
+
+        serviceOnlyGroups[key].lastTimestamp =
+          endDate.getTime();
+
+        serviceOnlyGroups[key].minutes =
+          minutes;
+      }
+    }
+
+    const serviceMembers =
+      Array.isArray(service.clenovia_rs) &&
+      service.clenovia_rs.length > 0
+        ? service.clenovia_rs
+        : [
+            service.clen_rs ||
+            service.clenRs ||
+            ''
+          ];
+
+    serviceMembers.forEach(member => {
+      const memberName =
+        cleanMemberName(member);
+
+      if (!isValidMemberName(memberName)) {
+        return;
+      }
+
+      const knownMember =
+        (appState.data.members || []).find(item =>
+          normalize(item.name || '') ===
+          normalize(memberName)
+        );
+
+      /*
+        Známy používateľ, ktorý nie je člen RS,
+        sa do RS hodín nezapočíta.
+
+        Neznámy historický záznam ponecháme,
+        aby sme nestratili staršie dáta.
+      */
+      if (
+        knownMember &&
+        !normalize(knownMember.role || '')
+          .includes(normalize('Clen RS'))
+      ) {
+        return;
+      }
+
+      serviceOnlyGroups[key].members.add(
+        memberName
+      );
+    });
+  });
+
+  Object.values(serviceOnlyGroups).forEach(group => {
+    group.members.forEach(memberName => {
+      sessions.push({
+        memberName,
+        firstTimestamp: group.firstTimestamp,
+        lastTimestamp: group.lastTimestamp,
+        minutes: group.minutes,
+        checks: 0,
+        reviry: new Set([group.revir])
+      });
+    });
+  });
 
   return sessions.map(session => ({
     memberName: session.memberName,
@@ -14926,6 +17976,12 @@ document.getElementById("hodinyRS").innerText =
   sluzby
 );
       renderGrafVysledkyKontrol(kontroly);
+
+renderGrafSluzbyRs(sluzby);
+initServiceStatsClick();
+
+renderGrafUcastniciSluzieb(sluzby);
+
 renderGrafMesacnyTarget(
   appState.data.statsChecks || [],
   appState.data.sluzbyReviry || [],
@@ -16644,6 +19700,271 @@ function closeChecksModal() {
     document.getElementById('checksModal').classList.add('hidden');
 }
 
+function initServiceStatsClick() {
+  const box = document.getElementById('grafSluzbyRs');
+
+  if (!box || box.dataset.clickReady === '1') {
+    return;
+  }
+
+  box.dataset.clickReady = '1';
+
+  box.addEventListener('click', event => {
+    const row = event.target.closest(
+      '#grafSluzbyRs > div'
+    );
+
+    if (!row) return;
+
+    const strong = row.querySelector('strong');
+
+    if (!strong) return;
+
+    const serviceType =
+      strong.textContent.trim();
+
+    if (!serviceType) return;
+
+    openServiceStatsDetailModal(serviceType);
+  });
+}
+
+function openServiceStatsDetailModal(serviceType) {
+  const modal =
+    document.getElementById('serviceStatsDetailModal');
+
+  const title =
+    document.getElementById('serviceStatsDetailTitle');
+
+  const list =
+    document.getElementById('serviceStatsDetailList');
+
+  const box =
+    document.getElementById('grafSluzbyRs');
+
+  if (!modal || !title || !list || !box) {
+    return;
+  }
+
+  const sluzby =
+    Array.isArray(box._serviceStatsData)
+      ? box._serviceStatsData
+      : [];
+
+  const matching = sluzby
+    .filter(service =>
+      safeText(service.typ_sluzby || '') ===
+      safeText(serviceType)
+    )
+    .sort((a, b) => {
+      const dateA =
+        new Date(a.zaciatok || 0).getTime() || 0;
+
+      const dateB =
+        new Date(b.zaciatok || 0).getTime() || 0;
+
+      return dateB - dateA;
+    });
+
+  const count = matching.length;
+
+  let serviceText = `${count} služieb`;
+
+  if (count === 1) {
+    serviceText = '1 služba';
+  } else if (count >= 2 && count <= 4) {
+    serviceText = `${count} služby`;
+  }
+
+  title.textContent =
+    `${serviceType} – ${serviceText}`;
+
+  if (matching.length === 0) {
+    list.innerHTML =
+      '<div class="item">Pre zvolený filter sa nenašla žiadna služba.</div>';
+
+    modal.classList.remove('hidden');
+    return;
+  }
+
+  list.innerHTML = matching.map(service => {
+    const zaciatok =
+      new Date(service.zaciatok || '');
+
+    const koniec =
+      new Date(service.koniec || '');
+
+    let dateText = 'Dátum neuvedený';
+    let timeText = '';
+    let minutes = 0;
+
+    if (!isNaN(zaciatok.getTime())) {
+      dateText =
+        zaciatok.toLocaleDateString('sk-SK');
+
+      timeText =
+        zaciatok.toLocaleTimeString(
+          'sk-SK',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+    }
+
+    if (
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime())
+    ) {
+      const endTime =
+        koniec.toLocaleTimeString(
+          'sk-SK',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+
+      timeText =
+        timeText
+          ? `${timeText} – ${endTime}`
+          : endTime;
+
+      if (koniec >= zaciatok) {
+        minutes = Math.round(
+          (
+            koniec.getTime() -
+            zaciatok.getTime()
+          ) / 60000
+        );
+      }
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    const hours =
+      Math.floor(minutes / 60);
+
+    const restMinutes =
+      minutes % 60;
+
+    let participants = [];
+
+    let rawParticipants =
+      service.clenovia_rs;
+
+    if (
+      typeof rawParticipants === 'string' &&
+      rawParticipants.trim()
+    ) {
+      try {
+        rawParticipants =
+          JSON.parse(rawParticipants);
+      } catch (e) {
+        rawParticipants = [];
+      }
+    }
+
+    if (Array.isArray(rawParticipants)) {
+      participants =
+        rawParticipants
+          .map(item => {
+            if (typeof item === 'string') {
+              return item.trim();
+            }
+
+            if (
+              item &&
+              typeof item === 'object'
+            ) {
+              return safeText(
+                item.name ||
+                item.meno ||
+                item.clen_rs ||
+                item.member_name ||
+                ''
+              );
+            }
+
+            return '';
+          })
+          .filter(Boolean);
+    }
+
+    if (
+      participants.length === 0 &&
+      service.clen_rs
+    ) {
+      participants = [
+        safeText(service.clen_rs)
+      ];
+    }
+
+    participants =
+      [...new Set(participants)];
+
+    const participantsText =
+      participants.length > 0
+        ? participants.join(', ')
+        : 'Neuvedení';
+
+    const revir =
+      safeText(service.revir || 'Revír neuvedený');
+
+    return `
+      <div class="item" style="margin-bottom:10px;">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          gap:12px;
+          align-items:flex-start;
+        ">
+          <strong>${escapeHtml(dateText)}</strong>
+
+          <span class="muted small">
+            ${hours} h ${restMinutes} min
+          </span>
+        </div>
+
+        <div style="margin-top:4px;">
+          ${escapeHtml(revir)}
+        </div>
+
+        ${
+          timeText
+            ? `
+              <div class="muted small" style="margin-top:3px;">
+                ${escapeHtml(timeText)}
+              </div>
+            `
+            : ''
+        }
+
+        <div style="margin-top:6px;">
+          <strong>Účastníci:</strong>
+          ${escapeHtml(participantsText)}
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  modal.classList.remove('hidden');
+}
+
+function closeServiceStatsDetailModal() {
+  document
+    .getElementById('serviceStatsDetailModal')
+    .classList.add('hidden');
+}
+
 function closeServiceWithoutCheckModal() {
   document.getElementById('serviceWithoutCheckModal').classList.add('hidden');
 }
@@ -16798,13 +20119,54 @@ renderChecks();
 }
 
 function openServiceWithoutCheckModal() {
-    const serviceType = document.getElementById('serviceType');
+  const serviceType = document.getElementById('serviceType');
+  const serviceDate = document.getElementById('serviceDate');
+  const timeFrom = document.getElementById('serviceTimeFrom');
+  const timeTo = document.getElementById('serviceTimeTo');
 
-    if (serviceType) {
-        serviceType.value = 'Bežná kontrola rybárov';
-    }
+  if (serviceType) {
+    serviceType.value = '';
+  }
 
-    document.getElementById('serviceWithoutCheckModal').classList.remove('hidden');
+  const zaciatokDate = new Date(appState.activeRevirStart);
+  const koniecDate = new Date();
+
+  // Predvyplnenie dátumu služby podľa začiatku služby
+  if (
+    serviceDate &&
+    !isNaN(zaciatokDate.getTime())
+  ) {
+    const year = zaciatokDate.getFullYear();
+    const month = String(
+      zaciatokDate.getMonth() + 1
+    ).padStart(2, '0');
+    const day = String(
+      zaciatokDate.getDate()
+    ).padStart(2, '0');
+
+    serviceDate.value =
+      `${year}-${month}-${day}`;
+  }
+
+  // Predvyplnenie času začiatku
+  if (timeFrom && !isNaN(zaciatokDate.getTime())) {
+    timeFrom.value =
+      String(zaciatokDate.getHours()).padStart(2, '0') +
+      ':' +
+      String(zaciatokDate.getMinutes()).padStart(2, '0');
+  }
+
+  // Predvyplnenie aktuálneho času ukončenia
+  if (timeTo) {
+    timeTo.value =
+      String(koniecDate.getHours()).padStart(2, '0') +
+      ':' +
+      String(koniecDate.getMinutes()).padStart(2, '0');
+  }
+
+  document
+    .getElementById('serviceWithoutCheckModal')
+    .classList.remove('hidden');
 }
 
 function toggleGroupMembersBox() {
@@ -16817,10 +20179,10 @@ function toggleGroupMembersBox() {
   if (checkbox.checked) {
     const currentUserId = String(appState.currentUserId || '');
 
-   const members = (appState.data.members || [])
+  const members = (appState.data.members || [])
   .filter(member =>
     String(member.id) !== currentUserId &&
-    normalize(member.role || '').includes(normalize('Clen RS'))
+    normalize(member.status || '') === normalize('Aktívny')
   );
 
     list.innerHTML = members.map(member => `
@@ -16888,25 +20250,99 @@ if (groupCheckbox && groupCheckbox.checked) {
   clenoviaRs = clenoviaRs.concat(selectedMembers);
 }
 
-  const zaciatokDate = new Date(appState.activeRevirStart);
-  const koniecDate = new Date();
+const serviceDateValue =
+  document.getElementById('serviceDate')?.value || '';
 
-  let trvanieMin = 0;
+const timeFromValue =
+  document.getElementById('serviceTimeFrom')?.value || '';
 
-  if (!isNaN(zaciatokDate.getTime())) {
-    trvanieMin = Math.floor((koniecDate - zaciatokDate) / 60000);
+const timeToValue =
+  document.getElementById('serviceTimeTo')?.value || '';
+
+if (
+  !serviceDateValue ||
+  !timeFromValue ||
+  !timeToValue
+) {
+  alert('Vyplň dátum a čas služby.');
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť službu';
   }
+
+  return;
+}
+
+const [year, month, day] =
+  serviceDateValue.split('-').map(Number);
+
+const [hoursFrom, minutesFrom] =
+  timeFromValue.split(':').map(Number);
+
+const [hoursTo, minutesTo] =
+  timeToValue.split(':').map(Number);
+
+const zaciatokDate = new Date(
+  year,
+  month - 1,
+  day,
+  hoursFrom,
+  minutesFrom,
+  0,
+  0
+);
+
+const koniecDate = new Date(
+  year,
+  month - 1,
+  day,
+  hoursTo,
+  minutesTo,
+  0,
+  0
+);
+
+if (
+  isNaN(zaciatokDate.getTime()) ||
+  isNaN(koniecDate.getTime())
+) {
+  alert('Dátum alebo čas služby nie je platný.');
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť službu';
+  }
+
+  return;
+}
+
+if (koniecDate < zaciatokDate) {
+  alert('Čas ukončenia služby nemôže byť skorší ako začiatok.');
+
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Uložiť službu';
+  }
+
+  return;
+}
+
+const trvanieMin = Math.floor(
+  (koniecDate - zaciatokDate) / 60000
+);
 
   const { data: novaSluzba, error: sluzbaError } = await db
     .from('sluzby_reviry')
     .insert([{
       revir: appState.activeRevir,
-      zaciatok: appState.activeRevirStart,
+      zaciatok: zaciatokDate.toISOString(),
       koniec: koniecDate.toISOString(),
       trvanie_min: trvanieMin,
-      pocet_kontrol: pocetKontrolSluzby,
+      pocet_kontrol: 0,
       clen_rs: currentMember ? currentMember.name : '',
       clen_rs_id: appState.currentUserId || '',
+      typ_sluzby: typSluzby,
       poznamka: poznamka,
       clenovia_rs: clenoviaRs
     }])
@@ -16944,6 +20380,54 @@ renderStats();
   document.getElementById('checkPlace').value = '';
   document.getElementById('serviceType').value = '';
   document.getElementById('serviceNote').value = '';
+
+const mainGroupCheck =
+  document.getElementById('isGroupCheck');
+
+if (mainGroupCheck) {
+  mainGroupCheck.checked = false;
+}
+
+const serviceGroupCheck =
+  document.getElementById('isGroupService');
+
+if (serviceGroupCheck) {
+  serviceGroupCheck.checked = false;
+}
+
+const groupMembersBox =
+  document.getElementById('groupMembersBox');
+
+if (groupMembersBox) {
+  groupMembersBox.classList.add('hidden');
+}
+
+document
+  .querySelectorAll('.group-member-checkbox')
+  .forEach(input => {
+    input.checked = false;
+  });
+
+const serviceDate =
+  document.getElementById('serviceDate');
+
+const serviceTimeFrom =
+  document.getElementById('serviceTimeFrom');
+
+const serviceTimeTo =
+  document.getElementById('serviceTimeTo');
+
+if (serviceDate) {
+  serviceDate.value = '';
+}
+
+if (serviceTimeFrom) {
+  serviceTimeFrom.value = '';
+}
+
+if (serviceTimeTo) {
+  serviceTimeTo.value = '';
+}
 
 if (saveBtn) {
   saveBtn.disabled = false;
@@ -17215,15 +20699,46 @@ function showReviryInfo() {
     const info = reviryInfo[revir];
 
     return `
-      <div class="item" onclick="showRevirDetail('${revir}')">
-        <strong>${revir}</strong><br>
-        <span class="muted">Číslo revíru:</span> ${info.cislo || '—'}<br>
-        <span class="muted">Rozloha:</span> ${info.rozloha || '—'}<br>
-        <span class="muted">Okres:</span> ${info.okres || '—'}<br>
-        <span class="muted">Charakter:</span> ${info.charakter || '—'}<br>
-        <span class="muted">Popis:</span> ${info.popis || '—'}
+  <div class="item revir-card" onclick="showRevirDetail('${revir}')">
+
+    <div class="revir-card-main">
+
+      <div class="revir-card-title">
+        ${revir}
       </div>
-    `;
+
+      <div class="revir-card-meta">
+
+        <span class="revir-badge">
+          ${info.cislo || '—'}
+        </span>
+
+        <span>
+          ${info.rozloha || '—'}
+        </span>
+
+        <span>
+          ${info.okres || '—'}
+        </span>
+
+        <span>
+          ${info.charakter || '—'}
+        </span>
+
+      </div>
+
+      <div class="revir-card-description">
+        ${info.popis || '—'}
+      </div>
+
+    </div>
+
+    <div class="revir-card-arrow">
+      →
+    </div>
+
+  </div>
+`;
   }).join('');
 
   modal.classList.remove('hidden');
@@ -17257,26 +20772,28 @@ content.innerHTML = `
     <strong>Charakter:</strong> ${info.charakter || '-'}<br>
     <strong>Popis:</strong> ${info.popis || '-'}<br>
     <br>
-  <strong>Poznámka:</strong> ${info.poznamka || '-'}<br>
-<strong>Lovná miera:</strong> ${info.lovnaMiera || '-'}<br>
-<strong>Osobitné ustanovenia:</strong> ${info.ustanovenia || '-'}<br>
 
-<br>
+    <strong>Poznámka:</strong> ${info.poznamka || '-'}<br>
+    <strong>Lovná miera:</strong> ${info.lovnaMiera || '-'}<br>
+    <strong>Osobitné ustanovenia:</strong> ${info.ustanovenia || '-'}<br>
 
-<div style="
-  padding:10px 12px;
-  background:#fff7ed;
-  border:1px solid #fed7aa;
-  border-radius:10px;
-  font-size:13px;
-  line-height:1.45;
-">
-  <strong>⚠️ Aktuálne a dočasné obmedzenia</strong><br>
-  Dočasné pravidlá a obmedzenia sa môžu meniť najmä z dôvodu
-  zarybnenia, rybárskych pretekov alebo rozhodnutia užívateľa revíru.
-  Pred výkonom kontroly je potrebné overiť aktuálne platné oznamy
-  MsO SRZ Sereď.
-</div>
+    <br>
+
+    <div style="
+      padding:10px 12px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:10px;
+      font-size:13px;
+      line-height:1.45;
+    ">
+      <strong>⚠️ Aktuálne a dočasné obmedzenia</strong><br>
+      Dočasné pravidlá a obmedzenia sa môžu meniť najmä z dôvodu
+      zarybnenia, rybárskych pretekov alebo rozhodnutia užívateľa revíru.
+      Pred výkonom kontroly je potrebné overiť aktuálne platné oznamy
+      MsO SRZ Sereď.
+    </div>
+  </div>
 `;
 
   modal.classList.remove('hidden');
