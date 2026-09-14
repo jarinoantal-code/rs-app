@@ -1272,6 +1272,7 @@
    ===================================================== */
 
 #mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-dk {
@@ -1291,6 +1292,7 @@
 
 
 #mainMenuSection .card-rybari:hover,
+#mainMenuSection .card-vozidla:hover,
 #mainMenuSection .card-statistiky:hover,
 #mainMenuSection .card-reporty:hover,
 #mainMenuSection .card-dk:hover {
@@ -1304,6 +1306,7 @@
 /* sekundárne ikony */
 
 #mainMenuSection .card-rybari .card-icon,
+#mainMenuSection .card-vozidla .card-icon,
 #mainMenuSection .card-statistiky .card-icon,
 #mainMenuSection .card-reporty .card-icon,
 #mainMenuSection .card-dk .card-icon {
@@ -1327,6 +1330,7 @@
 /* sekundárny nadpis */
 
 #mainMenuSection .card-rybari h3,
+#mainMenuSection .card-vozidla h3,
 #mainMenuSection .card-statistiky h3,
 #mainMenuSection .card-reporty h3,
 #mainMenuSection .card-dk h3 {
@@ -1455,6 +1459,7 @@
   /* spodné 4 – dva vedľa seba */
 
   #mainMenuSection .card-rybari,
+  #mainMenuSection .card-vozidla,
   #mainMenuSection .card-statistiky,
   #mainMenuSection .card-reporty,
   #mainMenuSection .card-dk {
@@ -1469,6 +1474,7 @@
 
 
   #mainMenuSection .card-rybari .card-icon,
+  #mainMenuSection .card-vozidla .card-icon,
   #mainMenuSection .card-statistiky .card-icon,
   #mainMenuSection .card-reporty .card-icon,
   #mainMenuSection .card-dk .card-icon {
@@ -1482,6 +1488,7 @@
 
 
   #mainMenuSection .card-rybari h3,
+  #mainMenuSection .card-vozidla h3,
   #mainMenuSection .card-statistiky h3,
   #mainMenuSection .card-reporty h3,
   #mainMenuSection .card-dk h3 {
@@ -2938,9 +2945,35 @@ header .header-inner {
   }
 }
 
+/* =========================================
+   ŠTATISTIKY – SPOLOČNÝ POPIS OBDOBIA
+   ========================================= */
+
+.stats-period-label {
+  text-align: center;
+  margin-top: 2px;
+  margin-bottom: 10px;
+  min-height: 14px;
+
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+
+  color: #64748b;
+}
+
+button:disabled,
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
 </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="xlsx.full.min.js"></script>
 
 </head>
 <body>
@@ -3139,6 +3172,30 @@ header .header-inner {
   <h3>Evidencia rybára</h3>
 </div>
 
+<div class="card card-vozidla" onclick="openSluzobneVozidlaModule()">
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 17h14"/>
+      <path d="M5 17a2 2 0 1 1-4 0"/>
+      <path d="M23 17a2 2 0 1 1-4 0"/>
+      <path d="M3 11l2-5h14l2 5"/>
+      <path d="M5 11h14a2 2 0 0 1 2 2v4H3v-4a2 2 0 0 1 2-2Z"/>
+    </svg>
+  </div>
+
+  <h3>Služobné vozidlá</h3>
+</div>
+
 
 <div class="card card-statistiky" onclick="openStatistikyModule()">
   <div class="card-icon">
@@ -3220,6 +3277,151 @@ header .header-inner {
     <button class="btn-secondary" onclick="showMainMenu()">
         ← Späť do hlavného menu
     </button>
+</div>
+
+<div id="sluzobneVozidlaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">🚗 Služobné vozidlá</h2>
+
+      <div class="muted small">
+        Evidencia kilometrov služobných vozidiel
+      </div>
+    </div>
+  </div>
+
+<div
+  id="vehicleLogCard"
+  class="card"
+  style="
+    margin:16px auto 0 auto;
+    max-width:720px;
+  "
+>
+  <h3 style="margin-top:0;">Zápis kilometrov</h3>
+
+<div class="field">
+  <label for="vehicleSelect">Vozidlo</label>
+
+  <select
+  id="vehicleSelect"
+  onchange="handleVehicleSelectionChange()"
+>
+
+    <option value="">Vyber vozidlo</option>
+    <option value="vitara">Vitara</option>
+    <option value="ford">Ford</option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="vehicleDate">Dátum</label>
+
+  <input
+    type="date"
+    id="vehicleDate"
+  >
+</div>
+
+<div class="field">
+  <label for="vehicleLastKm">Posledný stav km</label>
+
+  <input
+    type="number"
+    id="vehicleLastKm"
+    placeholder="Zatiaľ neevidovaný"
+    readonly
+  >
+
+<button
+  type="button"
+  id="editVehicleLastKmBtn"
+  class="btn-muted"
+  style="margin-top:8px;"
+  onclick="enableVehicleLastKmEdit()"
+>
+  Upraviť stav
+</button>
+
+<button
+  type="button"
+  id="saveVehicleLastKmOverrideBtn"
+  class="btn-primary"
+  style="margin-top:8px;"
+  onclick="saveVehicleLastKmOverride()"
+>
+  Potvrdiť nový stav
+</button>
+</div>
+
+<div class="field">
+  <label for="vehicleCurrentKm">Konečný stav km</label>
+
+  <input
+    type="number"
+    id="vehicleCurrentKm"
+    min="0"
+    step="1"
+    inputmode="numeric"
+    placeholder="Zadaj aktuálny stav km"
+    oninput="updateVehicleDrivenKm()"
+  >
+</div>
+
+<div class="field">
+  <label for="vehicleDrivenKm">Najazdené km</label>
+
+  <input
+    type="number"
+    id="vehicleDrivenKm"
+    readonly
+    placeholder="0"
+  >
+</div>
+
+<div class="field">
+  <label for="vehicleRecordedBy">Evidoval</label>
+
+  <input
+    type="text"
+    id="vehicleRecordedBy"
+    readonly
+    placeholder="Prihlásený člen RS"
+  >
+</div>
+
+<div class="field">
+  <label for="vehiclePurpose">Účel jazdy</label>
+
+  <select id="vehiclePurpose">
+    <option value="">Vyber účel jazdy</option>
+    <option value="kontrola">Kontrola RS</option>
+    <option value="sluzba">Služba</option>
+    <option value="podujatie">Podujatie</option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="vehicleNote">Poznámka</label>
+
+  <textarea
+    id="vehicleNote"
+    rows="3"
+    placeholder="Voliteľná poznámka – napr. poškodenie vozidla"
+  ></textarea>
+</div>
+
+<button
+  type="button"
+  id="saveVehicleLogBtn"
+  class="btn-primary"
+  onclick="saveVehicleLog()"
+>
+  Uložiť záznam
+</button>
+</div>
+
 </div>
 
 <div id="disciplinarnaKomisiaSection" class="hidden">
@@ -3394,8 +3596,13 @@ header .header-inner {
     </div>
 
     <div class="actions">
-        <button class="btn-info" onclick="exportData()">Export údajov</button>
-    </div>
+  <button
+    class="btn-info"
+    onclick="openStatsExportModal()"
+  >
+    Export údajov
+  </button>
+</div>
 </div>
 
       <div id="dashboardCardsSection" class="cards">
@@ -3449,12 +3656,20 @@ header .header-inner {
     <option value="grafMesacnyTarget">Mesačný TGT členov RS</option>
     <option value="grafSluzbyRs">Služby RS</option>
     <option value="grafUcastniciSluzieb">Účastníci služieb</option>
+    <option value="grafVozidla">Služobné vozidlá</option>
   </select>
 </div>
 
 <div class="card graph-card" data-graph-id="grafKontrolyReviry">
 
   <h3>Kontroly podľa revírov</h3>
+
+<div
+  id="grafKontrolyReviryObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
 
   <div id="grafKontrolyReviry">
     Graf bude doplnený v ďalšom kroku.
@@ -3465,6 +3680,13 @@ header .header-inner {
 
 <h3>Aktivita členov RS</h3>
 
+<div
+  id="grafAktivitaClenovObdobie"
+ class="stats-period-label"
+>
+  -
+</div>
+
   <div id="grafAktivitaClenov">
     Graf bude doplnený v ďalšom kroku.
   </div>
@@ -3473,6 +3695,13 @@ header .header-inner {
 <div class="card graph-card" data-graph-id="grafHodinyClenov">
 
 <h3>Odslúžené hodiny členov RS</h3>
+
+<div
+  id="grafHodinyClenovObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
 
   <div id="grafHodinyClenov">
     Graf bude doplnený v ďalšom kroku.
@@ -3483,6 +3712,13 @@ header .header-inner {
 
 <h3>Odslúžené hodiny podľa revírov</h3>
 
+<div
+  id="grafHodinyReviryObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
+
   <div id="grafHodinyReviry">
     Graf bude doplnený v ďalšom kroku.
   </div>
@@ -3491,6 +3727,13 @@ header .header-inner {
 <div class="card graph-card" data-graph-id="grafVysledkyKontrol">
 
 <h3>Výsledky kontrol</h3>
+
+<div
+  id="grafVysledkyKontrolObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
 
   <div id="grafVysledkyKontrol">
     Graf bude doplnený v ďalšom kroku.
@@ -3510,6 +3753,13 @@ header .header-inner {
 
   <h3>Služby RS</h3>
 
+<div
+  id="grafSluzbyRsObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
+
   <div id="grafSluzbyRs">
     Prehľad služieb bude doplnený v ďalšom kroku.
   </div>
@@ -3520,8 +3770,32 @@ header .header-inner {
 
   <h3>Účastníci služieb</h3>
 
+<div
+  id="grafUcastniciSluziebObdobie"
+  class="stats-period-label"
+>
+  -
+</div>
+
   <div id="grafUcastniciSluzieb">
     Prehľad účastníkov služieb bude doplnený v ďalšom kroku.
+  </div>
+
+</div>
+
+<div class="card graph-card" data-graph-id="grafVozidla">
+
+  <h3>🚗 Služobné vozidlá</h3>
+
+<div
+  id="grafVozidlaMesiac"
+  class="stats-period-label"
+>
+  -
+</div>
+
+  <div id="grafVozidla">
+    Prehľad kilometrov vozidiel bude doplnený v ďalšom kroku.
   </div>
 
 </div>
@@ -3969,6 +4243,60 @@ header .header-inner {
         </div>
       </div>
     </section>
+
+<div id="statsExportModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="toolbar">
+      <div>
+        <h2 style="margin:0;">Export štatistík</h2>
+
+        <div class="muted small">
+          Vyber typ údajov pre export
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn-secondary"
+        onclick="closeStatsExportModal()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="field" style="margin-top:14px;">
+      <label for="statsExportType">Typ exportu</label>
+
+      <select
+  id="statsExportType"
+  onchange="handleStatsExportTypeChange()"
+>
+        <option value="">Vyber typ štatistiky</option>
+        <option value="kontroly_reviry">Kontroly podľa revírov</option>
+        <option value="aktivita_clenov">Aktivita členov RS</option>
+        <option value="hodiny_clenov">Odslúžené hodiny členov RS</option>
+        <option value="hodiny_reviry">Odslúžené hodiny podľa revírov</option>
+        <option value="vysledky_kontrol">Výsledky kontrol</option>
+        <option value="mesacny_tgt">Mesačný TGT členov RS</option>
+        <option value="sluzby_rs">Služby RS</option>
+        <option value="ucastnici_sluzieb">Účastníci služieb</option>
+        <option value="vozidla">Služobné vozidlá</option>
+      </select>
+    </div>
+
+  <button
+  type="button"
+  id="statsExportBtn"
+  class="btn-primary"
+  style="margin-top:14px;"
+  onclick="exportSelectedStats()"
+  disabled
+>
+  Exportovať
+</button>
+  </div>
+</div>
+
 <div id="checksModal" class="modal hidden">
     <div class="modal-content">
         <div class="toolbar">
@@ -4587,14 +4915,26 @@ const appState = {
 // =====================================================
 
 const RS_LOCAL_DB_NAME = 'rs_app_local_core';
-const RS_LOCAL_DB_VERSION = 1;
+const RS_LOCAL_DB_VERSION = 2;
 
 const RS_LOCAL_STORES = {
   services: 'services',
   checks: 'checks',
   photos: 'photos',
-  meta: 'meta'
+  meta: 'meta',
+ vehicleLogs: 'vehicle_logs'
 };
+
+const RS_VEHICLES = [
+  {
+    id: 'vitara',
+    name: 'Vitara'
+  },
+  {
+    id: 'ford',
+    name: 'Ford'
+  }
+];
 
 let rsLocalDbPromise = null;
 
@@ -4676,6 +5016,31 @@ function openRsLocalDb() {
           { keyPath: 'key' }
         );
       }
+
+if (!db.objectStoreNames.contains(RS_LOCAL_STORES.vehicleLogs)) {
+  const store = db.createObjectStore(
+    RS_LOCAL_STORES.vehicleLogs,
+    { keyPath: 'local_id' }
+  );
+
+  store.createIndex(
+    'vehicle_id',
+    'vehicle_id',
+    { unique: false }
+  );
+
+  store.createIndex(
+    'sync_status',
+    'sync_status',
+    { unique: false }
+  );
+
+  store.createIndex(
+    'date',
+    'date',
+    { unique: false }
+  );
+}
     };
 
     request.onsuccess = event => {
@@ -4863,6 +5228,488 @@ async function rsLocalDelete(storeName, key) {
   });
 }
 
+async function getVehicleLastKm(vehicleId) {
+  if (!vehicleId) {
+    return null;
+  }
+
+  const metaRecord = await rsLocalGet(
+    RS_LOCAL_STORES.meta,
+    'vehicle_last_km_' + vehicleId
+  );
+
+  if (
+    !metaRecord ||
+    !Number.isFinite(Number(metaRecord.value))
+  ) {
+    return null;
+  }
+
+  return Number(metaRecord.value);
+}
+
+async function setVehicleLastKm(vehicleId, kmValue) {
+  if (!vehicleId) {
+    throw new Error('Chýba ID vozidla.');
+  }
+
+  const km = Number(kmValue);
+
+  if (!Number.isFinite(km) || km < 0) {
+    throw new Error('Neplatný stav kilometrov.');
+  }
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.meta,
+    {
+      key: 'vehicle_last_km_' + vehicleId,
+      value: km,
+      updated_at: new Date().toISOString()
+    }
+  );
+
+  return km;
+}
+
+async function handleVehicleSelectionChange() {
+  const vehicleSelect =
+    document.getElementById('vehicleSelect');
+
+  const vehicleLastKm =
+    document.getElementById('vehicleLastKm');
+
+  const vehicleCurrentKm =
+    document.getElementById('vehicleCurrentKm');
+
+  const vehicleDrivenKm =
+    document.getElementById('vehicleDrivenKm');
+
+  if (!vehicleSelect || !vehicleLastKm) {
+    return;
+  }
+
+  const vehicleId =
+    vehicleSelect.value || '';
+
+  if (!vehicleId) {
+    vehicleLastKm.value = '';
+
+    if (vehicleCurrentKm) {
+      vehicleCurrentKm.value = '';
+    }
+
+    if (vehicleDrivenKm) {
+      vehicleDrivenKm.value = '';
+    }
+
+    return;
+  }
+
+  try {
+    const lastKm =
+      await getVehicleLastKm(vehicleId);
+
+    vehicleLastKm.value =
+      lastKm !== null ? lastKm : '';
+
+  } catch (error) {
+    console.error(
+      'Načítanie posledného stavu km zlyhalo:',
+      error
+    );
+
+    vehicleLastKm.value = '';
+  }
+}
+
+function updateVehicleDrivenKm() {
+  const vehicleLastKm =
+    document.getElementById('vehicleLastKm');
+
+  const vehicleCurrentKm =
+    document.getElementById('vehicleCurrentKm');
+
+  const vehicleDrivenKm =
+    document.getElementById('vehicleDrivenKm');
+
+  if (
+    !vehicleLastKm ||
+    !vehicleCurrentKm ||
+    !vehicleDrivenKm
+  ) {
+    return;
+  }
+
+  const lastKm =
+    Number(vehicleLastKm.value);
+
+  const currentKm =
+    Number(vehicleCurrentKm.value);
+
+  if (
+    !Number.isFinite(lastKm) ||
+    !Number.isFinite(currentKm) ||
+    currentKm < lastKm
+  ) {
+    vehicleDrivenKm.value = '';
+    return;
+  }
+
+  vehicleDrivenKm.value =
+    currentKm - lastKm;
+}
+
+function enableVehicleLastKmEdit() {
+  const vehicleSelect =
+    document.getElementById('vehicleSelect');
+
+  const vehicleLastKm =
+    document.getElementById('vehicleLastKm');
+
+  if (!vehicleSelect || !vehicleLastKm) {
+    return;
+  }
+
+  if (!vehicleSelect.value) {
+    alert('Najprv vyber vozidlo.');
+    return;
+  }
+
+  const confirmed = confirm(
+    'Naozaj chceš upraviť posledný stav km vozidla?\n\n' +
+    'Táto zmena ovplyvní výpočet ďalšieho zápisu.'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  vehicleLastKm.readOnly = false;
+  vehicleLastKm.focus();
+  vehicleLastKm.select();
+}
+
+async function saveVehicleLastKmOverride() {
+  const vehicleSelect =
+    document.getElementById('vehicleSelect');
+
+  const vehicleLastKm =
+    document.getElementById('vehicleLastKm');
+
+  if (!vehicleSelect || !vehicleLastKm) {
+    return;
+  }
+
+  const vehicleId =
+    vehicleSelect.value || '';
+
+  if (!vehicleId) {
+    alert('Najprv vyber vozidlo.');
+    return;
+  }
+
+  const newKm =
+    Number(vehicleLastKm.value);
+
+  if (!Number.isFinite(newKm) || newKm < 0) {
+    alert('Zadaj platný stav kilometrov.');
+    return;
+  }
+
+  const confirmed = confirm(
+    'Uložiť nový posledný stav vozidla: ' +
+    newKm +
+    ' km?\n\n' +
+    'Existujúca história jázd sa tým nezmení.'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await setVehicleLastKm(
+      vehicleId,
+      newKm
+    );
+
+    vehicleLastKm.readOnly = true;
+
+    const vehicleCurrentKm =
+      document.getElementById('vehicleCurrentKm');
+
+    const vehicleDrivenKm =
+      document.getElementById('vehicleDrivenKm');
+
+    if (vehicleCurrentKm) {
+      vehicleCurrentKm.value = '';
+    }
+
+    if (vehicleDrivenKm) {
+      vehicleDrivenKm.value = '';
+    }
+
+    await handleVehicleSelectionChange();
+
+    alert(
+      'Posledný stav kilometrov bol upravený na ' +
+      newKm +
+      ' km.'
+    );
+
+  } catch (error) {
+    console.error(
+      'Úprava posledného stavu km zlyhala:',
+      error
+    );
+
+    alert(
+      'Posledný stav km sa nepodarilo uložiť.'
+    );
+  }
+}
+
+async function saveVehicleLog() {
+  const vehicleSelect =
+    document.getElementById('vehicleSelect');
+
+  const vehicleDate =
+    document.getElementById('vehicleDate');
+
+  const vehicleLastKm =
+    document.getElementById('vehicleLastKm');
+
+  const vehicleCurrentKm =
+    document.getElementById('vehicleCurrentKm');
+
+  const vehicleDrivenKm =
+    document.getElementById('vehicleDrivenKm');
+
+  const vehicleRecordedBy =
+    document.getElementById('vehicleRecordedBy');
+
+const vehiclePurpose =
+  document.getElementById('vehiclePurpose');
+
+  const vehicleNote =
+    document.getElementById('vehicleNote');
+
+  if (
+    !vehicleSelect ||
+    !vehicleDate ||
+    !vehicleLastKm ||
+    !vehicleCurrentKm ||
+    !vehicleDrivenKm
+  ) {
+    return;
+  }
+
+  const vehicleId =
+    vehicleSelect.value || '';
+
+  if (!vehicleId) {
+    alert('Vyber vozidlo.');
+    return;
+  }
+
+const purpose =
+  safeText(vehiclePurpose?.value || '');
+
+if (!purpose) {
+  alert('Vyber účel jazdy.');
+  return;
+}
+
+  const previousKm =
+    Number(vehicleLastKm.value);
+
+  const currentKm =
+    Number(vehicleCurrentKm.value);
+
+  if (
+    !Number.isFinite(previousKm) ||
+    !Number.isFinite(currentKm)
+  ) {
+    alert('Zadaj platný stav kilometrov.');
+    return;
+  }
+
+  if (currentKm < previousKm) {
+    alert(
+      'Konečný stav km nemôže byť nižší ako posledný evidovaný stav.'
+    );
+    return;
+  }
+
+  const drivenKm =
+    currentKm - previousKm;
+
+  const currentMember =
+    getCurrentUser();
+
+  const vehicle =
+    RS_VEHICLES.find(item =>
+      item.id === vehicleId
+    );
+
+  const record = {
+    local_id:
+      createLocalRecordId('vehicle_log'),
+
+    vehicle_id:
+      vehicleId,
+
+    vehicle_name:
+      vehicle ? vehicle.name : vehicleId,
+
+    date:
+      vehicleDate.value || todayISO(),
+
+    recorded_by_id:
+      appState.currentUserId || '',
+
+    recorded_by_name:
+      currentMember
+        ? currentMember.name
+        : (vehicleRecordedBy?.value || ''),
+
+purpose:
+  purpose,
+
+    previous_km:
+      previousKm,
+
+    current_km:
+      currentKm,
+
+    driven_km:
+      drivenKm,
+
+    note:
+      safeText(vehicleNote?.value || ''),
+
+    sync_status:
+      'PENDING',
+
+    created_at:
+      new Date().toISOString()
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.vehicleLogs,
+    record
+  );
+
+  await setVehicleLastKm(
+    vehicleId,
+    currentKm
+  );
+
+  alert(
+    'Záznam kilometrov bol uložený.\n\n' +
+    'Najazdené: ' + drivenKm + ' km'
+  );
+
+  await handleVehicleSelectionChange();
+
+  if (vehicleCurrentKm) {
+    vehicleCurrentKm.value = '';
+  }
+
+  if (vehicleDrivenKm) {
+    vehicleDrivenKm.value = '';
+  }
+
+if (vehiclePurpose) {
+  vehiclePurpose.value = '';
+}
+
+  if (vehicleNote) {
+    vehicleNote.value = '';
+  }
+}
+
+async function addHistoricalVehicleLog({
+  vehicleId,
+  date,
+  previousKm,
+  currentKm,
+  purpose,
+  note = ''
+}) {
+  const vehicle =
+    RS_VEHICLES.find(item =>
+      item.id === vehicleId
+    );
+
+  const currentMember =
+    getCurrentUser();
+
+  const drivenKm =
+    Number(currentKm) - Number(previousKm);
+
+  if (
+    !vehicleId ||
+    !date ||
+    !Number.isFinite(Number(previousKm)) ||
+    !Number.isFinite(Number(currentKm)) ||
+    drivenKm < 0
+  ) {
+    throw new Error(
+      'Neplatné údaje historického záznamu vozidla.'
+    );
+  }
+
+  const record = {
+    local_id:
+      createLocalRecordId('vehicle_log'),
+
+    vehicle_id:
+      vehicleId,
+
+    vehicle_name:
+      vehicle ? vehicle.name : vehicleId,
+
+    date:
+      date,
+
+    recorded_by_id:
+      appState.currentUserId || '',
+
+    recorded_by_name:
+      currentMember
+        ? currentMember.name
+        : '',
+
+    purpose:
+      safeText(purpose || ''),
+
+    previous_km:
+      Number(previousKm),
+
+    current_km:
+      Number(currentKm),
+
+    driven_km:
+      drivenKm,
+
+    note:
+      safeText(note),
+
+    sync_status:
+      'PENDING',
+
+    created_at:
+      new Date().toISOString()
+  };
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.vehicleLogs,
+    record
+  );
+
+  return record;
+}
 
 // -----------------------------------------------------
 // DIAGNOSTIKA
@@ -5697,7 +6544,8 @@ function saveActiveRevir() {
   localStorage.setItem(ACTIVE_REVIR_KEY, JSON.stringify({
     revir: appState.activeRevir,
     start: appState.activeRevirStart,
-    service_local_id: appState.activeServiceLocalId || ''
+    service_local_id: appState.activeServiceLocalId || '',
+    member2_id: appState.activeMember2Id || ''
   }));
 }
 
@@ -5718,10 +6566,11 @@ function loadActiveRevir() {
   const raw = localStorage.getItem(ACTIVE_REVIR_KEY);
 
   if (!raw) {
-    appState.activeRevir = '';
-    appState.activeRevirStart = '';
-    return;
-  }
+  appState.activeRevir = '';
+  appState.activeRevirStart = '';
+  appState.activeMember2Id = '';
+  return;
+}
 
   try {
     const data = JSON.parse(raw);
@@ -5730,6 +6579,8 @@ function loadActiveRevir() {
     const start = data.start || '';
 const serviceLocalId =
   data.service_local_id || '';
+const member2Id =
+  data.member2_id || '';
 
     const startDate = new Date(start);
 
@@ -5765,6 +6616,8 @@ appState.activeRevirStart = start;
 
 appState.activeServiceLocalId =
   serviceLocalId || createLocalRecordId('service');
+
+appState.activeMember2Id = member2Id;
 
 saveActiveRevir();
 
@@ -9491,6 +10344,42 @@ async function updateSyncStatusIndicator() {
     return;
   }
 
+indicator.onclick = async function () {
+  try {
+    const debugSummary =
+      await getPendingSyncSummary();
+
+    const item =
+      debugSummary?.items?.[0];
+
+    if (!item) {
+      alert(
+        'SYNC DIAGNOSTIKA\n\n' +
+        'Žiadny čakajúci balík.'
+      );
+      return;
+    }
+
+    alert(
+      'SYNC DIAGNOSTIKA\n\n' +
+      'Revír: ' + (item.revir || '-') + '\n' +
+      'Stav: ' + (item.sync_status || '-') + '\n' +
+      'Služba ID: ' + (item.service_local_id || '-') + '\n' +
+      'Kontroly: ' + (item.checks_count || 0) + '\n' +
+      'Fotografie: ' + (item.photos_count || 0) + '\n' +
+      'Posledný sync pokus: ' +
+        (item.last_sync_attempt_at || '-') + '\n' +
+      'Chyba: ' + (item.sync_error || '-')
+    );
+
+  } catch (error) {
+    alert(
+      'SYNC DIAGNOSTIKA – chyba:\n' +
+      String(error)
+    );
+  }
+};
+
   try {
     const summary =
       await getPendingSyncSummary();
@@ -11073,6 +11962,28 @@ if (appState.currentUserId) {
   memberSelect1.value = appState.currentUserId;
 }
 
+/*
+  RS2 patrí k aktívnej službe.
+  Po resete formulára aj reloadnutí aplikácie
+  zostane vybraný až do opustenia revíru.
+*/
+if (
+  appState.activeRevir &&
+  appState.activeMember2Id
+) {
+  memberSelect2.value =
+    appState.activeMember2Id;
+}
+
+memberSelect2.onchange = () => {
+  appState.activeMember2Id =
+    memberSelect2.value || '';
+
+  if (appState.activeRevir) {
+    saveActiveRevir();
+  }
+};
+
       const checkPlaceSelect = document.getElementById("checkPlace");
       if (checkPlaceSelect) {
         const currentValue = checkPlaceSelect.value;
@@ -11299,7 +12210,107 @@ function getSelectedCheckFisher() {
   return null;
 }
 
-    function renderChecks() {
+function getChecksForFisherHistory() {
+  const statsChecks =
+    Array.isArray(appState.data.statsChecks)
+      ? appState.data.statsChecks
+      : [];
+
+  const localChecks =
+    Array.isArray(appState.data.checks)
+      ? appState.data.checks
+      : [];
+
+  const merged = new Map();
+
+  /*
+    Kompletný zoznam kontrol zo štatistických dát.
+  */
+  statsChecks.forEach(item => {
+    const key = String(
+      item.id ||
+      item.check_local_id ||
+      item.local_id ||
+      ''
+    );
+
+    if (!key) return;
+
+    merged.set(key, item);
+  });
+
+  /*
+    Ak máme tú istú kontrolu aj lokálne,
+    lokálna verzia má prednosť, pretože môže
+    obsahovať fotky a detailnejšie údaje.
+  */
+  localChecks.forEach(item => {
+    const key = String(
+      item.id ||
+      item.check_local_id ||
+      item.local_id ||
+      ''
+    );
+
+    if (!key) return;
+
+    const existing =
+      merged.get(key) || {};
+
+    merged.set(key, {
+      ...existing,
+      ...item
+    });
+  });
+
+  return Array.from(merged.values());
+}
+
+async function loadFullCheckById(id) {
+  if (!id) return null;
+
+  try {
+    const { data, error } = await db
+      .from('checks')
+      .select(`
+        id,
+        created_at,
+        check_date,
+        fisher_name,
+        fisher_id_no,
+        location,
+        result,
+        disciplinarny_zaznam,
+        typ_priestupku,
+        poznamka,
+        photos,
+        member_name,
+        clen_rs_1,
+        clen_rs_2,
+        time_from,
+        time_to
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data || null;
+
+  } catch (error) {
+    console.warn(
+      'Nepodarilo sa načítať detail kontroly pre históriu:',
+      id,
+      error
+    );
+
+    return null;
+  }
+}
+
+    async function renderChecks() {
 const wrap = document.getElementById('checksList');
 
 const enteredName =
@@ -11362,7 +12373,7 @@ if (!query) {
 const summaryBox = document.getElementById('checksSummary');
 
 if (summaryBox && query) {
-  const fisherChecks = appState.data.checks.filter(item => {
+  const fisherChecks = getChecksForFisherHistory().filter(item => {
     const checkName =
       item.fisher_name ||
       item.fisherName ||
@@ -11517,7 +12528,7 @@ summaryBox.innerHTML =
 
 syncMobileChecksSummary();
 
-const filtered = appState.data.checks.filter(item => {
+const filtered = getChecksForFisherHistory().filter(item => {
   const itemFisherName =
     item.fisher_name ||
     item.fisherName ||
@@ -11548,7 +12559,39 @@ const filtered = appState.data.checks.filter(item => {
   return sameDatabaseId || sameName || sameMemberId || samePermit;
 });
 
-      wrap.innerHTML = filtered.map(item => {
+const enrichedFiltered =
+  await Promise.all(
+    filtered.map(async item => {
+      const hasFullDetail =
+        item.typ_priestupku ||
+        item.offence_type ||
+        item.offenceType ||
+        item.poznamka ||
+        item.note ||
+        (
+          Array.isArray(item.photos) &&
+          item.photos.length > 0
+        );
+
+      if (hasFullDetail || !item.id) {
+        return item;
+      }
+
+      const fullDetail =
+        await loadFullCheckById(item.id);
+
+      if (!fullDetail) {
+        return item;
+      }
+
+      return {
+        ...item,
+        ...fullDetail
+      };
+    })
+  );
+
+     wrap.innerHTML = enrichedFiltered.map(item => {
 const fisherName = item.fisher_name || item.fisherName || item.fisherIdNo || getFisherName(item.fisherId) || '-';
 const memberName = item.clen_rs_1 ? item.clen_rs_1 + (item.clen_rs_2 ? ' / ' + item.clen_rs_2 : '') : (item.member_name || getMemberName(item.memberId) || '-');
 const miesto = item.location || item.place || '-';
@@ -11642,6 +12685,8 @@ function showMainMenu() {
   document.getElementById('asistentRSSection').classList.add('hidden');
 
   document.getElementById('disciplinarnaKomisiaSection')?.classList.add('hidden');
+
+  document.getElementById('sluzobneVozidlaSection')?.classList.add('hidden');
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -13250,6 +14295,47 @@ function openAsistentRSModule() {
   closeAsistentDetail();
 
   document.getElementById('asistentRSSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function openSluzobneVozidlaModule() {
+  document.getElementById('mainMenuSection').classList.add('hidden');
+  document.getElementById('backToMenuSection').classList.remove('hidden');
+
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+  document.getElementById('legacyTabs').classList.add('hidden');
+
+  document.getElementById('graphsOnlySection').classList.add('hidden');
+  document.getElementById('dashboardCardsSection').classList.add('hidden');
+  document.getElementById('appOverviewSection').classList.add('hidden');
+  document.getElementById('filterSection').classList.add('hidden');
+
+  document.getElementById('asistentRSSection').classList.add('hidden');
+  document.getElementById('disciplinarnaKomisiaSection').classList.add('hidden');
+
+  document.getElementById('sluzobneVozidlaSection').classList.remove('hidden');
+
+const vehicleDate =
+  document.getElementById('vehicleDate');
+
+if (vehicleDate) {
+  vehicleDate.value = todayISO();
+}
+
+const vehicleRecordedBy =
+  document.getElementById('vehicleRecordedBy');
+
+const currentMember =
+  getCurrentUser();
+
+if (vehicleRecordedBy) {
+  vehicleRecordedBy.value =
+    currentMember ? currentMember.name : '';
+}
+
+  document
+    .getElementById('sluzobneVozidlaSection')
+    .scrollIntoView({ behavior: 'smooth' });
 }
 
 async function openDisciplinarnaKomisiaModule() {
@@ -15551,6 +16637,890 @@ const celkovoHodinRS =
       return lines.join(nl);
     }
 
+function openStatsExportModal() {
+  const modal =
+    document.getElementById('statsExportModal');
+
+  const select =
+    document.getElementById('statsExportType');
+
+  const button =
+    document.getElementById('statsExportBtn');
+
+  if (!modal) return;
+
+  if (select) {
+    select.value = '';
+  }
+
+  if (button) {
+    button.disabled = true;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeStatsExportModal() {
+  const modal =
+    document.getElementById('statsExportModal');
+
+  if (!modal) return;
+
+  modal.classList.add('hidden');
+}
+
+function handleStatsExportTypeChange() {
+  const select =
+    document.getElementById('statsExportType');
+
+  const button =
+    document.getElementById('statsExportBtn');
+
+  if (!select || !button) return;
+
+  button.disabled =
+    !safeText(select.value);
+}
+
+function buildVehicleStatsExcelHtml(records, periodLabel) {
+  const purposeLabels = {
+    kontrola: 'Kontrola RS',
+    sluzba: 'Služba',
+    podujatie: 'Podujatie'
+  };
+
+  const rows = (records || []).map(record => {
+    const purpose =
+      purposeLabels[record.purpose] ||
+      record.purpose ||
+      '-';
+
+    return `
+      <tr>
+        <td>${escapeHtml(record.date || '-')}</td>
+        <td>${escapeHtml(record.vehicle_name || record.vehicle_id || '-')}</td>
+        <td>${Number(record.previous_km) || 0}</td>
+        <td>${Number(record.current_km) || 0}</td>
+        <td>${Number(record.driven_km) || 0}</td>
+        <td>${escapeHtml(purpose)}</td>
+        <td>${escapeHtml(record.recorded_by_name || '-')}</td>
+        <td>${escapeHtml(record.note || '')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <html>
+      <head>
+        <meta charset="UTF-8">
+
+        <style>
+          table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+
+          th,
+          td {
+            border: 1px solid #b8c4bc;
+            padding: 7px;
+            text-align: left;
+          }
+
+          th {
+            background: #eaf4ed;
+            font-weight: 700;
+          }
+
+          h2 {
+            margin-bottom: 4px;
+          }
+
+          .period {
+            margin-bottom: 14px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <h2>Služobné vozidlá – evidencia kilometrov</h2>
+
+        <div class="period">
+          Obdobie: ${escapeHtml(periodLabel || '-')}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Dátum</th>
+              <th>Vozidlo</th>
+              <th>Predchádzajúci stav km</th>
+              <th>Konečný stav km</th>
+              <th>Najazdené km</th>
+              <th>Účel jazdy</th>
+              <th>Evidoval</th>
+              <th>Poznámka</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+}
+
+async function exportVehicleStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const allRecords =
+    await rsLocalGetAll(
+      RS_LOCAL_STORES.vehicleLogs
+    );
+
+  const filteredRecords =
+    (allRecords || []).filter(record => {
+      const dateValue =
+        safeText(record.date || '');
+
+      if (!dateValue) {
+        return false;
+      }
+
+      if (datumOd && dateValue < datumOd) {
+        return false;
+      }
+
+      if (datumDo && dateValue > datumDo) {
+        return false;
+      }
+
+      if (!datumOd && !datumDo) {
+        const now = new Date();
+
+        const year =
+          now.getFullYear();
+
+        const month =
+          String(
+            now.getMonth() + 1
+          ).padStart(2, '0');
+
+        return dateValue.startsWith(
+          `${year}-${month}-`
+        );
+      }
+
+      return true;
+    });
+
+  const purposeLabels = {
+    kontrola: 'Kontrola RS',
+    sluzba: 'Služba',
+    podujatie: 'Podujatie'
+  };
+
+  const exportRows =
+    filteredRecords.map(record => ({
+      'Dátum':
+        record.date || '',
+
+      'Vozidlo':
+        record.vehicle_name ||
+        record.vehicle_id ||
+        '',
+
+      'Predchádzajúci stav km':
+        Number(record.previous_km) || 0,
+
+      'Konečný stav km':
+        Number(record.current_km) || 0,
+
+      'Najazdené km':
+        Number(record.driven_km) || 0,
+
+      'Účel jazdy':
+        purposeLabels[record.purpose] ||
+        record.purpose ||
+        '',
+
+      'Evidoval':
+        record.recorded_by_name || '',
+
+      'Poznámka':
+        record.note || ''
+    }));
+
+ const periodLabel =
+  getStatsPeriodLabel(
+    datumOd,
+    datumDo
+  );
+
+const worksheetData = [
+  ['Služobné vozidlá – evidencia kilometrov'],
+  ['Obdobie:', periodLabel],
+  [],
+  [
+    'Dátum',
+    'Vozidlo',
+    'Predchádzajúci stav km',
+    'Konečný stav km',
+    'Najazdené km',
+    'Účel jazdy',
+    'Evidoval',
+    'Poznámka'
+  ]
+];
+
+exportRows.forEach(row => {
+  worksheetData.push([
+    row['Dátum'],
+    row['Vozidlo'],
+    row['Predchádzajúci stav km'],
+    row['Konečný stav km'],
+    row['Najazdené km'],
+    row['Účel jazdy'],
+    row['Evidoval'],
+    row['Poznámka']
+  ]);
+});
+
+const worksheet =
+  XLSX.utils.aoa_to_sheet(
+    worksheetData
+  );
+
+/* Šírky stĺpcov */
+worksheet['!cols'] = [
+  { wch: 13 },  // Dátum
+  { wch: 16 },  // Vozidlo
+  { wch: 24 },  // Predchádzajúci stav
+  { wch: 20 },  // Konečný stav
+  { wch: 16 },  // Najazdené
+  { wch: 18 },  // Účel
+  { wch: 22 },  // Evidoval
+  { wch: 50 }   // Poznámka
+];
+
+/* Nadpis cez celú tabuľku */
+worksheet['!merges'] = [
+  {
+    s: { r: 0, c: 0 },
+    e: { r: 0, c: 7 }
+  }
+];
+
+const workbook =
+  XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  worksheet,
+  'Služobné vozidlá'
+);
+
+  XLSX.writeFile(
+    workbook,
+    'rs_sluzobne_vozidla_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export služobných vozidiel',
+    'Bol vytvorený export služobných vozidiel do XLSX.'
+  );
+}
+
+async function exportKontrolyReviryStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let kontroly =
+    [...(appState.data.statsChecks || [])];
+
+  if (datumOd) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return (
+        checkDate &&
+        checkDate >= datumOd
+      );
+    });
+  }
+
+  if (datumDo) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return (
+        checkDate &&
+        checkDate <= datumDo
+      );
+    });
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    kontroly = kontroly.filter(k =>
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena
+    );
+  }
+
+  if (revir) {
+    kontroly = kontroly.filter(k =>
+      safeText(
+        k.location ||
+        k.place ||
+        ''
+      ) === safeText(revir)
+    );
+  }
+
+  const revirStats = {};
+
+  kontroly.forEach(k => {
+    const miesto =
+      safeText(
+        k.location ||
+        k.place ||
+        'Nezadaný revír'
+      );
+
+    revirStats[miesto] =
+      (revirStats[miesto] || 0) + 1;
+  });
+
+  const rows =
+    Object.entries(revirStats)
+      .sort((a, b) => b[1] - a[1]);
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Kontroly podľa revírov'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Revír',
+      'Počet kontrol'
+    ]
+  ];
+
+  rows.forEach(([revirName, count]) => {
+    worksheetData.push([
+      revirName,
+      count
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 42 },
+    { wch: 16 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Kontroly podľa revírov'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_kontroly_podla_revirov_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export kontrol podľa revírov',
+    'Bol vytvorený export štatistiky kontrol podľa revírov do XLSX.'
+  );
+}
+
+async function exportAktivitaClenovStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let kontroly =
+    [...(appState.data.statsChecks || [])];
+
+  let sluzby =
+    [...(appState.data.sluzbyReviry || [])];
+
+  if (datumOd) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate >= datumOd;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) >= datumOd
+    );
+  }
+
+  if (datumDo) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate <= datumDo;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) <= datumDo
+    );
+  }
+
+  if (revir) {
+    kontroly = kontroly.filter(k =>
+      safeText(
+        k.location ||
+        k.place ||
+        ''
+      ) === safeText(revir)
+    );
+
+    sluzby = sluzby.filter(s =>
+      safeText(
+        s.revir ||
+        ''
+      ) === safeText(revir)
+    );
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    kontroly = kontroly.filter(k =>
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena
+    );
+
+    sluzby = sluzby.filter(s => {
+      const clenovia =
+        Array.isArray(s.clenovia_rs)
+          ? s.clenovia_rs
+          : [];
+
+      return (
+        safeText(s.clen_rs || '') === menoClena ||
+        clenovia.some(clen =>
+          safeText(
+            clen.name ||
+            clen.meno ||
+            clen
+          ) === menoClena
+        )
+      );
+    });
+  }
+
+  const activity =
+    getMemberActivityStats(
+      kontroly,
+      sluzby
+    );
+
+  const rows =
+    Object.entries(activity)
+      .sort((a, b) => b[1] - a[1]);
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Aktivita členov RS'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Člen RS',
+      'Aktivita'
+    ]
+  ];
+
+  rows.forEach(([memberName, count]) => {
+    worksheetData.push([
+      memberName,
+      count
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 28 },
+    { wch: 14 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Aktivita členov RS'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_aktivita_clenov_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export aktivity členov RS',
+    'Bol vytvorený export štatistiky aktivity členov RS do XLSX.'
+  );
+}
+
+async function exportHodinyClenovStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let kontroly =
+    [...(appState.data.statsChecks || [])];
+
+  let sluzby =
+    [...(appState.data.sluzbyReviry || [])];
+
+  if (datumOd) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate >= datumOd;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) >= datumOd
+    );
+  }
+
+  if (datumDo) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate <= datumDo;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) <= datumDo
+    );
+  }
+
+  if (revir) {
+    kontroly = kontroly.filter(k =>
+      safeText(
+        k.location ||
+        k.place ||
+        ''
+      ) === safeText(revir)
+    );
+
+    sluzby = sluzby.filter(s =>
+      safeText(
+        s.revir ||
+        ''
+      ) === safeText(revir)
+    );
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    kontroly = kontroly.filter(k =>
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena
+    );
+
+    sluzby = sluzby.filter(s => {
+      const clenovia =
+        Array.isArray(s.clenovia_rs)
+          ? s.clenovia_rs
+          : [];
+
+      return (
+        safeText(s.clen_rs || '') === menoClena ||
+        clenovia.some(clen =>
+          safeText(
+            clen.name ||
+            clen.meno ||
+            clen
+          ) === menoClena
+        )
+      );
+    });
+  }
+
+  const counts = {};
+
+const sessions =
+  buildMemberCheckSessionsWithServices(
+    kontroly,
+    sluzby,
+    120
+  );
+
+sessions.forEach(session => {
+  counts[session.memberName] =
+    (counts[session.memberName] || 0) +
+    session.minutes;
+});
+
+const rows =
+  Object.entries(counts)
+    .sort((a, b) => b[1] - a[1]);
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Odslúžené hodiny členov RS'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Člen RS',
+      'Odslúžené minúty',
+      'Odslúžené hodiny'
+    ]
+  ];
+
+  rows.forEach(([memberName, minutes]) => {
+    const totalMinutes =
+      Number(minutes) || 0;
+
+    const hours =
+      Math.floor(totalMinutes / 60);
+
+    const mins =
+      totalMinutes % 60;
+
+    worksheetData.push([
+      memberName,
+      totalMinutes,
+      `${hours} h ${mins} min`
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 28 },
+    { wch: 20 },
+    { wch: 20 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Hodiny členov RS'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_hodiny_clenov_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export hodín členov RS',
+    'Bol vytvorený export odslúžených hodín členov RS do XLSX.'
+  );
+}
+
+async function exportSelectedStats() {
+  const select =
+    document.getElementById('statsExportType');
+
+  if (!select) {
+    return;
+  }
+
+  const exportType =
+    safeText(select.value || '');
+
+  if (!exportType) {
+    alert('Vyber typ štatistiky.');
+    return;
+  }
+
+if (exportType === 'aktivita_clenov') {
+  await exportAktivitaClenovStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'kontroly_reviry') {
+  await exportKontrolyReviryStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'hodiny_clenov') {
+  await exportHodinyClenovStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'hodiny_reviry') {
+  await exportHodinyReviryStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'vysledky_kontrol') {
+  await exportVysledkyKontrolStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'mesacny_tgt') {
+  await exportMesacnyTgtStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'sluzby_rs') {
+  await exportSluzbyRsStats();
+  closeStatsExportModal();
+  return;
+}
+
+if (exportType === 'ucastnici_sluzieb') {
+  await exportUcastniciSluziebStats();
+  closeStatsExportModal();
+  return;
+}
+
+  if (exportType === 'vozidla') {
+    await exportVehicleStats();
+    closeStatsExportModal();
+    return;
+  }
+
+  alert(
+    'Tento typ exportu ešte nie je pripravený.'
+  );
+}
+
 function exportData() {
   const content = buildChecksExcelHtml();
   const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8' });
@@ -17415,6 +19385,930 @@ function renderGrafHodinyReviry(kontroly, sluzby) {
     .join('');
 }
 
+async function exportHodinyReviryStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let kontroly =
+    [...(appState.data.statsChecks || [])];
+
+  let sluzby =
+    [...(appState.data.sluzbyReviry || [])];
+
+  if (datumOd) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate >= datumOd;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) >= datumOd
+    );
+  }
+
+  if (datumDo) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate <= datumDo;
+    });
+
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) <= datumDo
+    );
+  }
+
+  if (revir) {
+    kontroly = kontroly.filter(k =>
+      safeText(
+        k.location ||
+        k.place ||
+        ''
+      ) === safeText(revir)
+    );
+
+    sluzby = sluzby.filter(s =>
+      safeText(
+        s.revir ||
+        ''
+      ) === safeText(revir)
+    );
+  }
+
+  const counts = {};
+
+  const sessions =
+    buildRevirCheckSessions(
+      kontroly,
+      120
+    );
+
+  sessions.forEach(session => {
+    counts[session.revir] =
+      (counts[session.revir] || 0) +
+      session.minutes;
+  });
+
+  const sessionKeys = new Set(
+    sessions.map(session =>
+      session.dateKey +
+      '|' +
+      normalize(session.revir)
+    )
+  );
+
+  const fallbackServices = {};
+
+  (sluzby || []).forEach(service => {
+    const dateKey =
+      getServiceDateKey(service);
+
+    const serviceRevir =
+      safeText(
+        service.revir ||
+        'Nezadaný revír'
+      );
+
+    if (!dateKey || !serviceRevir) {
+      return;
+    }
+
+    const key =
+      dateKey +
+      '|' +
+      normalize(serviceRevir);
+
+    if (sessionKeys.has(key)) {
+      return;
+    }
+
+    const serviceStart = new Date(
+      service.zaciatok ||
+      service.start ||
+      ''
+    );
+
+    const serviceEnd = new Date(
+      service.koniec ||
+      service.end ||
+      ''
+    );
+
+    let minutes = 0;
+
+    if (
+      !isNaN(serviceStart.getTime()) &&
+      !isNaN(serviceEnd.getTime()) &&
+      serviceEnd >= serviceStart
+    ) {
+      minutes = Math.round(
+        (
+          serviceEnd.getTime() -
+          serviceStart.getTime()
+        ) / 60000
+      );
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    if (!fallbackServices[key]) {
+      fallbackServices[key] = {
+        revir: serviceRevir,
+        minutes: 0
+      };
+    }
+
+    fallbackServices[key].minutes =
+      Math.max(
+        fallbackServices[key].minutes,
+        minutes
+      );
+  });
+
+  Object.values(fallbackServices)
+    .forEach(service => {
+      counts[service.revir] =
+        (counts[service.revir] || 0) +
+        service.minutes;
+    });
+
+  const rows =
+    Object.entries(counts)
+      .sort((a, b) => b[1] - a[1]);
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Odslúžené hodiny podľa revírov'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Revír',
+      'Odslúžené minúty',
+      'Odslúžené hodiny'
+    ]
+  ];
+
+  rows.forEach(([revirName, minutes]) => {
+    const totalMinutes =
+      Number(minutes) || 0;
+
+    const hours =
+      Math.floor(totalMinutes / 60);
+
+    const mins =
+      totalMinutes % 60;
+
+    worksheetData.push([
+      revirName,
+      totalMinutes,
+      `${hours} h ${mins} min`
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 42 },
+    { wch: 20 },
+    { wch: 20 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Hodiny podľa revírov'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_hodiny_podla_revirov_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export hodín podľa revírov',
+    'Bol vytvorený export odslúžených hodín podľa revírov do XLSX.'
+  );
+}
+
+async function exportVysledkyKontrolStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let kontroly =
+    [...(appState.data.statsChecks || [])];
+
+  if (datumOd) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate >= datumOd;
+    });
+  }
+
+  if (datumDo) {
+    kontroly = kontroly.filter(k => {
+      const checkDate =
+        localDateKey(
+          k.check_date ||
+          k.created_at ||
+          k.date ||
+          ''
+        );
+
+      return checkDate && checkDate <= datumDo;
+    });
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    kontroly = kontroly.filter(k =>
+      safeText(k.clen_rs_1 || '') === menoClena ||
+      safeText(k.clen_rs_2 || '') === menoClena ||
+      safeText(k.member_name || '') === menoClena
+    );
+  }
+
+  if (revir) {
+    kontroly = kontroly.filter(k =>
+      safeText(
+        k.location ||
+        k.place ||
+        ''
+      ) === safeText(revir)
+    );
+  }
+
+  const stats = {};
+
+  kontroly.forEach(k => {
+    const result =
+      safeText(
+        k.result ||
+        'Bez výsledku'
+      );
+
+    stats[result] =
+      (stats[result] || 0) + 1;
+  });
+
+  const rows =
+    Object.entries(stats)
+      .sort((a, b) => b[1] - a[1]);
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Výsledky kontrol'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Výsledok kontroly',
+      'Počet'
+    ]
+  ];
+
+  rows.forEach(([result, count]) => {
+    worksheetData.push([
+      result,
+      count
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 28 },
+    { wch: 12 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Výsledky kontrol'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_vysledky_kontrol_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export výsledkov kontrol',
+    'Bol vytvorený export výsledkov kontrol do XLSX.'
+  );
+}
+
+async function exportSluzbyRsStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let sluzby =
+    [...(appState.data.sluzbyReviry || [])];
+
+  if (datumOd) {
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) >= datumOd
+    );
+  }
+
+  if (datumDo) {
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) <= datumDo
+    );
+  }
+
+  if (revir) {
+    sluzby = sluzby.filter(s =>
+      safeText(
+        s.revir || ''
+      ) === safeText(revir)
+    );
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    sluzby = sluzby.filter(s => {
+      const clenovia =
+        Array.isArray(s.clenovia_rs)
+          ? s.clenovia_rs
+          : [];
+
+      return (
+        safeText(s.clen_rs || '') === menoClena ||
+        clenovia.some(clen =>
+          safeText(
+            clen.name ||
+            clen.meno ||
+            clen
+          ) === menoClena
+        )
+      );
+    });
+  }
+
+  const stats = {};
+
+  sluzby.forEach(service => {
+    const typ =
+      safeText(
+        service.typ_sluzby ||
+        'Staršie služby / bez typu'
+      );
+
+    if (!stats[typ]) {
+      stats[typ] = {
+        count: 0,
+        minutes: 0
+      };
+    }
+
+    stats[typ].count += 1;
+
+    const zaciatok =
+      new Date(
+        service.zaciatok || ''
+      );
+
+    const koniec =
+      new Date(
+        service.koniec || ''
+      );
+
+    let minutes = 0;
+
+    if (
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime()) &&
+      koniec >= zaciatok
+    ) {
+      minutes = Math.round(
+        (
+          koniec.getTime() -
+          zaciatok.getTime()
+        ) / 60000
+      );
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    stats[typ].minutes += minutes;
+  });
+
+  const rows =
+    Object.entries(stats)
+      .filter(([typ]) =>
+        typ !== 'Staršie služby / bez typu'
+      )
+      .sort(
+        (a, b) =>
+          b[1].count - a[1].count
+      );
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Služby RS'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Typ služby',
+      'Počet služieb',
+      'Celkový čas'
+    ]
+  ];
+
+  rows.forEach(([typ, data]) => {
+    const hours =
+      Math.floor(data.minutes / 60);
+
+    const minutes =
+      data.minutes % 60;
+
+    worksheetData.push([
+      typ,
+      data.count,
+      `${hours} h ${minutes} min`
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 34 },
+    { wch: 16 },
+    { wch: 20 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Služby RS'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_sluzby_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export služieb RS',
+    'Bol vytvorený export štatistiky služieb RS do XLSX.'
+  );
+}
+
+async function exportUcastniciSluziebStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  const revir =
+    document.getElementById('filterRevir')?.value || '';
+
+  let sluzby =
+    [...(appState.data.sluzbyReviry || [])];
+
+  if (datumOd) {
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) >= datumOd
+    );
+  }
+
+  if (datumDo) {
+    sluzby = sluzby.filter(s =>
+      getServiceDateKey(s) <= datumDo
+    );
+  }
+
+  if (revir) {
+    sluzby = sluzby.filter(s =>
+      safeText(
+        s.revir || ''
+      ) === safeText(revir)
+    );
+  }
+
+  if (clenRS) {
+    const menoClena =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    sluzby = sluzby.filter(s => {
+      const clenovia =
+        Array.isArray(s.clenovia_rs)
+          ? s.clenovia_rs
+          : [];
+
+      return (
+        safeText(s.clen_rs || '') === menoClena ||
+        clenovia.some(clen =>
+          safeText(
+            clen.name ||
+            clen.meno ||
+            clen
+          ) === menoClena
+        )
+      );
+    });
+  }
+
+  const stats = {};
+
+  (sluzby || []).forEach(service => {
+    const typSluzby =
+      safeText(
+        service.typ_sluzby || ''
+      );
+
+    if (!typSluzby) {
+      return;
+    }
+
+    const zaciatok =
+      new Date(
+        service.zaciatok || ''
+      );
+
+    const koniec =
+      new Date(
+        service.koniec || ''
+      );
+
+    let minutes = 0;
+
+    if (
+      !isNaN(zaciatok.getTime()) &&
+      !isNaN(koniec.getTime()) &&
+      koniec >= zaciatok
+    ) {
+      minutes = Math.round(
+        (
+          koniec.getTime() -
+          zaciatok.getTime()
+        ) / 60000
+      );
+    }
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      minutes =
+        Number(service.trvanie_min) || 0;
+    }
+
+    let members = [];
+
+    if (
+      Array.isArray(service.clenovia_rs) &&
+      service.clenovia_rs.length > 0
+    ) {
+      members = service.clenovia_rs;
+    } else {
+      members = [
+        service.clen_rs ||
+        service.clenRs ||
+        ''
+      ];
+    }
+
+    const names =
+      members
+        .map(member =>
+          safeText(
+            typeof member === 'string'
+              ? member
+              : (
+                  member?.name ||
+                  member?.meno ||
+                  ''
+                )
+          )
+        )
+        .filter(name =>
+          name &&
+          name !== '-' &&
+          name !== 'null' &&
+          name !== 'undefined'
+        )
+        .filter((name, index, array) =>
+          array.indexOf(name) === index
+        );
+
+    names.forEach(name => {
+      if (!stats[name]) {
+        stats[name] = {
+          count: 0,
+          minutes: 0
+        };
+      }
+
+      stats[name].count += 1;
+      stats[name].minutes += minutes;
+    });
+  });
+
+  const rows =
+    Object.entries(stats)
+      .sort((a, b) =>
+        b[1].count - a[1].count ||
+        b[1].minutes - a[1].minutes
+      );
+
+  const periodLabel =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+
+  const worksheetData = [
+    ['Účastníci služieb'],
+    ['Obdobie:', periodLabel],
+    [],
+    [
+      'Člen RS',
+      'Počet služieb',
+      'Celkový čas'
+    ]
+  ];
+
+  rows.forEach(([name, data]) => {
+    const hours =
+      Math.floor(data.minutes / 60);
+
+    const minutes =
+      data.minutes % 60;
+
+    worksheetData.push([
+      name,
+      data.count,
+      `${hours} h ${minutes} min`
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 28 },
+    { wch: 16 },
+    { wch: 20 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Účastníci služieb'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_ucastnici_sluzieb_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export účastníkov služieb',
+    'Bol vytvorený export účastníkov služieb do XLSX.'
+  );
+}
+
+async function exportMesacnyTgtStats() {
+  const datumOd =
+    document.getElementById('filterDatumOd')?.value || '';
+
+  const datumDo =
+    document.getElementById('filterDatumDo')?.value || '';
+
+  const clenRS =
+    document.getElementById('filterClenRS')?.value || '';
+
+  let rows =
+    calculateMonthlyTargetStats(
+      appState.data.statsChecks || [],
+      appState.data.sluzbyReviry || [],
+      datumOd,
+      datumDo
+    );
+
+  if (clenRS) {
+    const memberName =
+      safeText(
+        getMemberName(clenRS)
+      );
+
+    rows = rows.filter(item =>
+      safeText(item.memberName) === memberName
+    );
+  }
+
+  rows.sort((a, b) => {
+    if (a.monthKey !== b.monthKey) {
+      return b.monthKey.localeCompare(a.monthKey);
+    }
+
+    return b.percentage - a.percentage;
+  });
+
+  const worksheetData = [
+    ['Mesačný TGT členov RS'],
+    [
+      'Obdobie filtra:',
+      getStatsPeriodLabel(
+        datumOd,
+        datumDo
+      )
+    ],
+    [],
+    [
+      'Mesiac',
+      'Člen RS',
+      'Počet služieb',
+      'TGT',
+      'Plnenie %'
+    ]
+  ];
+
+  rows.forEach(item => {
+    const [year, month] =
+      item.monthKey.split('-');
+
+    const monthLabel =
+      new Intl.DateTimeFormat(
+        'sk-SK',
+        {
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'Europe/Bratislava'
+        }
+      ).format(
+        new Date(
+          Number(year),
+          Number(month) - 1,
+          1
+        )
+      );
+
+    worksheetData.push([
+      monthLabel,
+      item.memberName,
+      item.serviceDays,
+      item.target,
+      item.percentage
+    ]);
+  });
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  worksheet['!cols'] = [
+    { wch: 20 },
+    { wch: 28 },
+    { wch: 16 },
+    { wch: 10 },
+    { wch: 14 }
+  ];
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Mesačný TGT'
+  );
+
+  XLSX.writeFile(
+    workbook,
+    'rs_mesacny_tgt_' +
+    todayISO() +
+    '.xlsx'
+  );
+
+  logChange(
+    'Export',
+    'Export mesačného TGT',
+    'Bol vytvorený export mesačného TGT členov RS do XLSX.'
+  );
+}
+
 function getResultColor(vysledok) {
   if (vysledok === 'Bez porušenia') return '#166534';
   if (vysledok === 'Poučenie rybára') return '#2563eb';
@@ -17611,6 +20505,428 @@ function renderGrafMesacnyTarget(
       `;
     })
     .join('');
+}
+
+function getStatsPeriodLabel(datumOd, datumDo) {
+  if (datumOd && datumDo) {
+    const fromDate = new Date(datumOd + 'T00:00:00');
+    const toDate = new Date(datumDo + 'T00:00:00');
+
+    const fromLabel = new Intl.DateTimeFormat(
+      'sk-SK',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'Europe/Bratislava'
+      }
+    ).format(fromDate);
+
+    const toLabel = new Intl.DateTimeFormat(
+      'sk-SK',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'Europe/Bratislava'
+      }
+    ).format(toDate);
+
+    return fromLabel + ' – ' + toLabel;
+  }
+
+  if (datumOd) {
+    const fromDate = new Date(datumOd + 'T00:00:00');
+
+    return 'Od ' + new Intl.DateTimeFormat(
+      'sk-SK',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'Europe/Bratislava'
+      }
+    ).format(fromDate);
+  }
+
+  if (datumDo) {
+    const toDate = new Date(datumDo + 'T00:00:00');
+
+    return 'Do ' + new Intl.DateTimeFormat(
+      'sk-SK',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'Europe/Bratislava'
+      }
+    ).format(toDate);
+  }
+
+  const now = new Date();
+
+  const label = new Intl.DateTimeFormat(
+    'sk-SK',
+    {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Europe/Bratislava'
+    }
+  ).format(now);
+
+  return (
+    label.charAt(0).toUpperCase() +
+    label.slice(1)
+  );
+}
+
+function updateKontrolyReviryPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafKontrolyReviryObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateAktivitaClenovPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafAktivitaClenovObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateHodinyClenovPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafHodinyClenovObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateHodinyReviryPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafHodinyReviryObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateVysledkyKontrolPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafVysledkyKontrolObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateSluzbyRsPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafSluzbyRsObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateUcastniciSluziebPeriodLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById(
+      'grafUcastniciSluziebObdobie'
+    );
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+function updateVehicleStatsMonthLabel(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById('grafVozidlaMesiac');
+
+  if (!box) return;
+
+  box.textContent =
+    getStatsPeriodLabel(
+      datumOd,
+      datumDo
+    );
+}
+
+async function renderGrafVozidla(
+  datumOd,
+  datumDo
+) {
+  const box =
+    document.getElementById('grafVozidla');
+
+  if (!box) {
+    return;
+  }
+
+  try {
+    const records =
+      await rsLocalGetAll(
+        RS_LOCAL_STORES.vehicleLogs
+      );
+
+    console.log(
+      'VEHICLE STATS RECORDS:',
+      records
+    );
+
+const now = new Date();
+
+const currentYear =
+  now.getFullYear();
+
+const currentMonth =
+  now.getMonth() + 1;
+
+const filteredRecords =
+  (records || []).filter(record => {
+    const dateValue =
+      safeText(record.date || '');
+
+    const match =
+      dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (!match) {
+      return false;
+    }
+
+    if (datumOd && dateValue < datumOd) {
+      return false;
+    }
+
+    if (datumDo && dateValue > datumDo) {
+      return false;
+    }
+
+    if (!datumOd && !datumDo) {
+      const year =
+        Number(match[1]);
+
+      const month =
+        Number(match[2]);
+
+      return (
+        year === currentYear &&
+        month === currentMonth
+      );
+    }
+
+    return true;
+  });
+
+const totals = {
+  vitara: 0,
+  ford: 0
+};
+
+const purposeTotals = {
+  vitara: {
+    kontrola: 0,
+    sluzba: 0,
+    podujatie: 0
+  },
+
+  ford: {
+    kontrola: 0,
+    sluzba: 0,
+    podujatie: 0
+  }
+};
+
+filteredRecords.forEach(record => {
+  const vehicleId =
+    safeText(record.vehicle_id || '');
+
+  const km =
+    Number(record.driven_km) || 0;
+
+  const purpose =
+    safeText(record.purpose || '');
+
+  if (vehicleId === 'vitara') {
+    totals.vitara += km;
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        purposeTotals.vitara,
+        purpose
+      )
+    ) {
+      purposeTotals.vitara[purpose] += km;
+    }
+  }
+
+  if (vehicleId === 'ford') {
+    totals.ford += km;
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        purposeTotals.ford,
+        purpose
+      )
+    ) {
+      purposeTotals.ford[purpose] += km;
+    }
+  }
+});
+
+const totalAll =
+  totals.vitara + totals.ford;
+
+const purposeLabels = {
+  kontrola: 'Kontrola RS',
+  sluzba: 'Služba',
+  podujatie: 'Podujatie'
+};
+
+
+function renderVehiclePurposes(vehicleId) {
+  return Object.entries(
+    purposeTotals[vehicleId]
+  )
+    .filter(([, km]) => km > 0)
+    .map(([purpose, km]) => `
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        margin-top:5px;
+        padding-left:10px;
+        font-size:12px;
+        color:#64748b;
+      ">
+        <span>${purposeLabels[purpose] || purpose}</span>
+        <span>${km} km</span>
+      </div>
+    `)
+    .join('');
+}
+
+box.innerHTML = `
+  <div style="margin:10px 0;">
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;
+    ">
+      <strong>Vitara</strong>
+      <span>${totals.vitara} km</span>
+    </div>
+
+${renderVehiclePurposes('vitara')}
+  </div>
+
+  <div style="margin:10px 0;">
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;
+    ">
+      <strong>Ford</strong>
+      <span>${totals.ford} km</span>
+    </div>
+
+${renderVehiclePurposes('ford')}
+  </div>
+
+  <div style="
+    margin-top:14px;
+    padding-top:10px;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+  ">
+    <strong>Spolu</strong>
+    <strong>${totalAll} km</strong>
+  </div>
+`;
+
+  } catch (error) {
+    console.error(
+      'Načítanie štatistiky vozidiel zlyhalo:',
+      error
+    );
+
+    box.innerHTML =
+      '<p>Štatistiku vozidiel sa nepodarilo načítať.</p>';
+  }
 }
 
     function updateDashboard() {
@@ -17989,7 +21305,51 @@ renderGrafMesacnyTarget(
   datumDo,
   clenRS
 );
-    }
+
+updateKontrolyReviryPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateAktivitaClenovPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateHodinyClenovPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateHodinyReviryPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateVysledkyKontrolPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateSluzbyRsPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateUcastniciSluziebPeriodLabel(
+  datumOd,
+  datumDo
+);
+
+updateVehicleStatsMonthLabel(
+  datumOd,
+  datumDo
+);
+renderGrafVozidla(
+  datumOd,
+  datumDo
+);
+}
 
 function suggestFishers() {
   const input = document.getElementById('checkFisherName');
@@ -18623,24 +21983,140 @@ function showPoruseniaDetail() {
     return result && result !== 'Bez porušenia';
   });
 
-  if (porusenia.length === 0) {
-    list.innerHTML = '<div class="empty">Nie sú evidované žiadne zistenia.</div>';
-  } else {
-    list.innerHTML = porusenia.map((item, index) => {
-      const meno = item.fisher_name || item.fisherName || item.fisher_id_no || item.fisherIdNo || '-';
-      const revir = item.location || item.place || '-';
-      const vysledok = item.result || '-';
-      const poznamka = item.poznamka || item.note || '-';
+  function renderPorusenia(filteredItems) {
+    const resultsBox =
+      document.getElementById('poruseniaSearchResults');
+
+    const countBox =
+      document.getElementById('poruseniaSearchCount');
+
+    if (!resultsBox) return;
+
+    if (countBox) {
+      countBox.textContent =
+        `Nájdené: ${filteredItems.length}`;
+    }
+
+    if (filteredItems.length === 0) {
+      resultsBox.innerHTML = `
+        <div class="empty">
+          Nenašli sa žiadne zistenia podľa zadaného vyhľadávania.
+        </div>
+      `;
+      return;
+    }
+
+    resultsBox.innerHTML = filteredItems.map((item, index) => {
+      const meno =
+        item.fisher_name ||
+        item.fisherName ||
+        item.fisher_id_no ||
+        item.fisherIdNo ||
+        '-';
+
+      const revir =
+        item.location ||
+        item.place ||
+        '-';
+
+      const vysledok =
+        item.result ||
+        '-';
+
+      const poznamka =
+        item.poznamka ||
+        item.note ||
+        '-';
 
       return `
-        <div class="item" onclick="showCheckDetail('${item.id}')">
-          <strong>${index + 1}. ${meno}</strong><br>
-          <span class="muted">Revír:</span> ${revir}<br>
-          <span class="muted">Výsledok:</span> ${statusBadge(vysledok)}<br>
-          <span class="muted">Poznámka:</span> ${poznamka}
+        <div
+          class="item"
+          onclick="showCheckDetail('${item.id}')"
+        >
+          <strong>
+            ${index + 1}. ${escapeHtml(meno)}
+          </strong><br>
+
+          <span class="muted">Revír:</span>
+          ${escapeHtml(revir)}<br>
+
+          <span class="muted">Výsledok:</span>
+          ${statusBadge(vysledok)}<br>
+
+          <span class="muted">Poznámka:</span>
+          ${escapeHtml(poznamka)}
         </div>
       `;
     }).join('');
+  }
+
+  list.innerHTML = `
+    <div style="
+      margin-bottom:14px;
+    ">
+      <input
+        id="poruseniaSearchInput"
+        type="search"
+        placeholder="Meno, členské ID alebo číslo povolenia"
+        autocomplete="off"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:12px 14px;
+          border:1px solid #d8e2dc;
+          border-radius:12px;
+          font-size:14px;
+          background:#ffffff;
+          outline:none;
+        "
+      >
+
+      <div
+        id="poruseniaSearchCount"
+        class="muted small"
+        style="margin-top:6px;"
+      >
+        Nájdené: ${porusenia.length}
+      </div>
+    </div>
+
+    <div id="poruseniaSearchResults"></div>
+  `;
+
+  renderPorusenia(porusenia);
+
+  const searchInput =
+    document.getElementById('poruseniaSearchInput');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const searchValue =
+        normalize(searchInput.value);
+
+      if (!searchValue) {
+        renderPorusenia(porusenia);
+        return;
+      }
+
+      const filtered = porusenia.filter(item => {
+        const fisherName =
+          item.fisher_name ||
+          item.fisherName ||
+          '';
+
+        const fisherId =
+          item.fisher_id_no ||
+          item.fisherIdNo ||
+          '';
+
+        return (
+          normalize(fisherName).includes(searchValue) ||
+          normalize(fisherId).includes(searchValue)
+        );
+      });
+
+      renderPorusenia(filtered);
+    });
   }
 
   modal.classList.remove('hidden');
