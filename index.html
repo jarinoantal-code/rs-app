@@ -1275,6 +1275,7 @@
 #mainMenuSection .card-vozidla,
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
 #mainMenuSection .card-dk {
   grid-column: span 3;
 
@@ -1291,11 +1292,12 @@
 }
 
 
-#mainMenuSection .card-rybari:hover,
-#mainMenuSection .card-vozidla:hover,
-#mainMenuSection .card-statistiky:hover,
-#mainMenuSection .card-reporty:hover,
-#mainMenuSection .card-dk:hover {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
   border-color: #bcd2c2;
 
   box-shadow:
@@ -1305,11 +1307,12 @@
 
 /* sekundárne ikony */
 
-#mainMenuSection .card-rybari .card-icon,
-#mainMenuSection .card-vozidla .card-icon,
-#mainMenuSection .card-statistiky .card-icon,
-#mainMenuSection .card-reporty .card-icon,
-#mainMenuSection .card-dk .card-icon {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
   width: 40px;
   height: 40px;
 
@@ -1329,11 +1332,12 @@
 
 /* sekundárny nadpis */
 
-#mainMenuSection .card-rybari h3,
-#mainMenuSection .card-vozidla h3,
-#mainMenuSection .card-statistiky h3,
-#mainMenuSection .card-reporty h3,
-#mainMenuSection .card-dk h3 {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
   margin: 0;
 
   color: #17261c;
@@ -1348,6 +1352,14 @@
 /* DK poznámka */
 
 #mainMenuSection .card-dk .muted {
+  margin-top: 4px;
+
+  font-size: 11px;
+
+  line-height: 1.3;
+}
+
+#mainMenuSection .card-info-velitela .muted {
   margin-top: 4px;
 
   font-size: 11px;
@@ -1458,11 +1470,12 @@
 
   /* spodné 4 – dva vedľa seba */
 
-  #mainMenuSection .card-rybari,
-  #mainMenuSection .card-vozidla,
-  #mainMenuSection .card-statistiky,
-  #mainMenuSection .card-reporty,
-  #mainMenuSection .card-dk {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
     grid-column: span 1;
 
     min-height: 106px;
@@ -1473,11 +1486,12 @@
   }
 
 
-  #mainMenuSection .card-rybari .card-icon,
-  #mainMenuSection .card-vozidla .card-icon,
-  #mainMenuSection .card-statistiky .card-icon,
-  #mainMenuSection .card-reporty .card-icon,
-  #mainMenuSection .card-dk .card-icon {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
     width: 34px;
     height: 34px;
 
@@ -1487,20 +1501,55 @@
   }
 
 
-  #mainMenuSection .card-rybari h3,
-  #mainMenuSection .card-vozidla h3,
-  #mainMenuSection .card-statistiky h3,
-  #mainMenuSection .card-reporty h3,
-  #mainMenuSection .card-dk h3 {
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
     font-size: 13px;
   }
 
 
-  #mainMenuSection .card-dk .muted {
-    display: none;
-  }
+#mainMenuSection .card-info-velitela .muted,
+#mainMenuSection .card-dk .muted {
+  display: none;
+}
 }
 
+/* =====================================================
+   MAIN MENU – FIX SEKUNDÁRNYCH KARIET
+   ===================================================== */
+
+#mainMenuSection .card-rybari,
+#mainMenuSection .card-vozidla,
+#mainMenuSection .card-statistiky,
+#mainMenuSection .card-reporty,
+#mainMenuSection .card-info-velitela,
+#mainMenuSection .card-dk {
+  grid-column: span 3;
+  width: auto;
+  min-width: 0;
+  min-height: 125px;
+}
+
+
+/* MOBIL */
+@media (max-width: 760px) {
+
+  #mainMenuSection .card-rybari,
+  #mainMenuSection .card-vozidla,
+  #mainMenuSection .card-statistiky,
+  #mainMenuSection .card-reporty,
+  #mainMenuSection .card-info-velitela,
+  #mainMenuSection .card-dk {
+    grid-column: span 1;
+    width: auto;
+    min-width: 0;
+    min-height: 106px;
+  }
+
+}
 
 /* =====================================================
    RS APP – LOGIN 2026 V1
@@ -3241,6 +3290,36 @@ button:disabled,
   <h3>Reporty</h3>
 </div>
 
+<div
+  id="infoVelitelaCard"
+  class="card card-info-velitela hidden"
+  onclick="openInfoVelitelaModule()"
+>
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18"/>
+      <path d="M5 7h14"/>
+      <path d="M7 11h10"/>
+      <path d="M7 15h6"/>
+    </svg>
+  </div>
+
+  <h3>Info veliteľa RS</h3>
+
+  <div class="muted small">
+    Denný a mesačný report rybárskej stráže
+  </div>
+</div>
 
 <div class="card card-dk" onclick="openDisciplinarnaKomisiaModule()">
   <div class="card-icon">
@@ -3420,6 +3499,131 @@ button:disabled,
 >
   Uložiť záznam
 </button>
+</div>
+
+</div>
+
+<div id="infoVelitelaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">
+        📋 Info veliteľa RS
+      </h2>
+
+      <div class="muted small">
+        Denný a mesačný report rybárskej stráže
+      </div>
+    </div>
+  </div>
+
+<div
+  class="card"
+  style="
+    margin:16px auto 0 auto;
+    max-width:1000px;
+  "
+>
+  <h3 style="margin-top:0;">
+    Mesačný report rybárskej stráže
+  </h3>
+
+  <div class="row">
+
+    <div class="field">
+      <label for="velitelReportMonth">
+        Mesiac / rok
+      </label>
+
+    <input
+  type="month"
+  id="velitelReportMonth"
+  onchange="renderInfoVelitelaReport()"
+>
+    </div>
+
+    <div class="field">
+      <label for="velitelReportCommander">
+        Vedúci rybárskej stráže
+      </label>
+
+      <input
+        type="text"
+        id="velitelReportCommander"
+        readonly
+      >
+    </div>
+
+  </div>
+
+  <div id="velitelReportContent" style="margin-top:18px;">
+
+    <div class="item">
+      <h3 style="margin-top:0;">
+        1. Činnosť RS
+      </h3>
+
+      <div id="velitelReportActivity">
+        <div class="muted">
+          Údaje sa načítajú podľa zvoleného mesiaca.
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <h3 style="margin-top:0;">
+        2. Zistené porušenia
+      </h3>
+
+      <div id="velitelReportViolations">
+        <div class="muted">
+          Údaje sa načítajú podľa zvoleného mesiaca.
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <h3 style="margin-top:0;">
+        3. Ochrana revírov
+      </h3>
+
+      <div id="velitelReportEnvironment">
+        <div class="muted">
+          Údaje sa načítajú podľa zvoleného mesiaca.
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <h3 style="margin-top:0;">
+        4. Problémové lokality
+      </h3>
+
+      <div id="velitelReportLocations">
+        <div class="muted">
+          Údaje sa načítajú podľa zvoleného mesiaca.
+        </div>
+      </div>
+    </div>
+
+<div
+  id="velitelMonthlyReportActions"
+  style="
+    margin-top:16px;
+    display:flex;
+    justify-content:flex-end;
+  "
+>
+  <button
+    type="button"
+    id="btnCreateVelitelMonthlyReport"
+    class="primary"
+  >
+    📄 Vytvoriť mesačný report
+  </button>
+</div>
+
+  </div>
 </div>
 
 </div>
@@ -4162,6 +4366,21 @@ button:disabled,
 </div>
 
 <div class="field">
+  <label for="checkCatchCount">
+    Počet kontrolovaných úlovkov
+  </label>
+
+  <input
+    type="number"
+    id="checkCatchCount"
+    min="0"
+    step="1"
+    value="0"
+    inputmode="numeric"
+  >
+</div>
+
+<div class="field">
   <label for="checkPhotos">Fotky</label>
   <input id="checkPhotos" type="file" accept="image/*" multiple />
 </div>
@@ -4533,6 +4752,21 @@ button:disabled,
 </select>
 
 <div style="margin-top:12px;">
+  <label>Zistenie na revíri</label>
+
+  <select id="serviceEnviroType">
+    <option value="">Bez zistenia</option>
+    <option value="cierna_skladka">Čierna skládka / odpad</option>
+    <option value="nepovolena_stavba">Nepovolená stavba</option>
+    <option value="nepovoleny_ponton_molo">Nepovolený pontón / mólo</option>
+    <option value="poskodenie_brehu">Poškodenie brehu</option>
+    <option value="znecistenie_vody">Znečistenie vody</option>
+    <option value="uhyn_ryb">Úhyn rýb</option>
+    <option value="iny_zasah">Iný zásah do revíru</option>
+  </select>
+</div>
+
+<div style="margin-top:12px;">
   <label>Dátum služby</label>
   <input type="date" id="serviceDate">
 </div>
@@ -4567,6 +4801,15 @@ button:disabled,
   onchange="toggleGroupMembersBox()"
 >
   <span>Spoločná akcia viacerých členov RS</span>
+</label>
+
+<label style="margin-top:12px; display:flex; gap:10px; align-items:center; justify-content:flex-start;">
+  <input
+    type="checkbox"
+    id="isPoliceService"
+    style="width:auto;"
+  >
+  <span>Spoločná akcia s políciou</span>
 </label>
 
 <div
@@ -5228,15 +5471,239 @@ async function rsLocalDelete(storeName, key) {
   });
 }
 
+async function getRemoteVehicleLastKm(vehicleId) {
+  if (!vehicleId) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await db
+      .from('vehicle_logs')
+      .select('current_km, created_at')
+      .eq('vehicle_id', vehicleId)
+      .order('created_at', {
+        ascending: false
+      })
+      .limit(1);
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      !Array.isArray(data) ||
+      data.length === 0
+    ) {
+      return null;
+    }
+
+    const km =
+      Number(data[0].current_km);
+
+    if (!Number.isFinite(km)) {
+      return null;
+    }
+
+    return km;
+
+  } catch (error) {
+    console.warn(
+      'Načítanie posledného stavu vozidla zo Supabase zlyhalo:',
+      error
+    );
+
+    return null;
+  }
+}
+
+async function uploadVehicleLogToRemote(record) {
+  if (!record || !record.local_id) {
+    return {
+      ok: false,
+      reason: 'INVALID_RECORD'
+    };
+  }
+
+  try {
+    const payload = {
+      local_id:
+        record.local_id,
+
+      vehicle_id:
+        record.vehicle_id,
+
+      vehicle_name:
+        record.vehicle_name || '',
+
+      date:
+        record.date || todayISO(),
+
+      recorded_by_id:
+        record.recorded_by_id || '',
+
+      recorded_by_name:
+        record.recorded_by_name || '',
+
+      purpose:
+        record.purpose || '',
+
+      previous_km:
+        Number(record.previous_km) || 0,
+
+      current_km:
+        Number(record.current_km) || 0,
+
+      driven_km:
+        Number(record.driven_km) || 0,
+
+      note:
+        record.note || '',
+
+      created_at:
+        record.created_at ||
+        new Date().toISOString(),
+
+      updated_at:
+        new Date().toISOString()
+    };
+
+    const { data, error } = await db
+  .from('vehicle_logs')
+  .upsert(
+    payload,
+    {
+      onConflict: 'local_id'
+    }
+  )
+  .select()
+  .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      ok: true,
+      data
+    };
+
+  } catch (error) {
+    console.error(
+      'Upload záznamu vozidla zlyhal:',
+      error
+    );
+
+    return {
+      ok: false,
+      reason: 'REMOTE_INSERT_FAILED',
+      error
+    };
+  }
+}
+
+async function syncPendingVehicleLogs() {
+  const records =
+    await rsLocalGetAll(
+      RS_LOCAL_STORES.vehicleLogs
+    );
+
+  const pendingRecords =
+    (records || []).filter(record =>
+      safeText(record.sync_status || '') === 'PENDING'
+    );
+
+  if (pendingRecords.length === 0) {
+    return {
+      ok: true,
+      synced: 0
+    };
+  }
+
+  let synced = 0;
+
+  for (const record of pendingRecords) {
+    const result =
+      await uploadVehicleLogToRemote(record);
+
+    if (!result.ok) {
+      console.warn(
+        'Vehicle log sync failed:',
+        record.local_id,
+        result.reason
+      );
+
+      continue;
+    }
+
+    record.sync_status = 'SYNCED';
+
+    await rsLocalPut(
+      RS_LOCAL_STORES.vehicleLogs,
+      record
+    );
+
+    synced += 1;
+  }
+
+  return {
+    ok: true,
+    synced
+  };
+}
+
 async function getVehicleLastKm(vehicleId) {
   if (!vehicleId) {
     return null;
   }
 
-  const metaRecord = await rsLocalGet(
-    RS_LOCAL_STORES.meta,
-    'vehicle_last_km_' + vehicleId
-  );
+  /*
+    1. Najprv skúsime odoslať prípadné lokálne
+       PENDING záznamy vozidiel.
+       Ak sme offline, funkcia ich jednoducho ponechá lokálne.
+  */
+  try {
+    await syncPendingVehicleLogs();
+  } catch (error) {
+    console.warn(
+      'Pending vehicle logs sa nepodarilo synchronizovať:',
+      error
+    );
+  }
+
+  /*
+    2. Ak je dostupný server, načítame centrálny
+       posledný stav vozidla.
+  */
+  const remoteKm =
+    await getRemoteVehicleLastKm(vehicleId);
+
+  if (
+    remoteKm !== null &&
+    Number.isFinite(Number(remoteKm))
+  ) {
+    const km = Number(remoteKm);
+
+    /*
+      Centrálny stav uložíme aj lokálne,
+      aby bol dostupný pri ďalšom offline použití.
+    */
+    await setVehicleLastKm(
+      vehicleId,
+      km
+    );
+
+    return km;
+  }
+
+  /*
+    3. Ak server nie je dostupný,
+       použijeme posledný lokálne známy stav.
+  */
+  const metaRecord =
+    await rsLocalGet(
+      RS_LOCAL_STORES.meta,
+      'vehicle_last_km_' + vehicleId
+    );
 
   if (
     !metaRecord ||
@@ -5595,15 +6062,43 @@ purpose:
       new Date().toISOString()
   };
 
+await rsLocalPut(
+  RS_LOCAL_STORES.vehicleLogs,
+  record
+);
+
+await setVehicleLastKm(
+  vehicleId,
+  currentKm
+);
+
+/*
+  Pokus o okamžitý upload do Supabase.
+  Pri chybe zostáva záznam lokálne ako PENDING.
+*/
+const remoteResult =
+  await uploadVehicleLogToRemote(record);
+
+if (remoteResult.ok) {
+  record.sync_status = 'SYNCED';
+
+  await rsLocalPut(
+    RS_LOCAL_STORES.vehicleLogs,
+    record
+  );
+} else {
+  record.sync_status = 'PENDING';
+
   await rsLocalPut(
     RS_LOCAL_STORES.vehicleLogs,
     record
   );
 
-  await setVehicleLastKm(
-    vehicleId,
-    currentKm
+  console.warn(
+    'Záznam vozidla zostáva PENDING:',
+    remoteResult.reason
   );
+}
 
   alert(
     'Záznam kilometrov bol uložený.\n\n' +
@@ -6684,6 +7179,84 @@ function setActiveRevirFromSelect() {
     function getCurrentUser() {
       return appState.data.members.find(item => item.id === appState.currentUserId) || null;
     }
+
+function updateInfoVelitelaAccess() {
+  const card = document.getElementById('infoVelitelaCard');
+
+  if (!card) {
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+
+  // Bez prihláseného používateľa zostáva karta skrytá.
+  if (!currentUser) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  const isAdmin =
+    currentUser.is_admin === true;
+
+  const isChairman =
+    currentUser.is_chairman === true;
+
+  const isCommander =
+    normalize(currentUser.role || '') ===
+    normalize('Velitel RS');
+
+  const hasAccess =
+    isAdmin ||
+    isChairman ||
+    isCommander;
+
+  card.classList.toggle('hidden', !hasAccess);
+}
+
+function updateInfoVelitelaAccess() {
+  const card =
+    document.getElementById(
+      'infoVelitelaCard'
+    );
+
+  if (!card) {
+    return;
+  }
+
+  if (canAccessInfoVelitela()) {
+    card.classList.remove('hidden');
+  } else {
+    card.classList.add('hidden');
+  }
+}
+
+function canAccessInfoVelitela() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) {
+    return false;
+  }
+
+  const role =
+    normalize(currentUser.role || '');
+
+  const isVelitel =
+    role.includes(
+      normalize('Velitel RS')
+    );
+
+  const isAdmin =
+    currentUser.is_admin === true;
+
+  const isChairman =
+    currentUser.is_chairman === true;
+
+  return (
+    isVelitel ||
+    isAdmin ||
+    isChairman
+  );
+}
 
    function getMemberName(id) {
     if (!id) return '-';
@@ -8053,6 +8626,14 @@ function resetCheckForm() {
   document.getElementById('checkResult').value = 'Bez porušenia';
   document.getElementById('checkOffenceType').value = '';
   document.getElementById('checkDisciplinarnyZaznam').value = 'Nie';
+
+const checkCatchCount =
+  document.getElementById('checkCatchCount');
+
+if (checkCatchCount) {
+  checkCatchCount.value = '0';
+}
+
   document.getElementById('checkNote').value = '';
   document.getElementById('checkPhotos').value = '';
 
@@ -8100,12 +8681,25 @@ function resetCheckForm() {
       document.getElementById('checkDisciplinarnyZaznam')?.value || 'Nie';
       const offenceType = safeText(document.getElementById('checkOffenceType').value);
       const note = safeText(document.getElementById('checkNote').value);
-      const files = Array.from(document.getElementById('checkPhotos').files || []);
+const files = Array.from(document.getElementById('checkPhotos').files || []);
 
-     if ((!fisherName && !fisherIdNo) || !memberId1 || !date || !place) {
-        alert('Vyplň meno alebo identifikačné číslo rybára, člena RS, dátum a miesto kontroly.');
-        return;
-      }
+const catchCount =
+  Number(
+    document.getElementById('checkCatchCount')?.value || 0
+  );
+
+if (
+  !Number.isFinite(catchCount) ||
+  catchCount < 0
+) {
+  alert('Zadaj platný počet kontrolovaných úlovkov.');
+  return;
+}
+
+if ((!fisherName && !fisherIdNo) || !memberId1 || !date || !place) {
+  alert('Vyplň meno alebo identifikačné číslo rybára, člena RS, dátum a miesto kontroly.');
+  return;
+}
 
       const linkedFisher =
   appState.data.fishers.find(f => f.id === fisherDbId) ||
@@ -8133,6 +8727,7 @@ function resetCheckForm() {
   disciplinarnyZaznam,
   offenceType,
   note,
+  pocet_kontrolovanych_ulovkov: catchCount,
   photos: [],
   createdAt: nowText(),
   createdBy: appState.currentUserId
@@ -8721,6 +9316,11 @@ async function buildSyncPayloadPreview() {
 
         typ_priestupku:
           check.typ_priestupku || '',
+
+pocet_kontrolovanych_ulovkov:
+  Number(
+    check.pocet_kontrolovanych_ulovkov
+  ) || 0,
 
         // URL fotografií ešte nepoznáme.
         // Tie vzniknú až po uploadnutí Blobov.
@@ -11316,8 +11916,10 @@ async function ensureCentralService(
         result: check.result,
         disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
         poznamka: check.note,
-        typ_priestupku: check.offenceType,
-        photos: check.photos || []
+       typ_priestupku: check.offenceType,
+pocet_kontrolovanych_ulovkov:
+  Number(check.pocet_kontrolovanych_ulovkov) || 0,
+photos: check.photos || []
       });
 
       console.log(
@@ -11387,7 +11989,9 @@ async function ensureCentralService(
       disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
       poznamka: check.note,
       typ_priestupku: check.offenceType,
-      photos: check.photos || []
+pocet_kontrolovanych_ulovkov:
+  Number(check.pocet_kontrolovanych_ulovkov) || 0,
+photos: check.photos || []
     }])
     .select()
     .single();
@@ -11416,7 +12020,9 @@ if (error) {
       disciplinarny_zaznam: check.disciplinarnyZaznam || 'Nie',
       poznamka: check.note,
       typ_priestupku: check.offenceType,
-      photos: check.photos || []
+pocet_kontrolovanych_ulovkov:
+  Number(check.pocet_kontrolovanych_ulovkov) || 0,
+photos: check.photos || []
     });
 
     console.log(
@@ -12655,15 +13261,17 @@ const typPriestupku = item.typ_priestupku || item.offence_type || item.offenceTy
       renderChangeLog();
     }
 
-    function renderAll() {
-      // populateLoginMembers();
-      populateCheckSelectors();
-      renderStats();
-      renderFishers();
-      renderMembers();
-      renderChecks();
-      renderChangeLog();
-    }
+ function renderAll() {
+  // populateLoginMembers();
+  populateCheckSelectors();
+  renderStats();
+  renderFishers();
+  renderMembers();
+  renderChecks();
+  renderChangeLog();
+
+  updateInfoVelitelaAccess();
+}
 
 function showMainMenu() {
   document.getElementById('mainMenuSection').classList.remove('hidden');
@@ -12687,6 +13295,10 @@ function showMainMenu() {
   document.getElementById('disciplinarnaKomisiaSection')?.classList.add('hidden');
 
   document.getElementById('sluzobneVozidlaSection')?.classList.add('hidden');
+
+document.getElementById('infoVelitelaSection')?.classList.add('hidden');
+
+updateInfoVelitelaAccess();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -15977,6 +16589,1772 @@ console.timeEnd('REPORTY - loadStatsChecks');
   document
     .getElementById('dashboardSection')
     .scrollIntoView({ behavior: 'smooth' });
+}
+
+async function openInfoVelitelaModule() {
+
+  // Bezpečnostná kontrola aj pri ručnom zavolaní funkcie.
+  if (!canAccessInfoVelitela()) {
+    alert('K tejto časti nemáte oprávnený prístup.');
+    return;
+  }
+
+try {
+  if (!appState.kontrolyLoaded) {
+    await refreshKontrolyData();
+  }
+
+  if (
+    !Array.isArray(appState.data.sluzbyReviry) ||
+    appState.data.sluzbyReviry.length === 0
+  ) {
+    await loadSluzbyReviry();
+  }
+
+} catch (error) {
+  console.error(
+    'Info veliteľa RS – načítanie dát zlyhalo:',
+    error
+  );
+
+  alert(
+    'Údaje pre report sa nepodarilo načítať.'
+  );
+
+  return;
+}
+
+  const section =
+    document.getElementById('infoVelitelaSection');
+
+  if (!section) {
+    console.error(
+      'Info veliteľa RS: sekcia infoVelitelaSection nebola nájdená.'
+    );
+    return;
+  }
+
+  // Hlavné menu
+  document
+    .getElementById('mainMenuSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('backToMenuSection')
+    ?.classList.remove('hidden');
+
+  // Ostatné pracovné časti
+  document
+    .getElementById('appSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('dashboardSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('legacyTabs')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('asistentRSSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('appOverviewSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('dashboardCardsSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('graphsOnlySection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('filterSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('disciplinarnaKomisiaSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('sluzobneVozidlaSection')
+    ?.classList.add('hidden');
+
+  // Zobrazíme iba Info veliteľa RS.
+  section.classList.remove('hidden');
+
+prepareInfoVelitelaReport();
+
+  section.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function prepareInfoVelitelaReport() {
+  const monthInput =
+    document.getElementById('velitelReportMonth');
+
+  const commanderInput =
+    document.getElementById('velitelReportCommander');
+
+  // Aktuálny mesiac
+  if (monthInput && !monthInput.value) {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(
+      now.getMonth() + 1
+    ).padStart(2, '0');
+
+    monthInput.value =
+      `${year}-${month}`;
+  }
+
+  // Vedúci rybárskej stráže
+  if (commanderInput) {
+    const commander =
+      (appState.data.members || []).find(member =>
+        normalize(member.role || '') ===
+        normalize('Velitel RS')
+      );
+
+    commanderInput.value =
+      commander?.name || 'Neuvedený';
+
+renderInfoVelitelaReport();
+
+  }
+}
+
+async function loadInfoVelitelaMonthData() {
+  const monthInput =
+    document.getElementById('velitelReportMonth');
+
+  const monthValue =
+    monthInput?.value || '';
+
+  if (!monthValue) {
+    return {
+      checks: [],
+      services: []
+    };
+  }
+
+  const [year, month] =
+    monthValue.split('-').map(Number);
+
+  const start =
+    `${year}-${String(month).padStart(2, '0')}-01T00:00:00`;
+
+  const nextYear =
+    month === 12
+      ? year + 1
+      : year;
+
+  const nextMonth =
+    month === 12
+      ? 1
+      : month + 1;
+
+  const end =
+    `${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00`;
+
+  const {
+    data: checks,
+    error: checksError
+  } = await db
+    .from('checks')
+    .select('*')
+    .gte('created_at', start)
+    .lt('created_at', end)
+    .order('created_at', {
+      ascending: true
+    });
+
+  if (checksError) {
+    throw checksError;
+  }
+
+  const {
+    data: services,
+    error: servicesError
+  } = await db
+    .from('sluzby_reviry')
+    .select('*')
+    .gte('zaciatok', start)
+    .lt('zaciatok', end)
+    .order('zaciatok', {
+      ascending: true
+    });
+
+  if (servicesError) {
+    throw servicesError;
+  }
+
+  return {
+    checks: checks || [],
+    services: services || []
+  };
+}
+
+function getInfoVelitelaMonthData() {
+  const monthInput =
+    document.getElementById('velitelReportMonth');
+
+  const monthValue =
+    monthInput?.value || '';
+
+  if (!monthValue) {
+    return {
+      checks: [],
+      services: []
+    };
+  }
+
+  const [year, month] =
+    monthValue.split('-').map(Number);
+
+  const checksSource =
+    appState.data.statsChecks ||
+    appState.data.checks ||
+    [];
+
+  const servicesSource =
+    appState.data.sluzbyReviry || [];
+
+  const checks = checksSource.filter(check => {
+    const value =
+      check.check_date ||
+      check.date ||
+      check.created_at ||
+      check.createdAt ||
+      '';
+
+    if (!value) {
+      return false;
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+      return false;
+    }
+
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() + 1 === month
+    );
+  });
+
+  const services = servicesSource.filter(service => {
+    const value =
+      service.zaciatok ||
+      service.start ||
+      '';
+
+    if (!value) {
+      return false;
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+      return false;
+    }
+
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() + 1 === month
+    );
+  });
+
+  return {
+    checks,
+    services
+  };
+}
+
+async function renderInfoVelitelaReport() {
+  const activityBox =
+    document.getElementById('velitelReportActivity');
+
+const violationsBox =
+  document.getElementById('velitelReportViolations');
+
+  if (!activityBox) {
+    return;
+  }
+
+ let checks = [];
+let services = [];
+
+try {
+  const monthData =
+    await loadInfoVelitelaMonthData();
+
+  checks = monthData.checks || [];
+  services = monthData.services || [];
+
+} catch (error) {
+  console.error(
+    'INFO VELITEĽA – mesačné dáta sa nepodarilo načítať:',
+    error
+  );
+
+  const fallbackData =
+    getInfoVelitelaMonthData();
+
+  checks = fallbackData.checks || [];
+  services = fallbackData.services || [];
+}
+
+  // Každý záznam kontroly predstavuje jedného
+  // kontrolovaného rybára.
+  const pocetKontrol =
+    checks.length;
+
+  const kontrolovaniRybari =
+    checks.length;
+
+// Kontrolné služby RS.
+// Kontroly patriace do jedného súvislého výkonu RS
+// počítame ako jednu kontrolnú službu.
+// Prechod cez polnoc službu nerozdeľuje.
+const kontrolneSluzby = (() => {
+  const controls = checks
+    .map(check => {
+      const dateValue =
+        check.check_date ||
+        check.date ||
+        check.created_at ||
+        check.createdAt ||
+        '';
+
+      const timeValue =
+        check.time_from ||
+        check.timeFrom ||
+        '';
+
+      if (!dateValue || !timeValue) {
+        return null;
+      }
+
+      const datePart =
+        String(dateValue).slice(0, 10);
+
+      const timePart =
+        String(timeValue).slice(0, 5);
+
+      const timestamp =
+        new Date(`${datePart}T${timePart}:00`);
+
+      if (isNaN(timestamp.getTime())) {
+        return null;
+      }
+
+      return timestamp;
+    })
+    .filter(Boolean)
+    .sort((a, b) =>
+      a.getTime() - b.getTime()
+    );
+
+  if (controls.length === 0) {
+    return 0;
+  }
+
+  let count = 1;
+
+  // Ak medzi dvoma kontrolami vznikne prestávka
+  // dlhšia ako 6 hodín, považujeme ďalšiu
+  // kontrolu za nový výkon služby.
+  const MAX_GAP_MS =
+    6 * 60 * 60 * 1000;
+
+  for (
+    let i = 1;
+    i < controls.length;
+    i++
+  ) {
+    const gap =
+      controls[i].getTime() -
+      controls[i - 1].getTime();
+
+    if (gap > MAX_GAP_MS) {
+      count++;
+    }
+  }
+
+  return count;
+})();
+
+ // Kontrola vo dvojici / tíme.
+const kontrolyVTyme =
+  checks.filter(check => {
+
+    // Priamy druhý člen uvedený pri kontrole.
+ const clen2 =
+  String(
+    check.clen_rs_2 ||
+    check.member_name_2 ||
+    ''
+  ).trim();
+
+const hasSecondMember =
+  clen2 &&
+  clen2 !== '-' &&
+  clen2.toLowerCase() !== 'null' &&
+  clen2.toLowerCase() !== 'undefined';
+
+if (hasSecondMember) {
+  return true;
+}
+
+    // Väzba kontroly na službu.
+    const serviceLocalId =
+      check.service_local_id ||
+      check.serviceLocalId ||
+      '';
+
+    if (!serviceLocalId) {
+      return false;
+    }
+
+    const service =
+      services.find(item =>
+        String(
+          item.service_local_id ||
+          item.local_id ||
+          item.local_service_id ||
+          ''
+        ) === String(serviceLocalId)
+      );
+
+    if (!service) {
+      return false;
+    }
+
+    return (
+      Array.isArray(service.clenovia_rs) &&
+      service.clenovia_rs.length > 1
+    );
+  }).length;
+
+
+// Víkendové kontroly = sobota alebo nedeľa.
+const vikendoveKontroly =
+  checks.filter(check => {
+   const value =
+  check.check_date ||
+  check.date ||
+  check.created_at ||
+  check.createdAt ||
+  '';
+
+    if (!value) {
+      return false;
+    }
+
+    const parts =
+      String(value)
+        .slice(0, 10)
+        .split('-')
+        .map(Number);
+
+    if (
+      parts.length !== 3 ||
+      parts.some(value => !Number.isFinite(value))
+    ) {
+      return false;
+    }
+
+    const [year, month, day] = parts;
+
+    const date =
+      new Date(
+        year,
+        month - 1,
+        day
+      );
+
+    if (isNaN(date.getTime())) {
+      return false;
+    }
+
+    const dayOfWeek =
+      date.getDay();
+
+    return (
+      dayOfWeek === 0 ||
+      dayOfWeek === 6
+    );
+  }).length;
+
+// Večerné a nočné kontroly.
+// Večer: 18:00 – 21:59
+// Noc:   22:00 – 05:59
+// Jedna kontrola môže zasiahnuť obe časové pásma.
+
+function timeToMinutes(value) {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+
+  const parts = value.split(':');
+
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (
+    !Number.isFinite(hours) ||
+    !Number.isFinite(minutes)
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function controlTouchesTimeRange(
+  timeFrom,
+  timeTo,
+  rangeFrom,
+  rangeTo
+) {
+  const start = timeToMinutes(timeFrom);
+  let end = timeToMinutes(timeTo);
+
+  if (start === null || end === null) {
+    return false;
+  }
+
+  // Ak kontrola pokračovala cez polnoc,
+  // koncový čas presunieme do nasledujúceho dňa.
+  if (end < start) {
+    end += 24 * 60;
+  }
+
+  // Kontrolu posúdime aj voči časovému pásmu
+  // posunutému do nasledujúceho dňa.
+  return (
+    (start < rangeTo && end >= rangeFrom) ||
+    (start < rangeTo + 1440 && end >= rangeFrom + 1440)
+  );
+}
+
+const vecerneKontroly =
+  checks.filter(check =>
+    controlTouchesTimeRange(
+      check.time_from,
+      check.time_to,
+      18 * 60,
+      22 * 60
+    )
+  ).length;
+
+const nocneKontroly =
+  checks.filter(check => {
+    const start = timeToMinutes(check.time_from);
+    let end = timeToMinutes(check.time_to);
+
+    if (start === null || end === null) {
+      return false;
+    }
+
+    if (end < start) {
+      end += 24 * 60;
+    }
+
+    // Nočné pásmo 22:00 – 05:59
+    // reprezentujeme ako 22:00 – 06:00 cez polnoc.
+    return (
+      (start < 6 * 60) ||
+      (end > 22 * 60) ||
+      (
+        end > 24 * 60 &&
+        end > 24 * 60
+      )
+    );
+  }).length;
+
+
+// Spoločné akcie s políciou.
+  const kontrolySPoliciou =
+    services.filter(service =>
+      service.spolocna_akcia_policia === true
+    ).length;
+
+// ========================================
+// 2. ZISTENÉ PORUŠENIA
+// ========================================
+
+const bezPorusenia =
+  checks.filter(check =>
+    String(check.result || '').trim() ===
+    'Bez porušenia'
+  ).length;
+
+const pouceniaRybara =
+  checks.filter(check =>
+    String(check.result || '').trim() ===
+    'Poučenie rybára'
+  ).length;
+
+const priestupky =
+  checks.filter(check =>
+    String(check.result || '').trim() ===
+    'Priestupok'
+  ).length;
+
+const podozrenia =
+  checks.filter(check =>
+    String(check.result || '').trim() ===
+    'Podozrenie'
+  ).length;
+
+const pytliactvo =
+  checks.filter(check =>
+    String(check.result || '').trim() ===
+    'Pytliactvo'
+  ).length;
+
+// Disciplinárny záznam.
+const disciplinarneZaznamy =
+  checks.filter(check => {
+    const value =
+      String(
+        check.disciplinarny_zaznam || ''
+      )
+        .trim()
+        .toLowerCase();
+
+    return value.startsWith('áno');
+  }).length;
+
+// Celkový počet zistení.
+// Kontroly bez porušenia sa sem nezapočítavajú.
+const spoluZisteni =
+  pouceniaRybara +
+  podozrenia +
+  priestupky +
+  pytliactvo;
+
+// Rozdelenie priestupkov podľa typu.
+const typyPriestupkov = {};
+
+checks.forEach(check => {
+  if (
+    String(check.result || '').trim() !==
+    'Priestupok'
+  ) {
+    return;
+  }
+
+  const typ =
+    String(
+      check.typ_priestupku || 'Neuvedené'
+    ).trim() || 'Neuvedené';
+
+  typyPriestupkov[typ] =
+    (typyPriestupkov[typ] || 0) + 1;
+});
+
+// ========================================
+// 3. OCHRANA REVÍROV
+// ========================================
+
+// Kategórie environmentálnych zistení.
+// Primárny zdroj je enviro_typ.
+//
+// Spätná kompatibilita:
+// starší záznam "Úhyn rýb" môže byť uložený
+// iba v typ_sluzby.
+
+// Počet vykonaných obhliadok revírov.
+// Obhliadka je činnosť RS, nie automaticky zistenie.
+const obhliadkyRevirov =
+  services.filter(service =>
+    String(service.typ_sluzby || '').trim() ===
+    'Obhliadka'
+  ).length;
+
+const ochranaRevirov = {
+  ciernaSkladka: 0,
+  nepovolenaStavba: 0,
+  nepovolenyPonton: 0,
+  poskodenieBrehu: 0,
+  znecistenieVody: 0,
+  uhynRyb: 0,
+  inyZasah: 0
+};
+
+services.forEach(service => {
+  const enviroTyp =
+    String(service.enviro_typ || '').trim();
+
+  const typSluzby =
+    String(service.typ_sluzby || '').trim();
+
+  switch (enviroTyp) {
+    case 'Čierna skládka / odpad':
+      ochranaRevirov.ciernaSkladka++;
+      break;
+
+    case 'Nepovolená stavba':
+      ochranaRevirov.nepovolenaStavba++;
+      break;
+
+    case 'Nepovolený pontón / mólo':
+      ochranaRevirov.nepovolenyPonton++;
+      break;
+
+    case 'Poškodenie brehu':
+      ochranaRevirov.poskodenieBrehu++;
+      break;
+
+    case 'Znečistenie vody':
+      ochranaRevirov.znecistenieVody++;
+      break;
+
+    case 'Úhyn rýb':
+      ochranaRevirov.uhynRyb++;
+      break;
+
+    case 'Iný zásah do revíru':
+      ochranaRevirov.inyZasah++;
+      break;
+  }
+
+  // Starší spôsob evidencie.
+  // Použijeme ho iba vtedy, keď enviro_typ
+  // ešte nebol vyplnený, aby sme jeden záznam
+  // nezapočítali dvakrát.
+  if (
+    !enviroTyp &&
+    typSluzby === 'Úhyn rýb'
+  ) {
+    ochranaRevirov.uhynRyb++;
+  }
+});
+
+const spoluOchranaRevirov =
+  ochranaRevirov.ciernaSkladka +
+  ochranaRevirov.nepovolenaStavba +
+  ochranaRevirov.nepovolenyPonton +
+  ochranaRevirov.poskodenieBrehu +
+  ochranaRevirov.znecistenieVody +
+  ochranaRevirov.uhynRyb +
+  ochranaRevirov.inyZasah;
+
+  activityBox.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ukazovateľ</th>
+            <th>Počet</th>
+          </tr>
+        </thead>
+
+        <tbody>
+         <tr>
+  <td>Počet vykonaných kontrolných služieb RS</td>
+  <td><strong>${kontrolneSluzby}</strong></td>
+</tr>
+
+</tr>
+  <td>Kontrolovaní rybári</td>
+  <td><strong>${kontrolovaniRybari}</strong></td>
+</tr>
+
+          <tr>
+            <td>Kontroly vo dvojici / tíme</td>
+            <td><strong>${kontrolyVTyme}</strong></td>
+          </tr>
+
+         <tr>
+  <td>Večerné kontroly</td>
+  <td><strong>${vecerneKontroly}</strong></td>
+</tr>
+
+<tr>
+  <td>Nočné kontroly</td>
+  <td><strong>${nocneKontroly}</strong></td>
+</tr>
+
+          <tr>
+            <td>Víkendové kontroly</td>
+            <td><strong>${vikendoveKontroly}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Spoločné kontroly s políciou</td>
+            <td><strong>${kontrolySPoliciou}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+
+// ========================================
+// 2. ZISTENÉ PORUŠENIA – ZOBRAZENIE
+// ========================================
+
+if (violationsBox) {
+  const typyPriestupkovRows =
+    Object.entries(typyPriestupkov)
+      .sort((a, b) => b[1] - a[1])
+      .map(([typ, pocet]) => `
+        <tr>
+          <td>${typ}</td>
+          <td><strong>${pocet}</strong></td>
+        </tr>
+      `)
+      .join('');
+
+  violationsBox.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ukazovateľ</th>
+            <th>Počet</th>
+          </tr>
+        </thead>
+
+<tbody>
+  <tr>
+    <td>Upozornenia / poučenia rybára</td>
+    <td><strong>${pouceniaRybara}</strong></td>
+  </tr>
+
+  <tr>
+    <td>Spísané disciplinárne záznamy</td>
+    <td><strong>${disciplinarneZaznamy}</strong></td>
+  </tr>
+
+  <tr>
+    <td>Priestupky</td>
+    <td><strong>${priestupky}</strong></td>
+  </tr>
+
+  <tr>
+    <td>Podozrenia</td>
+    <td><strong>${podozrenia}</strong></td>
+  </tr>
+
+  <tr>
+    <td>Závažné prípady – pytliactvo</td>
+    <td><strong>${pytliactvo}</strong></td>
+  </tr>
+
+  <tr>
+    <td>Spolu zistení</td>
+    <td><strong>${spoluZisteni}</strong></td>
+  </tr>
+</tbody>
+      </table>
+    </div>
+
+    ${
+      priestupky > 0
+        ? `
+          <div class="table-wrap" style="margin-top:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Typ priestupku</th>
+                  <th>Počet</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${typyPriestupkovRows}
+              </tbody>
+            </table>
+          </div>
+        `
+        : ''
+    }
+  `;
+}
+
+// ========================================
+// RENDER – 3. OCHRANA REVÍROV
+// ========================================
+
+const environmentBox =
+  document.getElementById(
+    'velitelReportEnvironment'
+  );
+
+if (environmentBox) {
+  environmentBox.innerHTML = `
+
+<div class="table-wrap" style="margin-bottom:10px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Činnosť ochrany revírov</th>
+        <th>Počet</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Vykonané obhliadky revírov</td>
+        <td><strong>${obhliadkyRevirov}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Zistenie</th>
+            <th>Počet</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Čierne skládky / odpad</td>
+            <td><strong>${ochranaRevirov.ciernaSkladka}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Nepovolené stavby</td>
+            <td><strong>${ochranaRevirov.nepovolenaStavba}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Nepovolené pontóny / móla</td>
+            <td><strong>${ochranaRevirov.nepovolenyPonton}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Poškodenie brehov</td>
+            <td><strong>${ochranaRevirov.poskodenieBrehu}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Znečistenie vody</td>
+            <td><strong>${ochranaRevirov.znecistenieVody}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Úhyn rýb</td>
+            <td><strong>${ochranaRevirov.uhynRyb}</strong></td>
+          </tr>
+
+          <tr>
+            <td>Iné zásahy do revíru</td>
+            <td><strong>${ochranaRevirov.inyZasah}</strong></td>
+          </tr>
+
+          <tr>
+            <td><strong>Spolu zistení</strong></td>
+            <td><strong>${spoluOchranaRevirov}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ========================================
+// 4. PROBLÉMOVÉ LOKALITY
+// ========================================
+
+const locationsBox =
+  document.getElementById(
+    'velitelReportLocations'
+  );
+
+const problemoveLokality = {};
+
+function addProblemovaLokalita(
+  revir,
+  problem
+) {
+  const key =
+    String(
+      revir || '(bez revíru)'
+    ).trim();
+
+  if (!problemoveLokality[key]) {
+    problemoveLokality[key] = {};
+  }
+
+  problemoveLokality[key][problem] =
+    (
+      problemoveLokality[key][problem] ||
+      0
+    ) + 1;
+}
+
+// ----------------------------------------
+// Zistenia z kontrol rybárov
+// ----------------------------------------
+
+checks.forEach(check => {
+  const result =
+    String(
+      check.result || ''
+    ).trim();
+
+  if (
+    !result ||
+    result === 'Bez porušenia'
+  ) {
+    return;
+  }
+
+  const revir =
+    check.location ||
+    check.place ||
+    '(bez revíru)';
+
+  if (result === 'Poučenie rybára') {
+    addProblemovaLokalita(
+      revir,
+      'Poučenie rybára'
+    );
+    return;
+  }
+
+  if (result === 'Priestupok') {
+    addProblemovaLokalita(
+      revir,
+      'Priestupok'
+    );
+    return;
+  }
+
+  if (result === 'Podozrenie') {
+    addProblemovaLokalita(
+      revir,
+      'Podozrenie'
+    );
+    return;
+  }
+
+  if (result === 'Pytliactvo') {
+    addProblemovaLokalita(
+      revir,
+      'Pytliactvo'
+    );
+  }
+});
+
+// ----------------------------------------
+// Zistenia z ochrany revírov
+// ----------------------------------------
+
+services.forEach(service => {
+  const enviro =
+    String(
+      service.enviro_typ || ''
+    ).trim();
+
+  const typSluzby =
+    String(
+      service.typ_sluzby || ''
+    ).trim();
+
+  const revir =
+    service.revir ||
+    '(bez revíru)';
+
+  // Nové záznamy.
+  if (
+    enviro &&
+    enviro !== 'Bez zistenia'
+  ) {
+    addProblemovaLokalita(
+      revir,
+      enviro
+    );
+
+    return;
+  }
+
+  // Spätná kompatibilita pre starší
+  // spôsob evidencie úhynu rýb.
+  if (
+    !enviro &&
+    typSluzby === 'Úhyn rýb'
+  ) {
+    addProblemovaLokalita(
+      revir,
+      'Úhyn rýb'
+    );
+  }
+});
+
+const problemoveLokalityRows =
+  Object.entries(problemoveLokality)
+    .map(([revir, problemy]) => {
+
+      const problemText =
+        Object.entries(problemy)
+          .map(
+            ([nazov, pocet]) =>
+              `${pocet}× ${nazov}`
+          )
+          .join(', ');
+
+      return {
+        revir,
+        problem: problemText
+      };
+    });
+
+if (locationsBox) {
+
+  const rowsHtml =
+    problemoveLokalityRows
+      .map(item => `
+        <tr>
+          <td>${item.revir}</td>
+
+          <td>
+            ${item.problem}
+          </td>
+
+          <td>
+            <textarea
+              class="velitel-location-action"
+              rows="2"
+              placeholder="Navrhované opatrenie..."
+              style="
+                width:100%;
+                min-width:180px;
+                box-sizing:border-box;
+                resize:vertical;
+              "
+            ></textarea>
+          </td>
+        </tr>
+      `)
+      .join('');
+
+  locationsBox.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Revír / miesto</th>
+            <th>Problém</th>
+            <th>Navrhované opatrenie</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${
+            rowsHtml ||
+            `
+              <tr>
+                <td
+                  colspan="3"
+                  class="muted"
+                >
+                  Za zvolený mesiac neboli
+                  zistené problémové lokality.
+                </td>
+              </tr>
+            `
+          }
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+setupVelitelReportAccordion();
+
+const createMonthlyReportBtn =
+  document.getElementById(
+    'btnCreateVelitelMonthlyReport'
+  );
+
+if (createMonthlyReportBtn) {
+  createMonthlyReportBtn.onclick = () => {
+    openVelitelMonthlyReportPreview();
+  };
+}
+
+}
+
+function setupVelitelReportAccordion() {
+  const contentIds = [
+    'velitelReportActivity',
+    'velitelReportViolations',
+    'velitelReportEnvironment',
+    'velitelReportLocations'
+  ];
+
+  contentIds.forEach(id => {
+    const content =
+      document.getElementById(id);
+
+    if (!content) {
+      return;
+    }
+
+    const card =
+      content.parentElement;
+
+    const heading =
+      card?.querySelector('h3');
+
+    if (!card || !heading) {
+      return;
+    }
+
+    // Po otvorení reportu je karta zatvorená.
+    content.style.display = 'none';
+
+    heading.style.cursor = 'pointer';
+    heading.style.userSelect = 'none';
+
+    // Zabráni opakovanému pripájaniu listenera.
+    if (heading.dataset.accordionReady === 'true') {
+      return;
+    }
+
+    heading.dataset.accordionReady = 'true';
+
+    heading.addEventListener('click', () => {
+      const isOpen =
+        content.style.display !== 'none';
+
+      // Najskôr zatvoríme všetky karty.
+      contentIds.forEach(otherId => {
+        const otherContent =
+          document.getElementById(otherId);
+
+        if (otherContent) {
+          otherContent.style.display = 'none';
+        }
+      });
+
+      // Ak kliknutá karta predtým nebola otvorená,
+      // otvoríme ju.
+      if (!isOpen) {
+        content.style.display = '';
+      }
+    });
+  });
+}
+
+function openVelitelMonthlyReportPreview() {
+
+  const monthInput =
+    document.getElementById(
+      'velitelReportMonth'
+    );
+
+  const monthValue =
+    monthInput?.value || '';
+
+  let monthText = monthValue;
+
+  if (/^\d{4}-\d{2}$/.test(monthValue)) {
+    const [year, month] =
+      monthValue.split('-');
+
+    const monthNames = [
+      'január',
+      'február',
+      'marec',
+      'apríl',
+      'máj',
+      'jún',
+      'júl',
+      'august',
+      'september',
+      'október',
+      'november',
+      'december'
+    ];
+
+    monthText =
+      `${monthNames[Number(month) - 1]} ${year}`;
+  }
+
+const leaderElement =
+  document.getElementById(
+    'velitelReportCommander'
+  );
+
+const leaderName =
+  String(
+    leaderElement?.value ||
+    leaderElement?.textContent ||
+    ''
+  ).trim();
+
+const activitySource =
+  document.getElementById(
+    'velitelReportActivity'
+  );
+
+const activityHtml =
+  activitySource?.innerHTML ||
+  '<p>Údaje nie sú k dispozícii.</p>';
+
+const violationsSource =
+  document.getElementById(
+    'velitelReportViolations'
+  );
+
+const violationsHtml =
+  violationsSource?.innerHTML ||
+  '<p>Údaje nie sú k dispozícii.</p>';
+
+const environmentSource =
+  document.getElementById(
+    'velitelReportEnvironment'
+  );
+
+const environmentHtml =
+  environmentSource?.innerHTML ||
+  '<p>Údaje nie sú k dispozícii.</p>';
+
+const locationsSource =
+  document.getElementById(
+    'velitelReportLocations'
+  );
+
+let locationsHtml =
+  '<p>Údaje nie sú k dispozícii.</p>';
+
+if (locationsSource) {
+  const locationsClone =
+    locationsSource.cloneNode(true);
+
+  const sourceTextareas =
+    locationsSource.querySelectorAll(
+      'textarea'
+    );
+
+  const clonedTextareas =
+    locationsClone.querySelectorAll(
+      'textarea'
+    );
+
+  clonedTextareas.forEach(
+    (textarea, index) => {
+      const value =
+        sourceTextareas[index]?.value?.trim() ||
+        '';
+
+      const text =
+        document.createElement('div');
+
+      text.className =
+        'report-measure-text';
+
+      text.textContent =
+        value || '—';
+
+      textarea.replaceWith(text);
+    }
+  );
+
+  locationsHtml =
+    locationsClone.innerHTML;
+}
+
+  const previewWindow =
+    window.open(
+      '',
+      '_blank',
+      'width=1000,height=900'
+    );
+
+  if (!previewWindow) {
+    alert(
+      'Prehliadač zablokoval otvorenie náhľadu reportu.'
+    );
+    return;
+  }
+
+  previewWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="sk">
+    <head>
+      <meta charset="UTF-8">
+
+      <title>
+        Mesačný report rybárskej stráže
+      </title>
+
+      <style>
+
+        @page {
+          size: A4;
+          margin: 15mm 15mm 18mm 15mm;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+          background: #ffffff;
+          color: #111111;
+          font-family: Arial, sans-serif;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .report {
+          width: 100%;
+          max-width: 180mm;
+          margin: 0 auto;
+        }
+
+        .header {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .organization {
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 5px;
+        }
+
+        .report-title {
+          font-size: 21px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          margin-bottom: 20px;
+        }
+
+        .report-info {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 24px;
+        }
+
+        .report-info td {
+          border: 1px solid #444;
+          padding: 8px 10px;
+        }
+
+        .report-info .label {
+          width: 38%;
+          font-weight: 700;
+          background: #f3f3f3;
+        }
+
+        .section {
+          margin-top: 18px;
+          break-inside: avoid;
+        }
+
+        .section-title {
+          font-size: 14px;
+          font-weight: 700;
+          border-bottom: 2px solid #222;
+          padding-bottom: 4px;
+          margin-bottom: 8px;
+        }
+
+.report-data .table-wrap {
+  width: 100%;
+}
+
+.report-data table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-data th,
+.report-data td {
+  border: 1px solid #777;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.report-data th {
+  background: #f3f3f3;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.report-data td:last-child,
+.report-data th:last-child {
+  width: 22%;
+  text-align: center;
+}
+
+.report-measure-text {
+  min-height: 28px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+        .placeholder {
+          min-height: 55px;
+          border: 1px solid #999;
+          padding: 10px;
+          color: #666;
+        }
+
+        .note-title {
+          margin-top: 28px;
+          font-weight: 700;
+        }
+
+        .note-lines {
+          margin-top: 8px;
+        }
+
+        .note-line {
+          height: 25px;
+          border-bottom: 1px solid #777;
+        }
+
+        .date-row {
+          margin-top: 28px;
+        }
+
+        .signatures {
+          display: flex;
+          justify-content: space-between;
+          gap: 50px;
+          margin-top: 45px;
+          break-inside: avoid;
+        }
+
+        .signature {
+          width: 45%;
+          text-align: center;
+        }
+
+        .signature-line {
+          border-top: 1px solid #222;
+          margin-top: 55px;
+          padding-top: 5px;
+        }
+
+        .stamp {
+          height: 70px;
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px dashed #999;
+          color: #777;
+        }
+
+        .print-toolbar {
+          width: 100%;
+          max-width: 180mm;
+          margin: 0 auto 18px auto;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .print-button {
+          border: 1px solid #333;
+          background: #ffffff;
+          padding: 9px 16px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .print-button:hover {
+          background: #f3f3f3;
+        }
+
+        @media print {
+          .print-toolbar {
+            display: none !important;
+          }
+        }
+
+      </style>
+    </head>
+
+    <body>
+
+      <div class="print-toolbar">
+        <button
+          type="button"
+          class="print-button"
+          onclick="window.print()"
+        >
+          🖨️ Vytlačiť / Uložiť PDF
+        </button>
+      </div>
+
+      <div class="report">
+
+        <div class="header">
+
+          <div class="organization">
+            MsO SRZ Sereď
+          </div>
+
+          <div class="report-title">
+            MESAČNÝ REPORT RYBÁRSKEJ STRÁŽE
+          </div>
+
+        </div>
+
+        <table class="report-info">
+
+          <tr>
+            <td class="label">
+              Mesiac / rok
+            </td>
+
+            <td>
+              ${monthText}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">
+              Vedúci rybárskej stráže
+            </td>
+
+            <td>
+              ${leaderName}
+            </td>
+          </tr>
+
+        </table>
+
+
+        <div class="section">
+
+          <div class="section-title">
+            1. Činnosť RS
+          </div>
+
+         <div class="report-data">
+  ${activityHtml}
+</div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-title">
+            2. Zistené porušenia
+          </div>
+
+         <div class="report-data">
+  ${violationsHtml}
+</div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-title">
+            3. Ochrana revírov
+          </div>
+
+<div class="report-data">
+  ${environmentHtml}
+</div>
+
+        </div>
+
+        <div class="section">
+
+          <div class="section-title">
+            4. Problémové lokality
+          </div>
+
+          <div class="report-data">
+  ${locationsHtml}
+</div>
+
+        </div>
+
+        <div class="date-row">
+          V Seredi dňa:
+          ______________________________
+        </div>
+
+
+        <div class="signatures">
+
+          <div class="signature">
+
+            <strong>
+              Vypracoval
+            </strong>
+
+            <div>
+              ${leaderName}
+            </div>
+
+            <div>
+              Vedúci rybárskej stráže
+            </div>
+
+            <div class="signature-line">
+              podpis
+            </div>
+
+          </div>
+
+
+          <div class="signature">
+
+            <strong>
+              Prevzal / oboznámil sa
+            </strong>
+
+            <div>
+              Predseda MsO SRZ Sereď
+            </div>
+
+            <div class="signature-line">
+              meno a podpis
+            </div>
+
+            <div class="stamp">
+              miesto na pečiatku
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </body>
+    </html>
+  `);
+
+  previewWindow.document.close();
 }
 
 function csvValue(value) {
@@ -23689,6 +26067,10 @@ if (saveBtn) {
   saveBtn.textContent = 'Ukladám...';
 }
   const typSluzby = document.getElementById('serviceType').value;
+
+const enviroTyp =
+  document.getElementById('serviceEnviroType')?.value || '';
+
   const poznamka = document.getElementById('serviceNote').value.trim();
 
 if (!typSluzby) {
@@ -23705,6 +26087,12 @@ if (!typSluzby) {
   const currentMember = getCurrentUser();
 
 const groupCheckbox = document.getElementById('isGroupService');
+
+const policeCheckbox =
+  document.getElementById('isPoliceService');
+
+const spolocnaAkciaPolicia =
+  policeCheckbox?.checked === true;
 
 let clenoviaRs = [];
 
@@ -23819,8 +26207,10 @@ const trvanieMin = Math.floor(
       clen_rs: currentMember ? currentMember.name : '',
       clen_rs_id: appState.currentUserId || '',
       typ_sluzby: typSluzby,
+      enviro_typ: enviroTyp,
       poznamka: poznamka,
-      clenovia_rs: clenoviaRs
+      clenovia_rs: clenoviaRs,
+      spolocna_akcia_policia: spolocnaAkciaPolicia
     }])
 .select()
 .single();
@@ -23855,6 +26245,14 @@ renderStats();
 
   document.getElementById('checkPlace').value = '';
   document.getElementById('serviceType').value = '';
+
+const serviceEnviroType =
+  document.getElementById('serviceEnviroType');
+
+if (serviceEnviroType) {
+  serviceEnviroType.value = '';
+}
+
   document.getElementById('serviceNote').value = '';
 
 const mainGroupCheck =
@@ -23869,6 +26267,13 @@ const serviceGroupCheck =
 
 if (serviceGroupCheck) {
   serviceGroupCheck.checked = false;
+}
+
+const servicePoliceCheck =
+  document.getElementById('isPoliceService');
+
+if (servicePoliceCheck) {
+  servicePoliceCheck.checked = false;
 }
 
 const groupMembersBox =
