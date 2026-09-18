@@ -7924,12 +7924,30 @@ async function saveNewPassword() {
       .getElementById('newPasswordRepeat')
       .value = '';
 
-    console.log(
-      'AUTH SETUP – aktivácia úspešne dokončená:',
-      member.name
-    );
+ console.log(
+  'AUTH SETUP – aktivácia úspešne dokončená:',
+  member.name
+);
 
-    finishLogin(member);
+const offlineVerifierCreated =
+  await createOfflinePasswordVerifier(
+    member.id,
+    password
+  );
+
+if (!offlineVerifierCreated) {
+  console.warn(
+    'OFFLINE AUTH – verifier po prvej aktivácii sa nepodarilo vytvoriť pre:',
+    member.name
+  );
+} else {
+  console.log(
+    'OFFLINE AUTH – verifier po prvej aktivácii pripravený pre:',
+    member.name
+  );
+}
+
+finishLogin(member);
 
   } catch (error) {
     console.error(
