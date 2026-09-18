@@ -3063,19 +3063,77 @@ button:disabled,
     <section id="loginSection" class="card span-12">
       <h2>Prihlásenie člena RS</h2>
       <div class="row">
-        <div class="field">
+        <div class="field hidden" id="loginIdentifierField">
           <label for="loginCisloOdznaku">Číslo odznaku alebo prístupový kód</label>
           <input id="loginCisloOdznaku" type="text" placeholder="Zadaj odznak alebo prístupový kód" autocomplete="off" />
         </div>
-        <div class="field" style="display:none;">
-          <label for="loginCode">Služobný kód / heslo</label>
-          <input id="loginCode" type="password" placeholder="Zadaj kód" />
-        </div>
+
+<div
+  id="rememberedUserInfo"
+  class="field hidden"
+  style="text-align:center;"
+>
+  <strong id="rememberedUserName"></strong>
+</div>
+
+        <div class="field">
+  <label for="loginCode">Heslo</label>
+  <input
+    id="loginCode"
+    type="password"
+    placeholder="Zadaj heslo"
+    autocomplete="current-password"
+  />
+</div>
       </div>
       <div class="actions">
   <button class="btn-primary" onclick="loginRS()">Prihlásiť</button>
 </div>
     </section>
+
+<section id="passwordSetupSection" class="card span-12 hidden">
+  <h2>Vytvorenie vlastného hesla</h2>
+
+  <div
+    id="passwordSetupUserInfo"
+    class="field"
+    style="text-align:center;"
+  >
+    <strong id="passwordSetupUserName"></strong>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="newPassword">Nové heslo</label>
+      <input
+        id="newPassword"
+        type="password"
+        placeholder="Zadaj nové heslo"
+        autocomplete="new-password"
+      />
+    </div>
+
+    <div class="field">
+      <label for="newPasswordRepeat">Zopakuj nové heslo</label>
+      <input
+        id="newPasswordRepeat"
+        type="password"
+        placeholder="Zadaj heslo ešte raz"
+        autocomplete="new-password"
+      />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button
+      class="btn-primary"
+      type="button"
+      onclick="saveNewPassword()"
+    >
+      Uložiť heslo
+    </button>
+  </div>
+</section>
 
     <div id="filterSection" class="card hidden" style="margin:20px 0;">
       <h3>Filter</h3>
@@ -7462,40 +7520,469 @@ function showFisherHistory(fisherName) {
   // Prihlásenie teraz prebieha cez číslo odznaku.
 }
 
-  function loginRS() {
-  const cisloOdznakuInput = document.getElementById('loginCisloOdznaku').value.trim().toUpperCase().replace('-', '');
-
-  if (!cisloOdznakuInput) {
-    alert('Zadaj číslo odznaku alebo prístupový kód.');
-    return;
+function getAuthEmailForMember(member) {
+  if (!member) {
+    return null;
   }
 
-const member = appState.data.members.find(item => {
-  const badge =
-    String(item.cislo_odznaku || '')
+  const identifier =
+    String(member.cislo_odznaku || member.access_code || '')
       .trim()
-      .toUpperCase()
-      .replace('-', '');
+      .toLowerCase();
 
-  const accessCode =
-    String(item.access_code || '')
-      .trim()
-      .toUpperCase()
-      .replace('-', '');
+  if (!identifier) {
+    return null;
+  }
 
-  return (
-    badge === cisloOdznakuInput ||
-    accessCode === cisloOdznakuInput
+  return 'rs-' + identifier + '@rsapp.local';
+}
+
+function prepareRememberedLogin() {
+  const rememberedMemberId =
+    localStorage.getItem('rs_app_remembered_member_id');
+
+  const identifierField =
+    document.getElementById('loginIdentifierField');
+
+  const rememberedUserInfo =
+    document.getElementById('rememberedUserInfo');
+
+  const rememberedUserName =
+    document.getElementById('rememberedUserName');
+
+  const identifierInput =
+    document.getElementById('loginCisloOdznaku');
+
+if (
+  !identifierField ||
+  !rememberedUserInfo ||
+  !rememberedUserName ||
+  !identifierInput
+) {
+  return;
+}
+
+if (!rememberedMemberId) {
+  identifierField.classList.remove('hidden');
+  rememberedUserInfo.classList.add('hidden');
+  return;
+}
+
+  const member = appState.data.members.find(
+    item =>
+      String(item.id) === String(rememberedMemberId)
   );
-});
 
-  if (!cisloOdznakuInput) {
-    alert('Zadaj číslo odznaku alebo prístupový kód.');
+if (!member) {
+  identifierField.classList.remove('hidden');
+  rememberedUserInfo.classList.add('hidden');
+  return;
+}
+
+  identifierInput.value =
+    member.cislo_odznaku ||
+    member.access_code ||
+    '';
+
+  identifierField.classList.add('hidden');
+
+  rememberedUserName.textContent = member.name;
+  rememberedUserInfo.classList.remove('hidden');
+}
+
+function finishLogin(member) {
+  appState.currentUserId = member.id;
+
+  try {
+    localStorage.setItem(
+      'rs_app_remembered_member_id',
+      String(member.id)
+    );
+  } catch (error) {
+    console.warn(
+      'AUTH DEVICE – nepodarilo sa zapamätať používateľa:',
+      error
+    );
+  }
+
+  if (
+    appState.activeRevir &&
+    appState.activeServiceLocalId
+  ) {
+    saveCurrentActiveServiceToIndexedDb()
+      .catch(error => {
+        console.error(
+          'ACTIVE SERVICE – obnovenie IndexedDB po prihlásení zlyhalo:',
+          error
+        );
+      });
+  }
+
+  document
+    .getElementById('loginSection')
+    .classList.add('hidden');
+
+  document
+    .getElementById('appSection')
+    .classList.add('hidden');
+
+  document
+    .getElementById('dashboardSection')
+    .classList.add('hidden');
+
+  document
+    .getElementById('mainMenuSection')
+    .classList.remove('hidden');
+
+  document
+    .getElementById('filterSection')
+    .classList.add('hidden');
+
+  document
+    .getElementById('logoutBtn')
+    .classList.remove('hidden');
+
+  document.getElementById('loggedUserText').textContent =
+    'Prihlásený: ' + member.name;
+
+  logChange(
+    'Prihlásenie',
+    'Prihlásenie',
+    'Prihlásený člen RS: ' + member.name
+  );
+
+  const teraz = aktualnyCas();
+
+  document.getElementById('checkTimeFrom').value = teraz;
+  document.getElementById('checkTimeTo').value = teraz;
+
+  renderAll();
+  updateSyncStatusIndicator();
+}
+
+const OFFLINE_AUTH_KEY_PREFIX = 'rs_app_offline_auth_';
+const OFFLINE_AUTH_ITERATIONS = 310000;
+
+function getOfflineAuthStorageKey(memberId) {
+  return OFFLINE_AUTH_KEY_PREFIX + String(memberId);
+}
+
+async function createOfflinePasswordVerifier(memberId, password) {
+  if (!memberId || !password) {
+    return false;
+  }
+
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: OFFLINE_AUTH_ITERATIONS,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    256
+  );
+
+  const record = {
+    version: 1,
+    memberId: String(memberId),
+    algorithm: 'PBKDF2-SHA256',
+    iterations: OFFLINE_AUTH_ITERATIONS,
+    salt: Array.from(salt),
+    verifier: Array.from(new Uint8Array(derivedBits))
+  };
+
+  localStorage.setItem(
+    getOfflineAuthStorageKey(memberId),
+    JSON.stringify(record)
+  );
+
+  return true;
+}
+
+function loadOfflinePasswordVerifier(memberId) {
+  try {
+    const raw = localStorage.getItem(
+      getOfflineAuthStorageKey(memberId)
+    );
+
+    if (!raw) {
+      return null;
+    }
+
+    const record = JSON.parse(raw);
+
+    if (
+      record?.version !== 1 ||
+      String(record?.memberId) !== String(memberId) ||
+      record?.algorithm !== 'PBKDF2-SHA256' ||
+      !Number.isInteger(record?.iterations) ||
+      !Array.isArray(record?.salt) ||
+      !Array.isArray(record?.verifier)
+    ) {
+      return null;
+    }
+
+    return record;
+
+  } catch (error) {
+    console.error(
+      'OFFLINE AUTH – načítanie verifiera zlyhalo:',
+      error
+    );
+
+    return null;
+  }
+}
+
+async function verifyOfflinePassword(memberId, password) {
+  const record = loadOfflinePasswordVerifier(memberId);
+
+  if (!record || !password) {
+    return false;
+  }
+
+  try {
+    const encoder = new TextEncoder();
+
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits']
+    );
+
+    const derivedBits = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: new Uint8Array(record.salt),
+        iterations: record.iterations,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      256
+    );
+
+    const calculated = new Uint8Array(derivedBits);
+    const expected = new Uint8Array(record.verifier);
+
+    if (calculated.length !== expected.length) {
+      return false;
+    }
+
+    let difference = 0;
+
+    for (let i = 0; i < calculated.length; i++) {
+      difference |= calculated[i] ^ expected[i];
+    }
+
+    return difference === 0;
+
+  } catch (error) {
+    console.error(
+      'OFFLINE AUTH – overenie hesla zlyhalo:',
+      error
+    );
+
+    return false;
+  }
+}
+
+async function saveNewPassword() {
+  const memberId = appState.pendingAuthMemberId;
+
+  const password = document
+    .getElementById('newPassword')
+    .value;
+
+  const passwordRepeat = document
+    .getElementById('newPasswordRepeat')
+    .value;
+
+  if (!memberId) {
+    alert('Chýba používateľ pre aktiváciu.');
     return;
   }
+
+  const member = appState.data.members.find(
+    item => String(item.id) === String(memberId)
+  );
 
   if (!member) {
-    alert('Používateľ s týmto odznakom alebo prístupovým kódom nebol nájdený.');
+    alert('Používateľ pre aktiváciu nebol nájdený.');
+    return;
+  }
+
+  if (member.auth_user_id) {
+    alert('Tento používateľ už má prihlasovanie aktivované.');
+    return;
+  }
+
+  if (!password || !passwordRepeat) {
+    alert('Vyplň obe polia hesla.');
+    return;
+  }
+
+  if (password !== passwordRepeat) {
+    alert('Zadané heslá sa nezhodujú.');
+    return;
+  }
+
+  if (password.length < 8) {
+    alert('Heslo musí mať aspoň 8 znakov.');
+    return;
+  }
+
+  const authEmail = getAuthEmailForMember(member);
+
+  if (!authEmail) {
+    alert('Nepodarilo sa pripraviť prihlasovací účet.');
+    return;
+  }
+
+  try {
+    console.log(
+      'AUTH SETUP – vytváram Auth účet pre:',
+      member.name
+    );
+
+    const { data: signUpData, error: signUpError } =
+      await db.auth.signUp({
+        email: authEmail,
+        password: password
+      });
+
+    if (
+      signUpError ||
+      !signUpData?.user ||
+      !signUpData?.session
+    ) {
+      console.error(
+        'AUTH SETUP – signUp zlyhal:',
+        signUpError
+      );
+
+      alert(
+        'Vytvorenie prihlasovacieho účtu sa nepodarilo.'
+      );
+      return;
+    }
+
+    console.log(
+      'AUTH SETUP – Auth účet vytvorený:',
+      signUpData.user.id
+    );
+
+    const { data: claimData, error: claimError } =
+      await db.rpc(
+        'claim_rs_member',
+        {
+          p_member_id: member.id
+        }
+      );
+
+    if (claimError || claimData !== true) {
+      console.error(
+        'AUTH SETUP – prepojenie člena zlyhalo:',
+        claimError
+      );
+
+      await db.auth.signOut();
+
+      alert(
+        'Účet bol vytvorený, ale prepojenie s členom RS sa nepodarilo. Kontaktuj administrátora.'
+      );
+      return;
+    }
+
+    member.auth_user_id = signUpData.user.id;
+    member.must_change_code = false;
+
+    appState.pendingAuthMemberId = null;
+
+    document
+      .getElementById('passwordSetupSection')
+      .classList.add('hidden');
+
+    document
+      .getElementById('newPassword')
+      .value = '';
+
+    document
+      .getElementById('newPasswordRepeat')
+      .value = '';
+
+    console.log(
+      'AUTH SETUP – aktivácia úspešne dokončená:',
+      member.name
+    );
+
+    finishLogin(member);
+
+  } catch (error) {
+    console.error(
+      'AUTH SETUP – neočakávaná chyba:',
+      error
+    );
+
+    alert(
+      'Pri aktivácii prihlasovania nastala chyba.'
+    );
+  }
+}
+
+async function loginRS() {
+  const cisloOdznakuInput = document
+    .getElementById('loginCisloOdznaku')
+    .value
+    .trim()
+    .toUpperCase()
+    .replace('-', '');
+
+  const password = document
+    .getElementById('loginCode')
+    .value;
+
+  if (!cisloOdznakuInput) {
+    alert('Zadaj číslo odznaku alebo prístupový kód.');
+    return;
+  }
+
+  const member = appState.data.members.find(item => {
+    const badge =
+      String(item.cislo_odznaku || '')
+        .trim()
+        .toUpperCase()
+        .replace('-', '');
+
+    const accessCode =
+      String(item.access_code || '')
+        .trim()
+        .toUpperCase()
+        .replace('-', '');
+
+    return (
+      badge === cisloOdznakuInput ||
+      accessCode === cisloOdznakuInput
+    );
+  });
+
+  if (!member) {
+    alert(
+      'Používateľ s týmto odznakom alebo prístupovým kódom nebol nájdený.'
+    );
     return;
   }
 
@@ -7504,50 +7991,251 @@ const member = appState.data.members.find(item => {
     return;
   }
 
-  appState.currentUserId = member.id;
-if (
-  appState.activeRevir &&
-  appState.activeServiceLocalId
-) {
-  saveCurrentActiveServiceToIndexedDb()
-    .catch(error => {
+   if (!member.auth_user_id) {
+    appState.pendingAuthMemberId = member.id;
+
+    document
+      .getElementById('loginSection')
+      .classList.add('hidden');
+
+    document
+      .getElementById('passwordSetupSection')
+      .classList.remove('hidden');
+
+    document
+      .getElementById('passwordSetupUserName')
+      .textContent = member.name;
+
+    document
+      .getElementById('newPassword')
+      .value = '';
+
+    document
+      .getElementById('newPasswordRepeat')
+      .value = '';
+
+    console.log(
+      'AUTH SETUP – pripravené vytvorenie hesla pre:',
+      member.name,
+      'member_id:',
+      member.id
+    );
+
+    return;
+  }
+
+ if (!password) {
+    alert('Zadaj heslo.');
+    return;
+  }
+
+  const authEmail = getAuthEmailForMember(member);
+
+  if (!authEmail) {
+    alert('Nepodarilo sa pripraviť prihlasovací účet používateľa.');
+    return;
+  }
+
+  try {
+    let authData = null;
+let authError = null;
+
+if (!navigator.onLine) {
+  console.log(
+    'OFFLINE AUTH – zariadenie je offline, overujem lokálne heslo pre:',
+    member.name
+  );
+
+  const offlinePasswordValid =
+    await verifyOfflinePassword(
+      member.id,
+      password
+    );
+
+  if (!offlinePasswordValid) {
+    console.warn(
+      'OFFLINE AUTH – lokálne heslo nebolo overené pre:',
+      member.name
+    );
+
+    alert('Nesprávne heslo.');
+    return;
+  }
+
+  console.log(
+    'OFFLINE AUTH – lokálne heslo úspešne overené pre:',
+    member.name
+  );
+
+  finishLogin(member);
+  return;
+}
+
+const authResult =
+  await db.auth.signInWithPassword({
+    email: authEmail,
+    password: password
+  });
+
+authData = authResult.data;
+authError = authResult.error;
+
+if (authError || !authData?.user) {
+  console.warn(
+    'AUTH LOGIN – prihlásenie zlyhalo:',
+    authError
+  );
+
+  alert('Nesprávne heslo.');
+  return;
+}
+
+    if (
+      String(authData.user.id) !==
+      String(member.auth_user_id)
+    ) {
       console.error(
-        'ACTIVE SERVICE – obnovenie IndexedDB po prihlásení zlyhalo:',
+        'AUTH LOGIN – Auth účet nezodpovedá členovi RS.'
+      );
+
+      await db.auth.signOut();
+
+      alert(
+        'Prihlasovací účet nie je správne prepojený s členom RS.'
+      );
+      return;
+    }
+
+const offlineVerifierCreated =
+  await createOfflinePasswordVerifier(
+    member.id,
+    password
+  );
+
+if (!offlineVerifierCreated) {
+  console.warn(
+    'OFFLINE AUTH – verifier sa nepodarilo vytvoriť pre:',
+    member.name
+  );
+} else {
+  console.log(
+    'OFFLINE AUTH – verifier pripravený pre:',
+    member.name
+  );
+}
+
+finishLogin(member);
+
+  } catch (error) {
+    console.error(
+      'AUTH LOGIN – neočakávaná chyba:',
+      error
+    );
+
+    alert(
+      'Pri prihlasovaní nastala chyba. Skús to znova.'
+    );
+  }
+}
+
+async function restoreAuthSession() {
+  try {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) {
+      console.warn(
+        'AUTH RESTORE – načítanie session zlyhalo:',
         error
       );
-    });
-}
-
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('appSection').classList.add('hidden');
-  document.getElementById('dashboardSection').classList.add('hidden');
-  document.getElementById('mainMenuSection').classList.remove('hidden');
-  document.getElementById('filterSection').classList.add('hidden');
-  document.getElementById('logoutBtn').classList.remove('hidden');
-  document.getElementById('loggedUserText').textContent = 'Prihlásený: ' + member.name;
-  logChange('Prihlásenie', 'Prihlásenie', 'Prihlásený člen RS: ' + member.name);
-
-const teraz = aktualnyCas();
-document.getElementById('checkTimeFrom').value = teraz;
-document.getElementById('checkTimeTo').value = teraz;
-
-renderAll();
-
-updateSyncStatusIndicator();
-
-}
-
-    function logoutRS() {
-      appState.currentUserId = null;
-      document.getElementById('appSection').classList.add('hidden');
-      document.getElementById('dashboardSection').classList.add('hidden');
-      document.getElementById('mainMenuSection').classList.add('hidden');
-      document.getElementById('filterSection').classList.add('hidden');
-      document.getElementById('logoutBtn').classList.add('hidden');
-      document.getElementById('loginSection').classList.remove('hidden');
-      document.getElementById('loggedUserText').textContent = 'Neprihlásený';
-      document.getElementById('loginCisloOdznaku').value = '';
+      return false;
     }
+
+    const authUser = data?.session?.user;
+
+    if (!authUser) {
+      console.log('AUTH RESTORE – aktívna session neexistuje.');
+      return false;
+    }
+
+    const member = appState.data.members.find(
+      item =>
+        String(item.auth_user_id || '') ===
+        String(authUser.id)
+    );
+
+    if (!member) {
+      console.warn(
+        'AUTH RESTORE – k Auth používateľovi nebol nájdený člen RS.'
+      );
+      return false;
+    }
+
+    if (normalize(member.status) !== normalize('Aktívny')) {
+      console.warn(
+        'AUTH RESTORE – člen RS nie je aktívny.'
+      );
+
+      await db.auth.signOut();
+      return false;
+    }
+
+    finishLogin(member);
+
+    console.log(
+      'AUTH RESTORE – session úspešne obnovená:',
+      member.name
+    );
+
+    return true;
+
+  } catch (error) {
+    console.error(
+      'AUTH RESTORE – neočakávaná chyba:',
+      error
+    );
+
+    return false;
+  }
+}
+
+ async function logoutRS() {
+  try {
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+      console.error('AUTH LOGOUT – Supabase odhlásenie zlyhalo:', error);
+      alert('Odhlásenie sa nepodarilo. Skús to znova.');
+      return;
+    }
+
+    appState.currentUserId = null;
+
+    document.getElementById('appSection').classList.add('hidden');
+    document.getElementById('dashboardSection').classList.add('hidden');
+    document.getElementById('mainMenuSection').classList.add('hidden');
+    document.getElementById('filterSection').classList.add('hidden');
+    document.getElementById('logoutBtn').classList.add('hidden');
+    document.getElementById('loginSection').classList.remove('hidden');
+
+    document.getElementById('loggedUserText').textContent =
+      'Neprihlásený';
+
+    document.getElementById('loginCisloOdznaku').value = '';
+document.getElementById('loginCode').value = '';
+
+prepareRememberedLogin();
+
+console.log('AUTH LOGOUT – úspešné odhlásenie.');
+
+  } catch (error) {
+    console.error(
+      'AUTH LOGOUT – neočakávaná chyba:',
+      error
+    );
+
+    alert('Odhlásenie sa nepodarilo. Skús to znova.');
+  }
+}
 
 const OFFLINE_SERVICES_KEY = 'rs_app_offline_services';
 
@@ -11146,6 +11834,42 @@ async function checkCentralSyncAvailability() {
       available: false,
       reason: 'BROWSER_OFFLINE',
       error: null
+    };
+  }
+
+  // =================================================
+  // AUTH OCHRANA CENTRÁLNEJ SYNCHRONIZÁCIE
+  // =================================================
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await db.auth.getSession();
+
+    if (
+      sessionError ||
+      !sessionData?.session?.user
+    ) {
+      console.warn(
+        'CENTRAL SYNC AVAILABILITY – chýba Auth session.'
+      );
+
+      return {
+        available: false,
+        reason: 'AUTH_SESSION_REQUIRED',
+        error: sessionError || null
+      };
+    }
+
+  } catch (error) {
+    console.warn(
+      'CENTRAL SYNC AVAILABILITY – kontrola Auth session zlyhala:',
+      error
+    );
+
+    return {
+      available: false,
+      reason: 'AUTH_SESSION_CHECK_FAILED',
+      error
     };
   }
 
@@ -24287,7 +25011,11 @@ async function init() {
   resetMemberForm();
   resetCheckForm();
 
-  await loadMembersForLogin();
+await loadMembersForLogin();
+
+prepareRememberedLogin();
+
+await restoreAuthSession();
 
   // =================================================
   // STARTUP SYNC
