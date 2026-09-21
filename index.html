@@ -3086,8 +3086,25 @@ button:disabled,
   />
 </div>
       </div>
-      <div class="actions">
+ <div class="actions">
   <button class="btn-primary" onclick="loginRS()">Prihlásiť</button>
+
+  <button
+    type="button"
+    onclick="openPasswordRecovery()"
+    style="
+      margin-top: 10px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: #08783f;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    "
+  >
+    Zabudol som heslo
+  </button>
 </div>
     </section>
 
@@ -3131,6 +3148,69 @@ button:disabled,
       onclick="saveNewPassword()"
     >
       Uložiť heslo
+    </button>
+  </div>
+</section>
+
+<section id="passwordRecoverySection" class="card span-12 hidden">
+  <h2>Zabudnuté heslo</h2>
+
+  <div class="row">
+    <div class="field">
+      <label for="recoveryBadge">Číslo odznaku</label>
+      <input
+        id="recoveryBadge"
+        type="text"
+        placeholder="Napr. GA-0075"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="field">
+      <label for="recoveryNewPassword">Nové heslo</label>
+      <input
+        id="recoveryNewPassword"
+        type="password"
+        placeholder="Minimálne 8 znakov"
+        autocomplete="new-password"
+      />
+    </div>
+
+    <div class="field">
+      <label for="recoveryNewPasswordRepeat">Zopakuj nové heslo</label>
+      <input
+        id="recoveryNewPasswordRepeat"
+        type="password"
+        placeholder="Zadaj nové heslo ešte raz"
+        autocomplete="new-password"
+      />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button
+      class="btn-primary"
+      type="button"
+      onclick="resetForgottenPassword()"
+    >
+      Nastaviť nové heslo
+    </button>
+
+    <button
+      type="button"
+      onclick="closePasswordRecovery()"
+      style="
+        margin-top: 10px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        color: #08783f;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: underline;
+      "
+    >
+      Späť na prihlásenie
     </button>
   </div>
 </section>
@@ -7187,14 +7267,54 @@ saveActiveRevir();
 }
 
 function setActiveRevirFromSelect() {
-  const revir = document.getElementById('checkPlace').value;
+  const revir =
+    document.getElementById('checkPlace').value;
 
   if (!revir) return;
+
+  // =====================================================
+  // OCHRANA AKTÍVNEJ SLUŽBY PRI ZMENE REVÍRU
+  // =====================================================
+  //
+  // Ak už existuje aktívna služba na inom revíri,
+  // obyčajná zmena hodnoty v selecte ju NESMIE prepísať.
+  //
+  // Formulár môže ukazovať nový revír,
+  // ale appState naďalej reprezentuje pôvodnú službu.
+  //
+  // Definitívna zmena A -> B sa vyrieši až pri
+  // ukladaní kontroly.
+  // =====================================================
+
+  if (
+    appState.activeRevir &&
+    appState.activeRevir !== revir
+  ) {
+    console.warn(
+      'ACTIVE SERVICE – zvolený iný revír, ' +
+      'pôvodná služba zostáva aktívna:',
+      {
+        activeRevir: appState.activeRevir,
+        selectedRevir: revir,
+        activeRevirStart:
+          appState.activeRevirStart,
+        activeServiceLocalId:
+          appState.activeServiceLocalId
+      }
+    );
+
+    return;
+  }
+
+  // =====================================================
+  // ŽIADNA AKTÍVNA SLUŽBA – založíme novú
+  // =====================================================
 
   appState.activeRevir = revir;
 
   if (!appState.activeRevirStart) {
-    appState.activeRevirStart = new Date().toISOString();
+    appState.activeRevirStart =
+      new Date().toISOString();
   }
 
   if (!appState.activeServiceLocalId) {
@@ -7797,6 +7917,186 @@ async function verifyOfflinePassword(memberId, password) {
     );
 
     return false;
+  }
+}
+
+function openPasswordRecovery() {
+  const recoveryToken = localStorage.getItem(
+    'rs_app_recovery_device_token'
+  );
+
+  if (!recoveryToken) {
+    alert(
+      'Obnova hesla je dostupná iba na zariadení, ' +
+      'na ktorom ste sa už úspešne prihlásili.'
+    );
+    return;
+  }
+
+  const loginSection =
+    document.getElementById('loginSection');
+
+  const recoverySection =
+    document.getElementById('passwordRecoverySection');
+
+  const loginIdentifier =
+    document.getElementById('loginCisloOdznaku');
+
+  const recoveryBadge =
+    document.getElementById('recoveryBadge');
+
+  if (!loginSection || !recoverySection) {
+    console.error(
+      'PASSWORD RECOVERY – chýba recovery UI.'
+    );
+    return;
+  }
+
+  if (
+    recoveryBadge &&
+    loginIdentifier &&
+    loginIdentifier.value
+  ) {
+    recoveryBadge.value = loginIdentifier.value;
+  }
+
+  document.getElementById('recoveryNewPassword').value = '';
+  document.getElementById('recoveryNewPasswordRepeat').value = '';
+
+  loginSection.classList.add('hidden');
+  recoverySection.classList.remove('hidden');
+}
+
+
+function closePasswordRecovery() {
+  const loginSection =
+    document.getElementById('loginSection');
+
+  const recoverySection =
+    document.getElementById('passwordRecoverySection');
+
+  if (recoverySection) {
+    recoverySection.classList.add('hidden');
+  }
+
+  if (loginSection) {
+    loginSection.classList.remove('hidden');
+  }
+
+  document.getElementById('recoveryNewPassword').value = '';
+  document.getElementById('recoveryNewPasswordRepeat').value = '';
+}
+
+
+async function resetForgottenPassword() {
+  const badge =
+    document.getElementById('recoveryBadge')
+      ?.value
+      ?.trim() || '';
+
+  const newPassword =
+    document.getElementById('recoveryNewPassword')
+      ?.value || '';
+
+  const repeatPassword =
+    document.getElementById('recoveryNewPasswordRepeat')
+      ?.value || '';
+
+  const deviceToken =
+    localStorage.getItem(
+      'rs_app_recovery_device_token'
+    );
+
+  if (!badge) {
+    alert('Zadajte číslo odznaku.');
+    return;
+  }
+
+  if (!deviceToken) {
+    alert(
+      'Toto zariadenie nie je pripravené na obnovu hesla.'
+    );
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    alert('Nové heslo musí mať minimálne 8 znakov.');
+    return;
+  }
+
+  if (newPassword !== repeatPassword) {
+    alert('Zadané heslá sa nezhodujú.');
+    return;
+  }
+
+  try {
+    const { data, error } = await db.functions.invoke(
+      'rs-password-recovery',
+      {
+        body: {
+          action: 'RESET_PASSWORD',
+          badge: badge,
+          device_token: deviceToken,
+          new_password: newPassword
+        }
+      }
+    );
+
+    if (error || !data?.ok) {
+      console.error(
+        'PASSWORD RECOVERY – reset zlyhal:',
+        {
+          data,
+          error
+        }
+      );
+
+      alert(
+        'Heslo sa nepodarilo obnoviť. ' +
+        'Skontrolujte číslo odznaku a skúste to znova.'
+      );
+      return;
+    }
+
+    // Aktualizujeme aj lokálny offline verifier.
+    const normalizedBadge =
+      badge
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
+
+    const member =
+      appState.data.members.find(item => {
+        const memberBadge =
+          String(item.cislo_odznaku || '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '');
+
+        return memberBadge === normalizedBadge;
+      });
+
+    if (member) {
+      await createOfflinePasswordVerifier(
+        member.id,
+        newPassword
+      );
+    }
+
+    alert(
+      'Heslo bolo úspešne zmenené. ' +
+      'Teraz sa môžete prihlásiť novým heslom.'
+    );
+
+    closePasswordRecovery();
+
+  } catch (error) {
+    console.error(
+      'PASSWORD RECOVERY – chyba:',
+      error
+    );
+
+    alert(
+      'Pri obnove hesla nastala chyba. Skúste to znova.'
+    );
   }
 }
 
@@ -8494,108 +8794,146 @@ await updateSyncStatusIndicator();
   }
 
 
-  // =====================================================
-  // PÔVODNÝ ONLINE REŽIM
-  // =====================================================
+// =====================================================
+// ONLINE REŽIM – NOVÁ SERVICE_LOCAL_ID ARCHITEKTÚRA
+// =====================================================
 
-  const { count, error: countError } = await db
-    .from('checks')
-    .select('id', { count: 'exact', head: true })
-    .eq('location', appState.activeRevir)
-    .gte('created_at', appState.activeRevirStart)
-    .lte('created_at', koniecIso);
+// 1. Počet kontrol berieme primárne z IndexedDB
+//    podľa presnej väzby service_local_id.
+let localServiceChecks = [];
 
-  if (countError) {
-    console.error(
-      'Chyba pri počítaní kontrol:',
-      countError
+try {
+  const allLocalChecks =
+    await rsLocalGetAll(
+      RS_LOCAL_STORES.checks
     );
 
-    alert(
-      'Nepodarilo sa načítať počet kontrol zo Supabase.'
+  localServiceChecks =
+    (allLocalChecks || []).filter(item =>
+      item.service_local_id ===
+      appState.activeServiceLocalId
     );
 
-    return;
-  }
+} catch (localChecksError) {
+  console.error(
+    'LEAVE SERVICE – nepodarilo sa načítať lokálne kontroly:',
+    localChecksError
+  );
 
-  pocetKontrol = count || 0;
+  alert(
+    'Nepodarilo sa overiť kontroly aktívnej služby.\n' +
+    'Služba preto NEBOLA ukončená.'
+  );
 
+  return;
+}
 
-  if (pocetKontrol === 0) {
-    openServiceWithoutCheckModal();
-    return;
-  }
-
-
-  const isGroupAction =
-    document.getElementById('isGroupCheck')?.checked;
-
-  if (isGroupAction) {
-    openGroupActionModal();
-    return;
-  }
+pocetKontrol = localServiceChecks.length;
 
 
-  const sprava =
-    'Revír: ' + appState.activeRevir + '\n\n' +
-    'Začiatok: ' +
-    new Date(appState.activeRevirStart).toLocaleString('sk-SK') +
-    '\n' +
-    'Koniec: ' + koniec + '\n' +
-    'Trvanie: ' + trvanieText + '\n\n' +
-    'Počet kontrol: ' + pocetKontrol + '\n\n' +
-    'Naozaj chceš ukončiť službu na tomto revíri?';
-
-  if (!confirm(sprava)) {
-    return;
-  }
+// Zachovávame existujúce správanie služby bez kontroly.
+if (pocetKontrol === 0) {
+  openServiceWithoutCheckModal();
+  return;
+}
 
 
-  const currentMember = getCurrentUser();
+// Zachovávame existujúcu skupinovú akciu.
+const isGroupAction =
+  document.getElementById('isGroupCheck')?.checked;
 
-  const { error: sluzbaError } = await db
-    .from('sluzby_reviry')
-    .insert([{
-      revir: appState.activeRevir,
-      zaciatok: appState.activeRevirStart,
-      koniec: koniecIso,
-      trvanie_min: trvanieMin,
-      pocet_kontrol: pocetKontrol,
-      clen_rs: currentMember ? currentMember.name : '',
-      clen_rs_id: appState.currentUserId || ''
-    }]);
+if (isGroupAction) {
+  openGroupActionModal();
+  return;
+}
 
 
-  if (sluzbaError) {
-    console.error(
-      'Chyba pri uložení služby revíru:',
-      sluzbaError
-    );
+// 2. Potvrdenie používateľovi.
+const sprava =
+  'Revír: ' + appState.activeRevir + '\n\n' +
+  'Začiatok: ' +
+  new Date(
+    appState.activeRevirStart
+  ).toLocaleString('sk-SK') +
+  '\n' +
+  'Koniec: ' + koniec + '\n' +
+  'Trvanie: ' + trvanieText + '\n\n' +
+  'Počet kontrol: ' +
+  pocetKontrol +
+  '\n\n' +
+  'Naozaj chceš ukončiť službu na tomto revíri?';
 
-    alert(
-      'Služba revíru sa neuložila do Supabase.'
-    );
-
-    return;
-  }
+if (!confirm(sprava)) {
+  return;
+}
 
 
-  await loadSluzbyReviry();
-
-  renderStats();
-  updateDashboard();
+const currentMember = getCurrentUser();
 
 
-  appState.activeRevir = '';
-  appState.activeRevirStart = '';
+// 3. Uzatvoríme EXISTUJÚCU IndexedDB službu.
+//    Nevytvárame nový paralelný Supabase záznam.
+try {
 
-  localStorage.removeItem(ACTIVE_REVIR_KEY);
+  await closeCurrentActiveServiceInIndexedDb({
+    koniecIso,
+    trvanieMin,
+    pocetKontrol,
+    clenRs:
+      currentMember
+        ? currentMember.name
+        : '',
+    clenRsId:
+      appState.currentUserId || ''
+  });
 
-  document.getElementById('checkPlace').value = '';
+} catch (closeError) {
 
-  resetCheckForm();
+  console.error(
+    'LEAVE SERVICE – IndexedDB uzatvorenie zlyhalo:',
+    closeError
+  );
 
-  alert('Revír bol ukončený.');
+  alert(
+    'Službu sa nepodarilo bezpečne ukončiť.\n' +
+    'Aktívny revír preto zostáva zachovaný.'
+  );
+
+  return;
+}
+
+
+// 4. Až po úspešnom uzatvorení služby
+//    vyčistíme aktívny stav.
+appState.activeRevir = '';
+appState.activeRevirStart = '';
+appState.activeServiceLocalId = '';
+
+localStorage.removeItem(
+  ACTIVE_REVIR_KEY
+);
+
+const checkPlace =
+  document.getElementById('checkPlace');
+
+if (checkPlace) {
+  checkPlace.value = '';
+}
+
+resetCheckForm();
+
+
+// 5. Obnovíme UI.
+renderStats();
+updateDashboard();
+
+await updateSyncStatusIndicator();
+
+alert(
+  'Revír bol ukončený.\n\n' +
+  'Služba čaká na synchronizáciu.'
+);
+
 }
 
     function ensureLogged() {
@@ -9379,7 +9717,352 @@ if (checkCatchCount) {
   ) || null;
 }
 
-    function saveCheck() {
+async function getLastCheckEndForActiveService() {
+  const activeRevir =
+    safeText(appState.activeRevir);
+
+  const activeStart =
+    appState.activeRevirStart;
+
+  const serviceLocalId =
+    appState.activeServiceLocalId;
+
+  if (
+    !activeRevir ||
+    !activeStart ||
+    !serviceLocalId
+  ) {
+    return {
+      ok: false,
+      reason: 'NO_ACTIVE_SERVICE',
+      checks: []
+    };
+  }
+
+  const startDate =
+    new Date(activeStart);
+
+  if (isNaN(startDate.getTime())) {
+    return {
+      ok: false,
+      reason: 'INVALID_SERVICE_START',
+      checks: []
+    };
+  }
+
+// Časy kontrol evidujeme iba s presnosťou na minúty.
+// Začiatok služby má aj sekundy a milisekundy.
+// Preto pri porovnávaní zarovnáme začiatok služby
+// na začiatok príslušnej minúty.
+const startMinute =
+  new Date(startDate);
+
+startMinute.setSeconds(0, 0);
+
+  // =====================================================
+  // 1. Najprv presná lokálna väzba service_local_id
+  // =====================================================
+
+  let localChecks = [];
+
+  try {
+    const allLocalChecks =
+      await rsLocalGetAll(
+        RS_LOCAL_STORES.checks
+      );
+
+    localChecks = allLocalChecks.filter(item =>
+      String(item.service_local_id || '') ===
+      String(serviceLocalId)
+    );
+
+  } catch (error) {
+    console.warn(
+      'ACTIVE SERVICE – lokálne kontroly sa nepodarilo načítať:',
+      error
+    );
+  }
+
+  // =====================================================
+  // Pomocná konverzia check_date + time_to na Date
+  // =====================================================
+
+
+  function getCheckEndDate(item) {
+    const checkDate =
+      safeText(item.check_date);
+
+    const timeTo =
+      safeText(item.time_to);
+
+    if (!checkDate || !timeTo) {
+      return null;
+    }
+
+    const value =
+      new Date(
+        checkDate + 'T' + timeTo + ':00'
+      );
+
+    if (isNaN(value.getTime())) {
+      return null;
+    }
+
+    return value;
+  }
+
+  const validLocalChecks =
+    localChecks
+      .map(item => ({
+        item,
+        endDate: getCheckEndDate(item)
+      }))
+      .filter(entry =>
+        entry.endDate &&
+        entry.endDate >= startMinute
+      )
+      .sort(
+        (a, b) =>
+          b.endDate - a.endDate
+      );
+
+  if (validLocalChecks.length > 0) {
+    const last =
+      validLocalChecks[0];
+
+    return {
+      ok: true,
+      source: 'LOCAL_SERVICE_ID',
+      check: last.item,
+      endDate: last.endDate,
+      endIso: last.endDate.toISOString(),
+      count: validLocalChecks.length
+    };
+  }
+
+  // =====================================================
+  // 2. ONLINE fallback pre staršie/centrálne kontroly
+  //    bez service_local_id
+  // =====================================================
+
+  if (!navigator.onLine) {
+    return {
+      ok: false,
+      reason: 'NO_LOCAL_CHECKS_OFFLINE',
+      checks: []
+    };
+  }
+
+  try {
+    const currentMember =
+      getCurrentUser();
+
+    if (!currentMember) {
+      return {
+        ok: false,
+        reason: 'CURRENT_MEMBER_NOT_FOUND',
+        checks: []
+      };
+    }
+
+    const startDateKey =
+      localDateKey(activeStart);
+
+    const { data, error } = await db
+      .from('checks')
+      .select(
+        'id, check_date, time_from, time_to, location, clen_rs_1, clen_rs_2'
+      )
+      .eq('location', activeRevir)
+      .gte('check_date', startDateKey);
+
+    if (error) {
+      console.warn(
+        'ACTIVE SERVICE – centrálne kontroly sa nepodarilo načítať:',
+        error
+      );
+
+      return {
+        ok: false,
+        reason: 'CENTRAL_CHECK_LOOKUP_FAILED',
+        error
+      };
+    }
+
+    const memberName =
+      safeText(currentMember.name);
+
+    const candidates =
+      (data || [])
+        .filter(item =>
+          safeText(item.clen_rs_1) === memberName ||
+          safeText(item.clen_rs_2) === memberName
+        )
+        .map(item => ({
+          item,
+          endDate: getCheckEndDate(item)
+        }))
+        .filter(entry =>
+          entry.endDate &&
+          entry.endDate >= startMinute
+        )
+        .sort(
+          (a, b) =>
+            b.endDate - a.endDate
+        );
+
+    if (candidates.length === 0) {
+      return {
+        ok: false,
+        reason: 'NO_CHECKS_FOR_ACTIVE_SERVICE',
+        checks: []
+      };
+    }
+
+    const last =
+      candidates[0];
+
+    return {
+      ok: true,
+      source: 'CENTRAL_FALLBACK',
+      check: last.item,
+      endDate: last.endDate,
+      endIso: last.endDate.toISOString(),
+      count: candidates.length
+    };
+
+  } catch (error) {
+    console.error(
+      'ACTIVE SERVICE – diagnostika poslednej kontroly zlyhala:',
+      error
+    );
+
+    return {
+      ok: false,
+      reason: 'UNEXPECTED_ERROR',
+      error
+    };
+  }
+}
+
+async function closeActiveServiceAtLastCheck() {
+  const activeRevir =
+    safeText(appState.activeRevir);
+
+  const activeStartIso =
+    appState.activeRevirStart;
+
+  const serviceLocalId =
+    appState.activeServiceLocalId;
+
+  if (
+    !activeRevir ||
+    !activeStartIso ||
+    !serviceLocalId
+  ) {
+    return {
+      ok: false,
+      reason: 'NO_ACTIVE_SERVICE'
+    };
+  }
+
+  const activeStart =
+    new Date(activeStartIso);
+
+  if (isNaN(activeStart.getTime())) {
+    return {
+      ok: false,
+      reason: 'INVALID_SERVICE_START'
+    };
+  }
+
+  const lastCheck =
+    await getLastCheckEndForActiveService();
+
+  if (!lastCheck.ok) {
+    return {
+      ok: false,
+      reason: lastCheck.reason || 'LAST_CHECK_NOT_FOUND'
+    };
+  }
+
+  // Kontroly majú čas iba na minúty,
+  // zatiaľ čo začiatok služby obsahuje aj sekundy.
+  // Koniec preto nikdy nesmie byť pred začiatkom.
+  const calculatedEnd =
+    lastCheck.endDate < activeStart
+      ? new Date(activeStart)
+      : new Date(lastCheck.endDate);
+
+  const durationMinutes =
+    Math.max(
+      0,
+      Math.floor(
+        (calculatedEnd - activeStart) / 60000
+      )
+    );
+
+  const currentMember =
+    getCurrentUser();
+
+  const closedService =
+    await closeCurrentActiveServiceInIndexedDb({
+      koniecIso:
+        calculatedEnd.toISOString(),
+
+      trvanieMin:
+        durationMinutes,
+
+      pocetKontrol:
+        lastCheck.count || 0,
+
+      clenRs:
+        currentMember
+          ? currentMember.name
+          : '',
+
+      clenRsId:
+        appState.currentUserId || ''
+    });
+
+  console.log(
+    'ACTIVE SERVICE – automaticky uzatvorená pri poslednej kontrole:',
+    {
+      serviceLocalId,
+      revir: activeRevir,
+      zaciatok: activeStartIso,
+      koniec: calculatedEnd.toISOString(),
+      trvanieMin: durationMinutes,
+      pocetKontrol: lastCheck.count || 0,
+      source: lastCheck.source
+    }
+  );
+
+  return {
+    ok: true,
+
+    serviceLocalId,
+    revir: activeRevir,
+
+    startIso:
+      activeStartIso,
+
+    endIso:
+      calculatedEnd.toISOString(),
+
+    durationMinutes,
+
+    checksCount:
+      lastCheck.count || 0,
+
+    source:
+      lastCheck.source,
+
+    closedService
+  };
+}
+
+    async function saveCheck() {
       if (!ensureLogged()) return;
 
       const fisherName = safeText(document.getElementById('checkFisherName').value);
@@ -9414,6 +10097,101 @@ if (
 if ((!fisherName && !fisherIdNo) || !memberId1 || !date || !place) {
   alert('Vyplň meno alebo identifikačné číslo rybára, člena RS, dátum a miesto kontroly.');
   return;
+}
+
+// =====================================================
+// AUTOMATICKÝ PRECHOD SLUŽBY PRI ZMENE REVÍRU
+// =====================================================
+//
+// Ak člen RS zabudol použiť „Opúšťam revír“
+// a začne kontrolu na inom revíri:
+//
+// 1. pôvodná služba sa uzavrie časom poslednej kontroly,
+// 2. pôvodná služba zostane CLOSED_PENDING_SYNC,
+// 3. nový revír dostane nové service_local_id,
+// 4. až potom pokračuje uloženie novej kontroly.
+//
+// =====================================================
+
+if (
+  appState.activeRevir &&
+  place !== appState.activeRevir
+) {
+  console.warn(
+    'ACTIVE SERVICE – automatický prechod na nový revír:',
+    {
+      oldRevir: appState.activeRevir,
+      newRevir: place,
+      oldServiceLocalId:
+        appState.activeServiceLocalId
+    }
+  );
+
+  const closeResult =
+    await closeActiveServiceAtLastCheck();
+
+  if (!closeResult.ok) {
+    console.error(
+      'ACTIVE SERVICE – automatické uzatvorenie pôvodnej služby zlyhalo:',
+      closeResult
+    );
+
+    alert(
+      'Pôvodnú službu sa nepodarilo bezpečne uzavrieť.\n\n' +
+      'Kontrola preto NEBOLA uložená.'
+    );
+
+    return;
+  }
+
+  const oldServiceLocalId =
+    closeResult.serviceLocalId;
+
+  // ===================================================
+  // Vytvorenie novej aktívnej služby
+  // ===================================================
+
+  appState.activeRevir = place;
+
+  appState.activeRevirStart =
+    new Date().toISOString();
+
+  appState.activeServiceLocalId =
+    createLocalRecordId('service');
+
+  // RS2 zostáva zachovaný.
+  saveActiveRevir();
+
+  try {
+    await saveCurrentActiveServiceToIndexedDb();
+  } catch (error) {
+    console.error(
+      'ACTIVE SERVICE – vytvorenie novej služby v IndexedDB zlyhalo:',
+      error
+    );
+
+    // Pôvodná služba už bola korektne uzavretá.
+    // Novú kontrolu však bez novej služby neuložíme.
+    alert(
+      'Pôvodná služba bola uzavretá, ale novú službu sa nepodarilo vytvoriť.\n\n' +
+      'Kontrola preto NEBOLA uložená.'
+    );
+
+    return;
+  }
+
+  console.log(
+    'ACTIVE SERVICE – prechod na nový revír pripravený:',
+    {
+      oldServiceLocalId,
+      newServiceLocalId:
+        appState.activeServiceLocalId,
+      newRevir:
+        appState.activeRevir,
+      newStart:
+        appState.activeRevirStart
+    }
+  );
 }
 
       const linkedFisher =
@@ -13090,6 +13868,9 @@ photos: check.photos || []
   const { data, error } = await db
     .from('checks')
     .insert([{
+      check_local_id: check.checkLocalId,
+      service_local_id: check.serviceLocalId,
+
       fisher_name: check.fisherName,
       fisher_id_no: check.fisherIdNo,
       member_name: getMemberName(check.memberId1),
