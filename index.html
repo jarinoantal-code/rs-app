@@ -3459,7 +3459,11 @@ button:disabled,
   </div>
 </div>
 
-<div class="card card-dk" onclick="openDisciplinarnaKomisiaModule()">
+<div
+  id="disciplinarnaKomisiaCard"
+  class="card card-dk"
+  onclick="openDisciplinarnaKomisiaModule()"
+>
   <div class="card-icon">
     <svg
       viewBox="0 0 24 24"
@@ -5280,13 +5284,14 @@ const appState = {
   activeServiceLocalId: '',
   kontrolyLoaded: false,
 
-  data: {
-    fishers: [],
-    members: [],
-    checks: [],
-    statsChecks: [],
-    changeLog: []
-  }
+data: {
+  fishers: [],
+  members: [],
+  memberAppRoles: [],
+  checks: [],
+  statsChecks: [],
+  changeLog: []
+}
 };
 
 // =====================================================
@@ -7397,6 +7402,104 @@ function updateInfoVelitelaAccess() {
   card.classList.toggle('hidden', !hasAccess);
 }
 
+function hasAppRole(memberId, roleCode) {
+  if (!memberId || !roleCode) {
+    return false;
+  }
+
+  const roles = Array.isArray(appState.data.memberAppRoles)
+    ? appState.data.memberAppRoles
+    : [];
+
+  return roles.some(role =>
+    Number(role.member_id) === Number(memberId) &&
+    String(role.role_code || '').trim().toUpperCase() ===
+      String(roleCode).trim().toUpperCase()
+  );
+}
+
+function getDkAccessLevel() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) {
+    return 'NONE';
+  }
+
+  if (hasAppRole(currentUser.id, 'DK')) {
+    return 'EDIT';
+  }
+
+  if (
+    hasAppRole(currentUser.id, 'VELITEL_RS') ||
+    hasAppRole(currentUser.id, 'PRESEDA') ||
+    hasAppRole(currentUser.id, 'TAJOMNIK') ||
+    hasAppRole(currentUser.id, 'ADMIN')
+  ) {
+    return 'READ_ONLY';
+  }
+
+  return 'NONE';
+}
+
+function applyDkDetailAccess() {
+  const accessLevel = getDkAccessLevel();
+  const isReadOnly = accessLevel !== 'EDIT';
+
+  const fieldIds = [
+    'dkStavPripadu',
+    'dkDatumPrerokovania',
+    'dkVysledok',
+    'dkVyskaPokuty',
+    'dkDobaOpatrenia',
+    'dkStupenPrevinenia',
+    'dkZavinenie',
+    'dkVzniklaSkoda',
+    'dkPredchadzajuceOpatrenie',
+    'dkPolahcujuceOkolnosti',
+    'dkPritazujuceOkolnosti',
+    'dkPorusenyPredpis',
+    'dkUstanovenie',
+    'dkPravnePosudenie',
+    'dkPoznamka',
+    'dkDokumenty'
+  ];
+
+  fieldIds.forEach(id => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.disabled = isReadOnly;
+    }
+  });
+
+  const saveButton =
+    document.getElementById('dkSaveButton');
+
+  if (saveButton) {
+    saveButton.classList.toggle(
+      'hidden',
+      isReadOnly
+    );
+  }
+}
+
+function updateDkAccess() {
+  const card =
+    document.getElementById('disciplinarnaKomisiaCard');
+
+  if (!card) {
+    return;
+  }
+
+  const accessLevel =
+    getDkAccessLevel();
+
+  card.classList.toggle(
+    'hidden',
+    accessLevel === 'NONE'
+  );
+}
+
 function updateInfoVelitelaAccess() {
   const card =
     document.getElementById(
@@ -7421,24 +7524,10 @@ function canAccessInfoVelitela() {
     return false;
   }
 
-  const role =
-    normalize(currentUser.role || '');
-
-  const isVelitel =
-    role.includes(
-      normalize('Velitel RS')
-    );
-
-  const isAdmin =
-    currentUser.is_admin === true;
-
-  const isChairman =
-    currentUser.is_chairman === true;
-
   return (
-    isVelitel ||
-    isAdmin ||
-    isChairman
+    hasAppRole(currentUser.id, 'VELITEL_RS') ||
+    hasAppRole(currentUser.id, 'PRESEDA') ||
+    hasAppRole(currentUser.id, 'ADMIN')
   );
 }
 
@@ -7494,13 +7583,14 @@ function showFisherHistory(fisherName) {
     function loadData() {
       const raw = localStorage.getItem(STORAGE_KEY);
 
-     if (!raw) {
-  appState.data = {
-    fishers: [],
-    members: [],
-    checks: [],
-    changeLog: []
-  };
+if (!raw) {
+appState.data = {
+  fishers: [],
+  members: [],
+  memberAppRoles: [],
+  checks: [],
+  changeLog: []
+};
   localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
   return;
 }
@@ -7509,13 +7599,13 @@ function showFisherHistory(fisherName) {
         const parsed = JSON.parse(raw);
         const data = parsed.data || parsed;
 
-        appState.data = {
-          fishers: Array.isArray(data.fishers) ? data.fishers : [],
-          members: Array.isArray(data.members) ? data.members : [],
-          checks: Array.isArray(data.checks) ? data.checks : [],
-          changeLog: Array.isArray(data.changeLog) ? data.changeLog : []
-        };
-
+appState.data = {
+  fishers: Array.isArray(data.fishers) ? data.fishers : [],
+  members: Array.isArray(data.members) ? data.members : [],
+  memberAppRoles: Array.isArray(data.memberAppRoles) ? data.memberAppRoles : [],
+  checks: Array.isArray(data.checks) ? data.checks : [],
+  changeLog: Array.isArray(data.changeLog) ? data.changeLog : []
+};
       } catch (error) {
         appState.data = createDemoData();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
@@ -7777,6 +7867,7 @@ function finishLogin(member) {
   document.getElementById('checkTimeTo').value = teraz;
 
   renderAll();
+  updateDkAccess();
   updateSyncStatusIndicator();
 }
 
@@ -8244,6 +8335,37 @@ if (!offlineVerifierCreated) {
   console.log(
     'OFFLINE AUTH – verifier po prvej aktivácii pripravený pre:',
     member.name
+  );
+}
+
+const { data: freshRoles, error: freshRolesError } = await db
+  .from('member_app_roles')
+  .select('member_id, role_code')
+  .order('member_id', { ascending: true });
+
+if (freshRolesError) {
+  console.warn(
+    'APP ROLES – načítanie rolí po prihlásení zlyhalo:',
+    freshRolesError
+  );
+} else {
+  appState.data.memberAppRoles = freshRoles || [];
+
+  try {
+    localStorage.setItem(
+      'rs_app_member_roles_cache',
+      JSON.stringify(appState.data.memberAppRoles)
+    );
+  } catch (cacheError) {
+    console.warn(
+      'APP ROLES – cache rolí sa nepodarilo uložiť:',
+      cacheError
+    );
+  }
+
+  console.log(
+    'APP ROLES – po prihlásení načítané:',
+    appState.data.memberAppRoles.length
   );
 }
 
@@ -10311,7 +10433,7 @@ async function uploadCheckPhotos(check, files) {
 
   checkSaveInProgress = true;
 
-if (appState.offlineMode) {
+if (appState.offlineMode || !navigator.onLine) {
   console.warn(
     'RS App je v offline režime – fotografie sa uložia lokálne do zariadenia.'
   );
@@ -10783,6 +10905,7 @@ async function buildSyncPayloadPreview() {
       const checkPayload = {
          check_local_id: check.local_id,
          service_local_id: check.service_local_id,
+         created_by_member_id: check.created_by || null,
 
         fisher_name: check.fisher_name || '',
         fisher_id_no: check.fisher_id_no || '',
@@ -11895,32 +12018,41 @@ async function linkPhotoToCentralCheck(
       photoEntry
     ];
 
-    const { data: updatedCheck, error: updateError } =
-      await db
-        .from('checks')
-        .update({
-          photos: nextPhotos
-        })
-        .eq('id', centralCheckId)
-        .select()
-        .single();
-
-    if (updateError) {
-      return {
-        status: 'ERROR',
-        reason: 'CHECK_PHOTO_LINK_FAILED',
-        data: null,
-        error: updateError
-      };
+const { error: updateError } =
+  await db.rpc(
+    'update_own_check_photos',
+    {
+      p_check_id: centralCheckId,
+      p_photos: nextPhotos
     }
+  );
 
-    return {
-      status: 'LINKED',
-      reason: 'PHOTO_LINK_CONFIRMED',
-      data: updatedCheck,
-      error: null,
-      photo_entry: photoEntry
-    };
+if (updateError) {
+  return {
+    status: 'ERROR',
+    reason: 'CHECK_PHOTO_LINK_FAILED',
+    data: null,
+    error: updateError
+  };
+}
+
+/*
+  RPC mení iba checks.photos a vracia void.
+  Preto po úspešnom zápise použijeme lokálne známy
+  výsledný stav namiesto pôvodného UPDATE ... SELECT.
+*/
+const updatedCheck = {
+  ...checkData,
+  photos: nextPhotos
+};
+
+return {
+  status: 'LINKED',
+  reason: 'PHOTO_LINK_CONFIRMED',
+  data: updatedCheck,
+  error: null,
+  photo_entry: photoEntry
+};
 
   } catch (error) {
     return {
@@ -13870,6 +14002,7 @@ photos: check.photos || []
     .insert([{
       check_local_id: check.checkLocalId,
       service_local_id: check.serviceLocalId,
+      created_by_member_id: check.createdBy || appState.currentUserId || null,
 
       fisher_name: check.fisherName,
       fisher_id_no: check.fisherIdNo,
@@ -14495,7 +14628,7 @@ document.getElementById('fisherProfileModal').classList.remove('hidden');
       const memberSelect2 = document.getElementById('checkMember2');
 
 const activeMembers = (appState.data.members || []).filter(item =>
-  normalize(item.role || '').includes(normalize('Clen RS'))
+  hasAppRole(item.id, 'CLEN_RS')
 );
 
    const memberOptions =
@@ -16900,6 +17033,14 @@ if (vehicleRecordedBy) {
 }
 
 async function openDisciplinarnaKomisiaModule() {
+
+  const dkAccessLevel = getDkAccessLevel();
+
+  if (dkAccessLevel === 'NONE') {
+    alert('K disciplinárnej komisii nemáte oprávnený prístup.');
+    return;
+  }
+
   document.getElementById('mainMenuSection').classList.add('hidden');
   document.getElementById('backToMenuSection').classList.remove('hidden');
 
@@ -16976,6 +17117,11 @@ async function loadDisciplinarnePripady() {
       vyska_pokuty,
       doba_opatrenia,
       stupen_previnenia,
+      zavinenie,
+      vznikla_skoda,
+      predchadzajuce_opatrenie,
+      polahcujuce_okolnosti,
+      pritazujuce_okolnosti,
       poruseny_predpis,
       ustanovenie,
       pravne_posudenie,
@@ -17577,9 +17723,9 @@ function showDisciplinarnyPripadDetail(id) {
     Odvolanie zo zvolenej funkcie
   </option>
 
-  <option value="Dočasné vylúčenie z členstva SRZ">
-    Dočasné vylúčenie z členstva SRZ
-  </option>
+ <option value="Dočasné vylúčenie z členstva SRZ">
+  Vylúčenie z členstva vo zväze na dobu až 5 rokov
+</option>
 
   <option value="Trvalé vylúčenie z členstva SRZ">
     Trvalé vylúčenie z členstva SRZ
@@ -17593,13 +17739,6 @@ function showDisciplinarnyPripadDetail(id) {
     Zastavenie disciplinárneho konania
   </option>
 
-  <option value="Postúpenie príslušnému orgánu">
-    Postúpenie príslušnému orgánu
-  </option>
-
-  <option value="Iné">
-    Iné
-  </option>
 </select>
   </div>
 
@@ -17634,11 +17773,13 @@ function showDisciplinarnyPripadDetail(id) {
     Doba opatrenia
   </label>
 
-  <input
-    id="dkDobaOpatrenia"
-    type="text"
-    placeholder="Napr. 1 rok / 2 roky"
-  >
+ <input
+  id="dkDobaOpatrenia"
+  type="number"
+  min="1"
+  step="1"
+  placeholder="Počet rokov"
+>
 </div>
 
   <strong>⚖️ Právne posúdenie prípadu</strong>
@@ -17652,7 +17793,10 @@ function showDisciplinarnyPripadDetail(id) {
     Stupeň disciplinárneho previnenia
   </label>
 
-  <select id="dkStupenPrevinenia">
+  <select
+  id="dkStupenPrevinenia"
+  onchange="updateDkOpatreniaPodlaStupna()"
+>
     <option value="">
       Vyber stupeň previnenia
     </option>
@@ -17673,6 +17817,102 @@ function showDisciplinarnyPripadDetail(id) {
       Mimoriadne hrubé
     </option>
   </select>
+</div>
+
+<div style="
+  margin:18px 0 14px 0;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+">
+  <strong>⚖️ Okolnosti disciplinárneho previnenia</strong>
+
+  <div class="muted small" style="margin-top:3px;">
+    Údaje pre posúdenie okolností prípadu disciplinárnou komisiou.
+  </div>
+</div>
+
+<div class="field">
+  <label for="dkZavinenie">
+    Zavinenie
+  </label>
+
+  <select id="dkZavinenie">
+    <option value="">
+      Neurčené
+    </option>
+
+    <option value="Úmysel">
+      Úmysel
+    </option>
+
+    <option value="Nedbanlivosť">
+      Nedbanlivosť
+    </option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="dkVzniklaSkoda">
+    Vznikla škoda
+  </label>
+
+  <select id="dkVzniklaSkoda">
+    <option value="">
+      Neurčené
+    </option>
+
+    <option value="ano">
+      Áno
+    </option>
+
+    <option value="nie">
+      Nie
+    </option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="dkPredchadzajuceOpatrenie">
+    Predchádzajúce disciplinárne opatrenie
+  </label>
+
+  <select id="dkPredchadzajuceOpatrenie">
+    <option value="">
+      Neurčené
+    </option>
+
+    <option value="ano">
+      Áno
+    </option>
+
+    <option value="nie">
+      Nie
+    </option>
+  </select>
+</div>
+
+<div class="field">
+  <label for="dkPolahcujuceOkolnosti">
+    Poľahčujúce okolnosti
+  </label>
+
+  <textarea
+    id="dkPolahcujuceOkolnosti"
+    rows="3"
+    placeholder="Zapíš zistené poľahčujúce okolnosti..."
+  ></textarea>
+</div>
+
+<div class="field">
+  <label for="dkPritazujuceOkolnosti">
+    Priťažujúce okolnosti
+  </label>
+
+  <textarea
+    id="dkPritazujuceOkolnosti"
+    rows="3"
+    placeholder="Zapíš zistené priťažujúce okolnosti..."
+  ></textarea>
 </div>
 
 <div class="field">
@@ -17758,11 +17998,22 @@ function showDisciplinarnyPripadDetail(id) {
   </div>
 </div>
 
-  <button
+   <button
+    id="dkSaveButton"
     class="btn-primary"
     onclick="saveDisciplinarneRiesenie()">
     Uložiť riešenie
   </button>
+
+<button
+  id="dkOfficialDocumentButton"
+  type="button"
+  class="btn-secondary"
+  style="margin-top:10px;"
+  onclick="openDkOfficialDocument()">
+  📄 Oficiálny dokument DK
+</button>
+
 </div>
   `;
 
@@ -17785,6 +18036,21 @@ function showDisciplinarnyPripadDetail(id) {
 
   const dkStupenPrevinenia =
     document.getElementById('dkStupenPrevinenia');
+
+const dkZavinenie =
+  document.getElementById('dkZavinenie');
+
+const dkVzniklaSkoda =
+  document.getElementById('dkVzniklaSkoda');
+
+const dkPredchadzajuceOpatrenie =
+  document.getElementById('dkPredchadzajuceOpatrenie');
+
+const dkPolahcujuceOkolnosti =
+  document.getElementById('dkPolahcujuceOkolnosti');
+
+const dkPritazujuceOkolnosti =
+  document.getElementById('dkPritazujuceOkolnosti');
 
   const dkPorusenyPredpis =
     document.getElementById('dkPorusenyPredpis');
@@ -17830,6 +18096,43 @@ function showDisciplinarnyPripadDetail(id) {
       dk.stupen_previnenia || '';
   }
 
+if (dkZavinenie) {
+  dkZavinenie.value =
+    dk.zavinenie || '';
+}
+
+if (dkVzniklaSkoda) {
+  dkVzniklaSkoda.value =
+    dk.vznikla_skoda === true
+      ? 'ano'
+      : dk.vznikla_skoda === false
+        ? 'nie'
+        : '';
+}
+
+if (dkPredchadzajuceOpatrenie) {
+  dkPredchadzajuceOpatrenie.value =
+    dk.predchadzajuce_opatrenie === true
+      ? 'ano'
+      : dk.predchadzajuce_opatrenie === false
+        ? 'nie'
+        : '';
+}
+
+if (dkPolahcujuceOkolnosti) {
+  dkPolahcujuceOkolnosti.value =
+    Array.isArray(dk.polahcujuce_okolnosti)
+      ? dk.polahcujuce_okolnosti.join('\n')
+      : '';
+}
+
+if (dkPritazujuceOkolnosti) {
+  dkPritazujuceOkolnosti.value =
+    Array.isArray(dk.pritazujuce_okolnosti)
+      ? dk.pritazujuce_okolnosti.join('\n')
+      : '';
+}
+
   if (dkPorusenyPredpis) {
     dkPorusenyPredpis.value =
       dk.poruseny_predpis || '';
@@ -17850,15 +18153,1132 @@ function showDisciplinarnyPripadDetail(id) {
       dk.poznamka_dk || '';
   }
 
-  toggleDkDoplnkovePolia();
+updateDkOpatreniaPodlaStupna();
+toggleDkDoplnkovePolia();
+applyDkDetailAccess();
 
-  modal.classList.remove('hidden');
+modal.classList.remove('hidden');
 }
 
 function closeDisciplinarnyPripadModal() {
   document
     .getElementById('disciplinarnyPripadModal')
     ?.classList.add('hidden');
+}
+
+function openDkOfficialDocument() {
+  const checkId =
+    document.getElementById('dkCheckId')?.value || '';
+
+  const vysledok =
+    document.getElementById('dkVysledok')?.value || '';
+
+  if (!checkId) {
+    alert('Nie je určený disciplinárny prípad.');
+    return;
+  }
+
+  if (!vysledok) {
+    alert('Najskôr vyber výsledok / spôsob riešenia.');
+    return;
+  }
+
+  let typDokumentu = '';
+
+  switch (vysledok) {
+    case 'Oslobodenie':
+      typDokumentu = 'OSLOBODZUJÚCE ROZHODNUTIE';
+      break;
+
+    case 'Upustenie od uloženia disciplinárneho opatrenia':
+      typDokumentu =
+        'ROZHODNUTIE O UPUSTENÍ OD ULOŽENIA DISCIPLINÁRNEHO OPATRENIA';
+      break;
+
+    case 'Zastavenie disciplinárneho konania':
+      typDokumentu =
+        'ROZHODNUTIE O ZASTAVENÍ DISCIPLINÁRNEHO KONANIA';
+      break;
+
+    default:
+      typDokumentu = 'DISCIPLINÁRNE ROZHODNUTIE';
+      break;
+  }
+
+if (typDokumentu === 'DISCIPLINÁRNE ROZHODNUTIE') {
+  openDkDisciplinarneRozhodnutiePreparation(checkId);
+  return;
+}
+
+alert(
+  'Oficiálny dokument DK\n\n' +
+  'Check ID: ' + checkId + '\n' +
+  'Výsledok: ' + vysledok + '\n' +
+  'Typ dokumentu: ' + typDokumentu
+);
+}
+
+function openDkDisciplinarneRozhodnutiePreparation(checkId) {
+  const item = (appState.data.disciplinarnePripady || [])
+    .find(check => String(check.id) === String(checkId));
+
+  if (!item) {
+    alert('Disciplinárny prípad sa nenašiel.');
+    return;
+  }
+
+  const meno =
+    item.fisher_name ||
+    item.fisherName ||
+    item.fisher_id_no ||
+    '';
+
+  const datumSkutku =
+    formatDateTime(
+      item.created_at ||
+      item.date ||
+      ''
+    );
+
+  const miestoSkutku =
+    item.location ||
+    item.place ||
+    '';
+
+  const typPriestupku =
+    item.typ_priestupku ||
+    '';
+
+  const poznamkaRs =
+    item.poznamka ||
+    item.note ||
+    '';
+
+  const dk = item.dk || {};
+
+  const porusenyPredpis =
+    dk.poruseny_predpis ||
+    document.getElementById('dkPorusenyPredpis')?.value ||
+    '';
+
+  const ustanovenie =
+    dk.ustanovenie ||
+    document.getElementById('dkUstanovenie')?.value ||
+    '';
+
+  const pravnePosudenie =
+    dk.pravne_posudenie ||
+    document.getElementById('dkPravnePosudenie')?.value ||
+    '';
+
+  const poznamkaDk =
+    dk.poznamka_dk ||
+    document.getElementById('dkPoznamka')?.value ||
+    '';
+
+  const vysledok =
+    document.getElementById('dkVysledok')?.value ||
+    dk.vysledok_riesenia ||
+    '';
+
+const stupenPrevinenia =
+  document.getElementById('dkStupenPrevinenia')?.value ||
+  dk.stupen_previnenia ||
+  '';
+
+  const vyskaPokuty =
+    document.getElementById('dkVyskaPokuty')?.value ||
+    dk.vyska_pokuty ||
+    '';
+
+  const dobaOpatrenia =
+    document.getElementById('dkDobaOpatrenia')?.value ||
+    dk.doba_opatrenia ||
+    '';
+
+  const preparationWindow =
+    window.open('', '_blank', 'width=1000,height=850');
+
+  if (!preparationWindow) {
+    alert('Prehliadač zablokoval otvorenie okna dokumentu.');
+    return;
+  }
+
+  preparationWindow.document.open();
+
+  preparationWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="sk">
+    <head>
+      <meta charset="UTF-8">
+      <title>Príprava disciplinárneho rozhodnutia</title>
+
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background:#f3f4f6;
+          margin:0;
+          padding:24px;
+          color:#111827;
+        }
+
+        .card {
+          max-width:850px;
+          margin:0 auto;
+          background:#fff;
+          border-radius:14px;
+          padding:24px;
+          box-shadow:0 4px 18px rgba(0,0,0,.08);
+        }
+
+        h1 {
+          margin-top:0;
+          font-size:24px;
+        }
+
+        .info {
+          background:#f8fafc;
+          border:1px solid #e5e7eb;
+          border-radius:10px;
+          padding:14px;
+          margin-bottom:20px;
+        }
+
+        .field {
+          margin-bottom:14px;
+        }
+
+        label {
+          display:block;
+          font-weight:700;
+          margin-bottom:5px;
+        }
+
+        input,
+        textarea {
+          width:100%;
+          box-sizing:border-box;
+          padding:10px;
+          border:1px solid #cbd5e1;
+          border-radius:8px;
+          font:inherit;
+        }
+
+        textarea {
+          resize:vertical;
+        }
+
+        .readonly {
+          background:#f3f4f6;
+        }
+
+        .section-title {
+          margin:24px 0 12px;
+          padding-top:18px;
+          border-top:1px solid #e5e7eb;
+          font-weight:700;
+          font-size:18px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="card">
+
+        <h1>Príprava – Disciplinárne rozhodnutie</h1>
+
+        <div class="info">
+          Údaje označené ako údaje RS APP sú predvyplnené z evidencie.
+          Chýbajúce identifikačné údaje doplní disciplinárna komisia.
+        </div>
+
+        <div class="section-title">
+          Identifikácia disciplinárne stíhanej osoby
+        </div>
+
+        <div class="field">
+          <label>Meno a priezvisko</label>
+        <input
+  id="docMeno"
+  class="readonly"
+  value="${escapeHtml(meno)}"
+  readonly
+>
+        </div>
+
+        <div class="field">
+          <label>Dátum narodenia</label>
+          <input
+            id="docDatumNarodenia"
+            type="date"
+          >
+        </div>
+
+        <div class="field">
+          <label>Trvalé bydlisko</label>
+          <input
+            id="docBydlisko"
+            type="text"
+          >
+        </div>
+
+        <div class="field">
+          <label>Spisová značka</label>
+          <input
+            id="docSpisovaZnacka"
+            type="text"
+          >
+        </div>
+
+<div class="field">
+  <label>Názov disciplinárneho orgánu</label>
+  <input
+    id="docDisciplinarnyOrgan"
+    type="text"
+    value="Disciplinárna komisia pri výbore MsO SRZ Sereď"
+  >
+</div>
+
+<div class="field">
+  <label>Miesto zasadnutia / vydania rozhodnutia</label>
+  <input
+    id="docMiestoRozhodnutia"
+    type="text"
+    value="Sereď"
+  >
+</div>
+
+<div class="field">
+  <label>Dátum zasadnutia / rozhodnutia</label>
+  <input
+    id="docDatumRozhodnutia"
+    type="date"
+    value="${document.getElementById('dkDatumPrerokovania')?.value || ''}"
+  >
+</div>
+
+<div class="field">
+  <label>Predseda disciplinárneho orgánu / poverená osoba</label>
+  <input
+    id="docPredseda"
+    type="text"
+    placeholder="Meno a priezvisko"
+  >
+</div>
+
+        <div class="section-title">
+          Skutok a podklady RS APP
+        </div>
+
+        <div class="field">
+          <label>Dátum kontroly</label>
+          <input
+            id="docDatumSkutku"
+            class="readonly"
+            value="${escapeHtml(datumSkutku)}"
+            readonly
+          >
+        </div>
+
+        <div class="field">
+          <label>Miesto / revír</label>
+          <input
+            id="docMiestoSkutku"
+            class="readonly"
+            value="${escapeHtml(miestoSkutku)}"
+            readonly
+          >
+        </div>
+
+        <div class="field">
+          <label>Typ priestupku</label>
+          <input
+            id="docTypPriestupku"
+            class="readonly"
+            value="${escapeHtml(typPriestupku)}"
+            readonly
+          >
+        </div>
+
+        <div class="field">
+          <label>Poznámka RS</label>
+          <textarea
+            id="docPoznamkaRs"
+            class="readonly"
+            rows="4"
+            readonly
+          >${escapeHtml(poznamkaRs)}</textarea>
+        </div>
+
+        <div class="section-title">
+          Údaje disciplinárnej komisie
+        </div>
+
+        <div class="field">
+          <label>Porušený predpis</label>
+          <input
+            id="docPorusenyPredpis"
+            class="readonly"
+            value="${escapeHtml(porusenyPredpis)}"
+            readonly
+          >
+        </div>
+
+        <div class="field">
+          <label>Konkrétne ustanovenie</label>
+          <input
+            id="docUstanovenie"
+            class="readonly"
+            value="${escapeHtml(ustanovenie)}"
+            readonly
+          >
+        </div>
+
+<div class="field">
+  <label>Stupeň disciplinárneho previnenia</label>
+  <input
+    id="docStupenPrevinenia"
+    class="readonly"
+    value="${escapeHtml(stupenPrevinenia)}"
+    readonly
+  >
+</div>
+
+        <div class="field">
+          <label>Disciplinárne opatrenie</label>
+        <input
+  id="docVysledok"
+  class="readonly"
+  value="${escapeHtml(vysledok)}"
+  readonly
+>
+        </div>
+
+        <div class="field">
+          <label>Výška pokuty (€)</label>
+        <input
+  id="docVyskaPokuty"
+  class="readonly"
+  value="${escapeHtml(String(vyskaPokuty))}"
+  readonly
+>
+        </div>
+
+        <div class="field">
+          <label>Doba opatrenia</label>
+          <input
+            id="docDobaOpatrenia"
+            class="readonly"
+            value="${escapeHtml(String(dobaOpatrenia))}"
+            readonly
+          >
+        </div>
+
+        <div class="field">
+          <label>Právne posúdenie</label>
+          <textarea
+            id="docPravnePosudenie"
+            class="readonly"
+            rows="4"
+            readonly
+          >${escapeHtml(pravnePosudenie)}</textarea>
+        </div>
+
+        <div class="field">
+          <label>Odôvodnenie / poznámka DK</label>
+          <textarea
+            id="docPoznamkaDk"
+            class="readonly"
+            rows="5"
+            readonly
+          >${escapeHtml(poznamkaDk)}</textarea>
+        </div>
+
+<div style="
+  margin-top:24px;
+  padding-top:18px;
+  border-top:1px solid #e5e7eb;
+">
+  <button
+    type="button"
+    onclick="window.opener.generateDkDisciplinarneRozhodnutie(this.ownerDocument)"
+    style="
+      width:100%;
+      padding:12px 16px;
+      border:0;
+      border-radius:8px;
+      background:#166534;
+      color:white;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    "
+  >
+    📄 Vytvoriť oficiálne disciplinárne rozhodnutie
+  </button>
+</div>
+
+      </div>
+    </body>
+    </html>
+  `);
+
+  preparationWindow.document.close();
+}
+
+function getDkOpatrenieLegalReference(stupen, vysledok) {
+  const map = {
+    'Menej závažné': {
+      'Upozornenie':
+        '§ 6 ods. 4 písm. a)',
+      'Peňažná pokuta':
+        '§ 6 ods. 4 písm. b)'
+    },
+
+    'Závažné': {
+      'Peňažná pokuta':
+        '§ 6 ods. 6 písm. a)',
+      'Odňatie povolenia na rybolov':
+        '§ 6 ods. 6 písm. b)',
+      'Nevydanie povolenia na rybolov':
+        '§ 6 ods. 6 písm. c)',
+      'Odňatie a nevydanie povolenia na rybolov':
+        '§ 6 ods. 6 písm. d)',
+      'Odvolanie zo zvolenej funkcie':
+        '§ 6 ods. 6 písm. e)'
+    },
+
+    'Hrubé': {
+      'Peňažná pokuta':
+        '§ 6 ods. 8 písm. a)',
+      'Nevydanie povolenia na rybolov':
+        '§ 6 ods. 8 písm. b)',
+      'Odňatie a nevydanie povolenia na rybolov':
+        '§ 6 ods. 8 písm. c)',
+      'Odvolanie zo zvolenej funkcie':
+        '§ 6 ods. 8 písm. d)'
+    },
+
+    'Mimoriadne hrubé': {
+      'Nevydanie povolenia na rybolov':
+        '§ 6 ods. 10 písm. a)',
+      'Odňatie a nevydanie povolenia na rybolov':
+        '§ 6 ods. 10 písm. b)',
+      'Dočasné vylúčenie z členstva SRZ':
+        '§ 6 ods. 10 písm. c)',
+      'Trvalé vylúčenie z členstva SRZ':
+        '§ 6 ods. 10 písm. e)',
+      'Odvolanie zo zvolenej funkcie':
+        '§ 6 ods. 10 písm. d)'
+    }
+  };
+
+  return map[stupen]?.[vysledok] || '';
+}
+
+function generateDkDisciplinarneRozhodnutie(sourceDocument) {
+  if (!sourceDocument) {
+    alert('Nepodarilo sa načítať údaje dokumentu.');
+    return;
+  }
+
+  const getValue = id =>
+    sourceDocument.getElementById(id)?.value?.trim() || '';
+
+const stupenPrevinenia =
+  getValue('docStupenPrevinenia');
+
+  const organ =
+    getValue('docDisciplinarnyOrgan');
+
+  const spisovaZnacka =
+    getValue('docSpisovaZnacka');
+
+  const datumNarodenia =
+    getValue('docDatumNarodenia');
+
+  const bydlisko =
+    getValue('docBydlisko');
+
+  const miestoRozhodnutia =
+    getValue('docMiestoRozhodnutia');
+
+  const datumRozhodnutia =
+    getValue('docDatumRozhodnutia');
+
+  const predseda =
+    getValue('docPredseda');
+
+const vysledokPreParagraf =
+  getValue('docVysledok');
+
+const opatrenieLegalReference =
+  getDkOpatrenieLegalReference(
+    stupenPrevinenia,
+    vysledokPreParagraf
+  );
+
+if (
+  vysledokPreParagraf &&
+  !opatrenieLegalReference
+) {
+  alert(
+    'Pre kombináciu stupňa disciplinárneho previnenia a opatrenia ' +
+    'sa nenašiel platný odkaz na § 6 DP SRZ.'
+  );
+  return;
+}
+
+  if (!organ) {
+    alert('Doplň názov disciplinárneho orgánu.');
+    return;
+  }
+
+  if (!spisovaZnacka) {
+    alert('Doplň spisovú značku.');
+    return;
+  }
+
+  if (!datumNarodenia) {
+    alert('Doplň dátum narodenia.');
+    return;
+  }
+
+  if (!bydlisko) {
+    alert('Doplň trvalé bydlisko.');
+    return;
+  }
+
+  if (!miestoRozhodnutia) {
+    alert('Doplň miesto rozhodnutia.');
+    return;
+  }
+
+  if (!datumRozhodnutia) {
+    alert('Doplň dátum rozhodnutia.');
+    return;
+  }
+
+  if (!predseda) {
+    alert('Doplň predsedu disciplinárneho orgánu.');
+    return;
+  }
+
+ const getReadonlyValue = id =>
+  sourceDocument.getElementById(id)?.value || '';
+
+const meno =
+  getReadonlyValue('docMeno');
+
+const datumSkutku =
+  getReadonlyValue('docDatumSkutku');
+
+const miestoSkutku =
+  getReadonlyValue('docMiestoSkutku');
+
+const typPriestupku =
+  getReadonlyValue('docTypPriestupku');
+
+const poznamkaRs =
+  getReadonlyValue('docPoznamkaRs');
+
+const porusenyPredpis =
+  getReadonlyValue('docPorusenyPredpis');
+
+const ustanovenie =
+  getReadonlyValue('docUstanovenie');
+
+const vysledok =
+  getReadonlyValue('docVysledok');
+
+const vyskaPokuty =
+  getReadonlyValue('docVyskaPokuty');
+
+const dobaOpatrenia =
+  getReadonlyValue('docDobaOpatrenia');
+
+const pravnePosudenie =
+  getReadonlyValue('docPravnePosudenie');
+
+const odovodnenie =
+  getReadonlyValue('docPoznamkaDk');
+
+  const formatDocDate = value => {
+    if (!value) return '';
+
+    const parts = value.split('-');
+
+    if (parts.length !== 3) {
+      return value;
+    }
+
+    return (
+      parts[2] + '.' +
+      parts[1] + '.' +
+      parts[0]
+    );
+  };
+
+  const datumNarodeniaText =
+    formatDocDate(datumNarodenia);
+
+  const datumRozhodnutiaText =
+    formatDocDate(datumRozhodnutia);
+
+  let opatrenieText =
+    vysledok || '';
+
+  if (
+    vysledok === 'Peňažná pokuta' &&
+    vyskaPokuty
+  ) {
+    opatrenieText +=
+      ' vo výške ' +
+      vyskaPokuty +
+      ' €';
+  }
+
+  if (
+    dobaOpatrenia &&
+    (
+      vysledok === 'Nevydanie povolenia na rybolov' ||
+      vysledok ===
+        'Odňatie a nevydanie povolenia na rybolov' ||
+      vysledok ===
+        'Dočasné vylúčenie z členstva SRZ'
+    )
+  ) {
+    opatrenieText +=
+      ' na dobu ' +
+      dobaOpatrenia +
+      ' rok/roky';
+  }
+
+const rozhodnutieWindow =
+  sourceDocument.defaultView;
+
+if (!rozhodnutieWindow) {
+  alert('Nepodarilo sa otvoriť náhľad dokumentu.');
+  return;
+}
+
+rozhodnutieWindow.document.open();
+
+  rozhodnutieWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>Disciplinárne rozhodnutie</title>
+
+<style>
+
+  @page {
+    size: A4;
+    margin: 18mm 20mm 18mm 20mm;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #e5e7eb;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.35;
+    color: #000;
+  }
+
+  .print-toolbar {
+    max-width: 210mm;
+    margin: 14px auto;
+    text-align: right;
+  }
+
+  .print-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font: 600 14px Arial, sans-serif;
+    cursor: pointer;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 20px;
+    background: #fff;
+    padding: 18mm 20mm;
+  }
+
+  .organ {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 18px;
+  }
+
+  .spis {
+    text-align: right;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 16pt;
+    letter-spacing: 1px;
+    margin: 20px 0 24px;
+  }
+
+  p {
+    margin: 0 0 12px;
+    text-align: justify;
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  .person {
+    margin-bottom: 18px;
+  }
+
+  .decision {
+    margin: 18px 0;
+  }
+
+  .measure {
+    text-align: center;
+    font-weight: bold;
+    margin: 20px 0;
+  }
+
+  .section-title {
+    font-weight: bold;
+    text-align: center;
+    margin: 22px 0 12px;
+  }
+
+  .signature {
+    width: 45%;
+    margin-left: auto;
+    margin-top: 45px;
+    text-align: center;
+  }
+
+  .signature-line {
+    margin-top: 42px;
+    border-top: 1px solid #000;
+    padding-top: 4px;
+  }
+
+  .stamp {
+    margin-top: 25px;
+    min-height: 35px;
+  }
+
+  .delivery {
+    margin-top: 30px;
+    font-size: 10.5pt;
+  }
+
+  @media print {
+
+    body {
+      background: #fff;
+    }
+
+    .print-toolbar {
+      display: none;
+    }
+
+    .page {
+      margin: 0;
+      padding: 0;
+      width: auto;
+      min-height: auto;
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="print-toolbar">
+  <button
+    type="button"
+    class="print-button"
+    onclick="window.print()"
+  >
+    🖨️ Vytlačiť / Uložiť PDF
+  </button>
+</div>
+
+<div class="page">
+
+  <div class="organ">
+    ${escapeHtml(organ)}
+  </div>
+
+  <div class="spis">
+    Spisová značka:
+    ${escapeHtml(spisovaZnacka)}
+  </div>
+
+  <h1>
+    DISCIPLINÁRNE ROZHODNUTIE
+  </h1>
+
+  <div class="person">
+
+    <p>
+      <strong>
+        Disciplinárne stíhaný:
+      </strong>
+      ${escapeHtml(meno)}
+    </p>
+
+    <p>
+      <strong>Dátum narodenia:</strong>
+      ${escapeHtml(datumNarodeniaText)}
+    </p>
+
+    <p>
+      <strong>Bydlisko:</strong>
+      ${escapeHtml(bydlisko)}
+    </p>
+
+  </div>
+
+  <p>
+    Disciplinárny orgán po prerokovaní veci
+    disciplinárne stíhaného rozhodol vo veci
+    disciplinárneho previnenia:
+    <strong>
+      ${escapeHtml(typPriestupku)}
+    </strong>.
+  </p>
+
+  <div class="decision">
+
+    <p>
+      Skutok bol zistený dňa
+      <strong>${escapeHtml(datumSkutku)}</strong>
+      v mieste
+      <strong>${escapeHtml(miestoSkutku)}</strong>.
+    </p>
+
+    <p>
+      <strong>Opis skutku:</strong><br>
+      ${escapeHtml(poznamkaRs)}
+    </p>
+
+    <p>
+      Tým došlo k porušeniu:
+      <strong>
+        ${escapeHtml(porusenyPredpis)}
+        ${escapeHtml(ustanovenie)}
+      </strong>.
+    </p>
+
+  </div>
+
+  <p class="center">
+    Za uvedené disciplinárne previnenie sa ukladá
+    disciplinárne opatrenie:
+  </p>
+
+  <div class="measure">
+  ${escapeHtml(opatrenieText)}
+  ${opatrenieLegalReference
+    ? '<br><span style="font-weight:normal;">podľa ' +
+      escapeHtml(opatrenieLegalReference) +
+      ' DP SRZ</span>'
+    : ''}
+</div>
+
+  <p>
+    Náhrada trov disciplinárneho konania:
+    <strong>30 €</strong>.
+  </p>
+
+  <div class="section-title">
+    Odôvodnenie
+  </div>
+
+  <p>
+    ${escapeHtml(
+      odovodnenie ||
+      pravnePosudenie ||
+      ''
+    )}
+  </p>
+
+  <div class="section-title">
+    Poučenie
+  </div>
+
+  <p>
+    Proti tomuto rozhodnutiu možno podať odvolanie
+    v lehote 15 dní odo dňa jeho doručenia.
+  </p>
+
+  <p>
+    Odvolanie sa podáva prostredníctvom
+    disciplinárneho orgánu, ktorý toto rozhodnutie
+    vydal.
+  </p>
+
+  <p style="margin-top:30px;">
+    V ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+  </p>
+
+  <div class="signature">
+
+    <div>
+      ${escapeHtml(predseda)}
+    </div>
+
+    <div>
+      predseda disciplinárneho orgánu
+    </div>
+
+    <div class="signature-line">
+      podpis
+    </div>
+
+    <div class="stamp">
+      pečiatka
+    </div>
+
+  </div>
+
+  <div class="delivery">
+    Rozhodnutie sa doručuje disciplinárne
+    stíhanému doporučene do vlastných rúk.
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  rozhodnutieWindow.document.close();
+}
+
+function updateDkOpatreniaPodlaStupna() {
+  const stupen =
+    document.getElementById('dkStupenPrevinenia')?.value || '';
+
+  const vysledokSelect =
+    document.getElementById('dkVysledok');
+
+  if (!vysledokSelect) return;
+
+const pokutaInput =
+  document.getElementById('dkVyskaPokuty');
+
+if (pokutaInput) {
+  pokutaInput.removeAttribute('max');
+
+  if (stupen === 'Menej závažné') {
+    pokutaInput.min = '0';
+    pokutaInput.max = '100';
+  }
+
+  if (stupen === 'Závažné') {
+    pokutaInput.min = '50';
+    pokutaInput.max = '300';
+  }
+
+  if (stupen === 'Hrubé') {
+    pokutaInput.min = '200';
+    pokutaInput.max = '500';
+  }
+}
+
+let povoleneOpatrenia = null;
+
+if (stupen === 'Menej závažné') {
+  povoleneOpatrenia = [
+    '',
+    'Upustenie od uloženia disciplinárneho opatrenia',
+    'Upozornenie',
+    'Peňažná pokuta',
+    'Oslobodenie',
+    'Zastavenie disciplinárneho konania'
+  ];
+}
+
+if (stupen === 'Závažné') {
+  povoleneOpatrenia = [
+    '',
+    'Upustenie od uloženia disciplinárneho opatrenia',
+    'Peňažná pokuta',
+    'Odňatie povolenia na rybolov',
+    'Nevydanie povolenia na rybolov',
+    'Odňatie a nevydanie povolenia na rybolov',
+    'Odvolanie zo zvolenej funkcie',
+    'Oslobodenie',
+    'Zastavenie disciplinárneho konania'
+  ];
+}
+
+if (stupen === 'Hrubé') {
+  povoleneOpatrenia = [
+    '',
+    'Upustenie od uloženia disciplinárneho opatrenia',
+    'Peňažná pokuta',
+    'Nevydanie povolenia na rybolov',
+    'Odňatie a nevydanie povolenia na rybolov',
+    'Odvolanie zo zvolenej funkcie',
+    'Oslobodenie',
+    'Zastavenie disciplinárneho konania'
+  ];
+}
+
+if (stupen === 'Mimoriadne hrubé') {
+  povoleneOpatrenia = [
+    '',
+    'Upustenie od uloženia disciplinárneho opatrenia',
+    'Nevydanie povolenia na rybolov',
+    'Odňatie a nevydanie povolenia na rybolov',
+    'Odvolanie zo zvolenej funkcie',
+    'Dočasné vylúčenie z členstva SRZ',
+    'Trvalé vylúčenie z členstva SRZ',
+    'Oslobodenie',
+    'Zastavenie disciplinárneho konania'
+  ];
+}
+
+if (!povoleneOpatrenia) {
+  Array.from(vysledokSelect.options).forEach(option => {
+    option.hidden = false;
+    option.disabled = false;
+  });
+
+  return;
+}
+
+  Array.from(vysledokSelect.options).forEach(option => {
+    const jePovolene =
+      povoleneOpatrenia.includes(option.value);
+
+    option.hidden = !jePovolene;
+    option.disabled = !jePovolene;
+  });
+
+  if (
+    !povoleneOpatrenia.includes(vysledokSelect.value)
+  ) {
+    vysledokSelect.value = '';
+    toggleDkDoplnkovePolia();
+  }
 }
 
 
@@ -17885,13 +19305,13 @@ function toggleDkDoplnkovePolia() {
   }
 
   // Opatrenia súvisiace s povolením na rybolov
-  if (
-    vysledok === 'Odňatie povolenia na rybolov' ||
-    vysledok === 'Nevydanie povolenia na rybolov' ||
-    vysledok === 'Odňatie a nevydanie povolenia na rybolov'
-  ) {
-    dobaBox.classList.remove('hidden');
-  }
+if (
+  vysledok === 'Nevydanie povolenia na rybolov' ||
+  vysledok === 'Odňatie a nevydanie povolenia na rybolov' ||
+  vysledok === 'Dočasné vylúčenie z členstva SRZ'
+) {
+  dobaBox.classList.remove('hidden');
+}
 }
 
 async function uploadDisciplinarneDokumenty(checkId, files) {
@@ -17946,6 +19366,11 @@ async function uploadDisciplinarneDokumenty(checkId, files) {
 async function saveDisciplinarneRiesenie() {
   if (!ensureLogged()) return;
 
+  if (getDkAccessLevel() !== 'EDIT') {
+    alert('Riešenie disciplinárneho prípadu môže upravovať iba člen disciplinárnej komisie.');
+    return;
+  }
+
   const checkId =
     document.getElementById('dkCheckId')?.value || '';
 
@@ -17976,6 +19401,51 @@ async function saveDisciplinarneRiesenie() {
   const pravnePosudenie =
     document.getElementById('dkPravnePosudenie')?.value.trim() || null;
 
+const zavinenie =
+  document.getElementById('dkZavinenie')?.value || null;
+
+const vzniklaSkodaRaw =
+  document.getElementById('dkVzniklaSkoda')?.value || '';
+
+const vzniklaSkoda =
+  vzniklaSkodaRaw === 'ano'
+    ? true
+    : vzniklaSkodaRaw === 'nie'
+      ? false
+      : null;
+
+const predchadzajuceOpatrenieRaw =
+  document.getElementById('dkPredchadzajuceOpatrenie')?.value || '';
+
+const predchadzajuceOpatrenie =
+  predchadzajuceOpatrenieRaw === 'ano'
+    ? true
+    : predchadzajuceOpatrenieRaw === 'nie'
+      ? false
+      : null;
+
+const polahcujuceOkolnostiRaw =
+  document.getElementById('dkPolahcujuceOkolnosti')?.value.trim() || '';
+
+const polahcujuceOkolnosti =
+  polahcujuceOkolnostiRaw
+    ? polahcujuceOkolnostiRaw
+        .split('\n')
+        .map(item => item.trim())
+        .filter(Boolean)
+    : null;
+
+const pritazujuceOkolnostiRaw =
+  document.getElementById('dkPritazujuceOkolnosti')?.value.trim() || '';
+
+const pritazujuceOkolnosti =
+  pritazujuceOkolnostiRaw
+    ? pritazujuceOkolnostiRaw
+        .split('\n')
+        .map(item => item.trim())
+        .filter(Boolean)
+    : null;
+
   const poznamkaDk =
     document.getElementById('dkPoznamka')?.value.trim() || null;
 
@@ -17993,6 +19463,146 @@ const dokumentFiles =
     vyskaPokutyRaw !== ''
       ? Number(vyskaPokutyRaw)
       : null;
+
+if (
+  vysledokRiesenia === 'Peňažná pokuta' &&
+  stupenPrevinenia === 'Menej závažné'
+) {
+  if (
+    vyskaPokuty === null ||
+    !Number.isFinite(vyskaPokuty) ||
+    vyskaPokuty < 0 ||
+    vyskaPokuty > 100
+  ) {
+    alert(
+      'Pri stupni „Menej závažné“ môže byť peňažná pokuta najviac 100 €.'
+    );
+    return;
+  }
+}
+
+if (
+  vysledokRiesenia === 'Peňažná pokuta' &&
+  stupenPrevinenia === 'Závažné'
+) {
+  if (
+    vyskaPokuty === null ||
+    !Number.isFinite(vyskaPokuty) ||
+    vyskaPokuty < 50 ||
+    vyskaPokuty > 300
+  ) {
+    alert(
+      'Pri stupni „Závažné“ môže byť peňažná pokuta od 50 € do 300 €.'
+    );
+    return;
+  }
+}
+
+if (
+  vysledokRiesenia === 'Peňažná pokuta' &&
+  stupenPrevinenia === 'Hrubé'
+) {
+  if (
+    vyskaPokuty === null ||
+    !Number.isFinite(vyskaPokuty) ||
+    vyskaPokuty < 200 ||
+    vyskaPokuty > 500
+  ) {
+    alert(
+      'Pri stupni „Hrubé“ môže byť peňažná pokuta od 200 € do 500 €.'
+    );
+    return;
+  }
+}
+
+if (
+  stupenPrevinenia === 'Závažné' &&
+  (
+    vysledokRiesenia === 'Nevydanie povolenia na rybolov' ||
+    vysledokRiesenia === 'Odňatie a nevydanie povolenia na rybolov'
+  )
+) {
+  const dobaOpatreniaRoky =
+    Number(dobaOpatrenia);
+
+  if (
+    dobaOpatrenia === null ||
+    !Number.isInteger(dobaOpatreniaRoky) ||
+    dobaOpatreniaRoky < 1 ||
+    dobaOpatreniaRoky > 2
+  ) {
+    alert(
+      'Pri stupni „Závažné“ môže byť toto opatrenie uložené najviac na 2 roky.'
+    );
+    return;
+  }
+}
+
+if (
+  stupenPrevinenia === 'Hrubé' &&
+  (
+    vysledokRiesenia === 'Nevydanie povolenia na rybolov' ||
+    vysledokRiesenia === 'Odňatie a nevydanie povolenia na rybolov'
+  )
+) {
+  const dobaOpatreniaRoky =
+    Number(dobaOpatrenia);
+
+  if (
+    dobaOpatrenia === null ||
+    !Number.isInteger(dobaOpatreniaRoky) ||
+    dobaOpatreniaRoky < 1 ||
+    dobaOpatreniaRoky > 3
+  ) {
+    alert(
+      'Pri stupni „Hrubé“ môže byť toto opatrenie uložené najviac na 3 roky.'
+    );
+    return;
+  }
+}
+
+if (
+  stupenPrevinenia === 'Mimoriadne hrubé' &&
+  (
+    vysledokRiesenia === 'Nevydanie povolenia na rybolov' ||
+    vysledokRiesenia === 'Odňatie a nevydanie povolenia na rybolov'
+  )
+) {
+  const dobaOpatreniaRoky =
+    Number(dobaOpatrenia);
+
+  if (
+    dobaOpatrenia === null ||
+    !Number.isInteger(dobaOpatreniaRoky) ||
+    dobaOpatreniaRoky < 1 ||
+    dobaOpatreniaRoky > 3
+  ) {
+    alert(
+      'Pri stupni „Mimoriadne hrubé“ môže byť toto opatrenie uložené najviac na 3 roky.'
+    );
+    return;
+  }
+}
+
+if (
+  stupenPrevinenia === 'Mimoriadne hrubé' &&
+  vysledokRiesenia === 'Dočasné vylúčenie z členstva SRZ'
+) {
+  const dobaOpatreniaRoky =
+    Number(dobaOpatrenia);
+
+  if (
+    dobaOpatrenia === null ||
+    !Number.isInteger(dobaOpatreniaRoky) ||
+    dobaOpatreniaRoky < 1 ||
+    dobaOpatreniaRoky > 5
+  ) {
+    alert(
+      'Pri dočasnom vylúčení z členstva SRZ môže byť doba opatrenia najviac 5 rokov.'
+    );
+    return;
+  }
+}
 
   const currentUser = getCurrentUser();
 
@@ -18027,6 +19637,11 @@ if (dokumentFiles.length > 0) {
     vyska_pokuty: vyskaPokuty,
     doba_opatrenia: dobaOpatrenia,
     stupen_previnenia: stupenPrevinenia,
+    zavinenie: zavinenie,
+    vznikla_skoda: vzniklaSkoda,
+    predchadzajuce_opatrenie: predchadzajuceOpatrenie,
+    polahcujuce_okolnosti: polahcujuceOkolnosti,
+    pritazujuce_okolnosti: pritazujuceOkolnosti,
     poruseny_predpis: porusenyPredpis,
     ustanovenie: ustanovenie,
     pravne_posudenie: pravnePosudenie,
@@ -18112,7 +19727,9 @@ try {
   );
 }
 
-  alert('Riešenie disciplinárnej komisie bolo uložené.');
+alert('Riešenie disciplinárnej komisie bolo uložené.');
+
+closeDisciplinarnyPripadModal();
 }
 
 function openAsistentPlaceholder(title) {
@@ -25874,7 +27491,17 @@ async function loadMembersForLogin() {
       throw membersError;
     }
 
+    const { data: rolesData, error: rolesError } = await db
+      .from('member_app_roles')
+      .select('member_id, role_code')
+      .order('member_id', { ascending: true });
+
+    if (rolesError) {
+      throw rolesError;
+    }
+
     appState.data.members = membersData || [];
+    appState.data.memberAppRoles = rolesData || [];
     appState.offlineMode = false;
 
     // Uložíme posledný funkčný snapshot pre ďalší výpadok.
@@ -25883,8 +27510,13 @@ async function loadMembersForLogin() {
         'rs_app_members_cache',
         JSON.stringify(appState.data.members)
       );
+
+      localStorage.setItem(
+        'rs_app_member_roles_cache',
+        JSON.stringify(appState.data.memberAppRoles)
+      );
     } catch (cacheError) {
-      console.warn('Members cache sa nepodarilo uložiť:', cacheError);
+      console.warn('Members/roles cache sa nepodarilo uložiť:', cacheError);
     }
 
     console.log(
@@ -25892,20 +27524,31 @@ async function loadMembersForLogin() {
       appState.data.members.length
     );
 
+    console.log(
+      'APP role načítané:',
+      appState.data.memberAppRoles.length
+    );
+
   } catch (error) {
     console.warn(
-      'Supabase members nedostupní – aktivujem núdzový režim:',
+      'Supabase members/roles nedostupní – aktivujem núdzový režim:',
       error
     );
 
     let cachedMembers = [];
+    let cachedRoles = [];
 
     try {
       cachedMembers = JSON.parse(
         localStorage.getItem('rs_app_members_cache') || '[]'
       );
+
+      cachedRoles = JSON.parse(
+        localStorage.getItem('rs_app_member_roles_cache') || '[]'
+      );
     } catch (cacheError) {
       cachedMembers = [];
+      cachedRoles = [];
     }
 
     if (Array.isArray(cachedMembers) && cachedMembers.length > 0) {
@@ -25914,11 +27557,19 @@ async function loadMembersForLogin() {
       appState.data.members = EMERGENCY_RS_MEMBERS;
     }
 
+    appState.data.memberAppRoles =
+      Array.isArray(cachedRoles) ? cachedRoles : [];
+
     appState.offlineMode = true;
 
     console.warn(
       'RS App beží v núdzovom režime. Počet členov:',
       appState.data.members.length
+    );
+
+    console.warn(
+      'APP role z lokálnej cache:',
+      appState.data.memberAppRoles.length
     );
   }
 }
@@ -26946,6 +28597,7 @@ async function showCheckDetail(id) {
       .select(`
         id,
         created_at,
+        created_by_member_id,
         check_date,
         fisher_name,
         fisher_id_no,
@@ -27131,6 +28783,32 @@ if (Array.isArray(item.photos)) {
     }).join('')
   : '<div class="muted">Bez fotiek.</div>';
 
+const currentUserId = Number(appState.currentUserId);
+const checkAuthorId = Number(item.created_by_member_id);
+
+const checkCreatedAt = new Date(item.created_at);
+const editDeadline = new Date(
+  checkCreatedAt.getTime() + (72 * 60 * 60 * 1000)
+);
+
+const canEditCheck =
+  Number.isFinite(currentUserId) &&
+  Number.isFinite(checkAuthorId) &&
+  currentUserId === checkAuthorId &&
+  !isNaN(checkCreatedAt.getTime()) &&
+  new Date() <= editDeadline;
+
+const editCheckButtonHtml = canEditCheck
+  ? `
+      <button
+        class="btn-primary"
+        style="margin-top:12px;"
+        onclick="openEditCheckModal('${item.id}')">
+        Upraviť kontrolu
+      </button>
+    `
+  : '';
+
   body.innerHTML = `
     <div class="item">
       <h3 style="margin-top:0;">${meno}</h3>
@@ -27148,12 +28826,7 @@ if (Array.isArray(item.photos)) {
      <p><strong>Fotky:</strong></p>
       <div>${photosHtml}</div>
 
-      <button
-        class="btn-primary"
-        style="margin-top:12px;"
-        onclick="openEditCheckModal('${item.id}')">
-        Upraviť kontrolu
-      </button>
+  ${editCheckButtonHtml}
     </div>
   `;
 
@@ -27169,6 +28842,7 @@ async function openEditCheckModal(id, preserveRemovedPhotos = false) {
       .select(`
         id,
         created_at,
+        created_by_member_id,
         check_date,
         fisher_name,
         fisher_id_no,
@@ -27208,6 +28882,33 @@ async function openEditCheckModal(id, preserveRemovedPhotos = false) {
     alert('Kontrola sa nenašla.');
     return;
   }
+
+const currentUserId = Number(appState.currentUserId);
+const checkAuthorId = Number(item.created_by_member_id);
+
+const checkCreatedAt = new Date(item.created_at);
+const editDeadline = new Date(
+  checkCreatedAt.getTime() + (72 * 60 * 60 * 1000)
+);
+
+const isCheckAuthor =
+  Number.isFinite(currentUserId) &&
+  Number.isFinite(checkAuthorId) &&
+  currentUserId === checkAuthorId;
+
+const isWithinEditWindow =
+  !isNaN(checkCreatedAt.getTime()) &&
+  new Date() <= editDeadline;
+
+if (!isCheckAuthor) {
+  alert('Túto kontrolu nemôžete upraviť.');
+  return;
+}
+
+if (!isWithinEditWindow) {
+  alert('Lehota 3 dní na úpravu tejto kontroly už uplynula.');
+  return;
+}
 
   if (!preserveRemovedPhotos) {
   window.editCheckRemovedPhotos = [];
@@ -27836,11 +29537,11 @@ function openGroupActionModal() {
 
   const currentUserId = String(appState.currentUserId || '');
 
- const members = (appState.data.members || [])
-  .filter(member =>
-    String(member.id) !== currentUserId &&
-    normalize(member.role || '').includes(normalize('Clen RS'))
-  );
+  const members = (appState.data.members || [])
+    .filter(member =>
+      String(member.id) !== currentUserId &&
+      normalize(member.status || '') === normalize('Aktívny')
+    );
 
   list.innerHTML = members.map(member => `
     <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
@@ -28038,11 +29739,11 @@ function toggleGroupMembersBox() {
   if (checkbox.checked) {
     const currentUserId = String(appState.currentUserId || '');
 
-  const members = (appState.data.members || [])
-  .filter(member =>
-    String(member.id) !== currentUserId &&
-    normalize(member.status || '') === normalize('Aktívny')
-  );
+    const members = (appState.data.members || [])
+      .filter(member =>
+        String(member.id) !== currentUserId &&
+        normalize(member.status || '') === normalize('Aktívny')
+      );
 
     list.innerHTML = members.map(member => `
       <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
