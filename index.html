@@ -1276,6 +1276,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
   grid-column: span 3;
 
@@ -1297,6 +1298,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
   border-color: #bcd2c2;
 
@@ -1312,6 +1314,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
   width: 40px;
   height: 40px;
@@ -1337,6 +1340,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
   margin: 0;
 
@@ -1475,6 +1479,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
     grid-column: span 1;
 
@@ -1491,6 +1496,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
     width: 34px;
     height: 34px;
@@ -1506,6 +1512,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
     font-size: 13px;
   }
@@ -1526,6 +1533,7 @@
 #mainMenuSection .card-statistiky,
 #mainMenuSection .card-reporty,
 #mainMenuSection .card-info-velitela,
+#mainMenuSection .card-revir-zistenia,
 #mainMenuSection .card-dk {
   grid-column: span 3;
   width: auto;
@@ -1542,6 +1550,7 @@
   #mainMenuSection .card-statistiky,
   #mainMenuSection .card-reporty,
   #mainMenuSection .card-info-velitela,
+  #mainMenuSection .card-revir-zistenia,
   #mainMenuSection .card-dk {
     grid-column: span 1;
     width: auto;
@@ -3429,6 +3438,35 @@ button:disabled,
 </div>
 
 <div
+  id="revirZisteniaCard"
+  class="card card-revir-zistenia"
+  onclick="openRevirZisteniaModule()"
+>
+  <div class="card-icon">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 22c4-4 7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 3 8 7 12Z"/>
+      <circle cx="12" cy="10" r="2"/>
+    </svg>
+  </div>
+
+  <h3>Zistenia na revíroch</h3>
+
+  <div class="muted small">
+    Evidencia ochrany a stavu revírov
+  </div>
+</div>
+
+<div
   id="infoVelitelaCard"
   class="card card-info-velitela hidden"
   onclick="openInfoVelitelaModule()"
@@ -3499,6 +3537,68 @@ button:disabled,
         ← Späť do hlavného menu
     </button>
 </div>
+
+<!-- =====================================================
+     ZISTENIA NA REVÍROCH
+     ===================================================== -->
+<div id="revirZisteniaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">🌿 Zistenia na revíroch</h2>
+
+      <div class="muted small">
+        Evidencia ochrany a stavu revírov
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="card"
+    style="
+      margin:16px auto 0 auto;
+      max-width:900px;
+    "
+  >
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        flex-wrap:wrap;
+      "
+    >
+      <div>
+        <h3 style="margin:0;">Evidované zistenia</h3>
+
+        <div class="muted small" style="margin-top:4px;">
+          Nahlásené udalosti a zistenia na revíroch
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn-primary"
+        disabled
+        title="Funkciu doplníme v ďalšom kroku"
+      >
+        + Nahlásiť zistenie
+      </button>
+    </div>
+
+    <div
+      id="revirZisteniaList"
+      style="margin-top:16px;"
+    >
+      <div class="empty">
+        Zatiaľ nie sú evidované žiadne zistenia na revíroch.
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- KONIEC ZISTENIA NA REVÍROCH -->
 
 <div id="sluzobneVozidlaSection" class="hidden">
 
@@ -15380,6 +15480,8 @@ function showMainMenu() {
 
 document.getElementById('infoVelitelaSection')?.classList.add('hidden');
 
+document.getElementById('revirZisteniaSection')?.classList.add('hidden');
+
 updateInfoVelitelaAccess();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -20157,6 +20259,88 @@ console.timeEnd('REPORTY - loadStatsChecks');
     .scrollIntoView({ behavior: 'smooth' });
 }
 
+async function openRevirZisteniaModule() {
+  const section =
+    document.getElementById('revirZisteniaSection');
+
+  if (!section) {
+    console.error(
+      'Zistenia na revíroch: sekcia revirZisteniaSection nebola nájdená.'
+    );
+    return;
+  }
+
+  document
+    .getElementById('mainMenuSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('backToMenuSection')
+    ?.classList.remove('hidden');
+
+  document
+    .getElementById('appSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('dashboardSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('legacyTabs')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('asistentRSSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('appOverviewSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('dashboardCardsSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('graphsOnlySection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('filterSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('disciplinarnaKomisiaSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('sluzobneVozidlaSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('infoVelitelaSection')
+    ?.classList.add('hidden');
+
+  section.classList.remove('hidden');
+
+try {
+  await loadRevirZistenia();
+
+renderRevirZistenia();
+} catch (error) {
+  console.error(
+    'Zistenia na revíroch – načítanie dát zlyhalo:',
+    error
+  );
+}
+
+  section.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
 async function openInfoVelitelaModule() {
 
   // Bezpečnostná kontrola aj pri ručnom zavolaní funkcie.
@@ -20870,35 +21054,35 @@ services.forEach(service => {
   const typSluzby =
     String(service.typ_sluzby || '').trim();
 
-  switch (enviroTyp) {
-    case 'Čierna skládka / odpad':
-      ochranaRevirov.ciernaSkladka++;
-      break;
+switch (enviroTyp) {
+  case 'cierna_skladka':
+    ochranaRevirov.ciernaSkladka++;
+    break;
 
-    case 'Nepovolená stavba':
-      ochranaRevirov.nepovolenaStavba++;
-      break;
+  case 'nepovolena_stavba':
+    ochranaRevirov.nepovolenaStavba++;
+    break;
 
-    case 'Nepovolený pontón / mólo':
-      ochranaRevirov.nepovolenyPonton++;
-      break;
+  case 'nepovoleny_ponton_molo':
+    ochranaRevirov.nepovolenyPonton++;
+    break;
 
-    case 'Poškodenie brehu':
-      ochranaRevirov.poskodenieBrehu++;
-      break;
+  case 'poskodenie_brehu':
+    ochranaRevirov.poskodenieBrehu++;
+    break;
 
-    case 'Znečistenie vody':
-      ochranaRevirov.znecistenieVody++;
-      break;
+  case 'znecistenie_vody':
+    ochranaRevirov.znecistenieVody++;
+    break;
 
-    case 'Úhyn rýb':
-      ochranaRevirov.uhynRyb++;
-      break;
+  case 'uhyn_ryb':
+    ochranaRevirov.uhynRyb++;
+    break;
 
-    case 'Iný zásah do revíru':
-      ochranaRevirov.inyZasah++;
-      break;
-  }
+  case 'iny_zasah':
+    ochranaRevirov.inyZasah++;
+    break;
+}
 
   // Starší spôsob evidencie.
   // Použijeme ho iba vtedy, keď enviro_typ
@@ -27975,6 +28159,939 @@ async function loadSluzbyReviry() {
   }
 }
 
+async function loadRevirZistenia() {
+  try {
+    const { data, error } = await db
+      .from('revir_zistenia')
+      .select('*')
+      .order('datum_zistenia', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    appState.data.revirZistenia = data || [];
+
+    try {
+      localStorage.setItem(
+        'rs_app_revir_zistenia_cache',
+        JSON.stringify(appState.data.revirZistenia)
+      );
+    } catch (cacheError) {
+      console.warn(
+        'Cache zistení na revíroch sa nepodarilo uložiť:',
+        cacheError
+      );
+    }
+
+    console.log(
+      'Zistenia na revíroch – živé dáta načítané:',
+      appState.data.revirZistenia.length
+    );
+
+  } catch (error) {
+    console.warn(
+      'Zistenia na revíroch – Supabase nedostupný, používam cache:',
+      error
+    );
+
+    try {
+      const cached = JSON.parse(
+        localStorage.getItem('rs_app_revir_zistenia_cache') || '[]'
+      );
+
+      appState.data.revirZistenia =
+        Array.isArray(cached) ? cached : [];
+
+    } catch (cacheError) {
+      console.warn(
+        'Cache zistení na revíroch sa nepodarilo načítať:',
+        cacheError
+      );
+
+      appState.data.revirZistenia = [];
+    }
+  }
+}
+
+function getRevirZistenieTypeLabel(value) {
+  const labels = {
+    cierna_skladka: 'Čierna skládka / odpad',
+    nepovolena_stavba: 'Nepovolená stavba',
+    nepovoleny_ponton_molo: 'Nepovolený pontón / mólo',
+    poskodenie_brehu: 'Poškodenie brehu',
+    znecistenie_vody: 'Znečistenie vody',
+    uhyn_ryb: 'Úhyn rýb',
+    iny_zasah: 'Iný zásah do revíru'
+  };
+
+  const key = String(value || '').trim();
+
+  return labels[key] || key || '-';
+}
+
+function renderRevirZistenia() {
+  const container =
+    document.getElementById('revirZisteniaList');
+
+  if (!container) {
+    console.warn(
+      'Zistenia na revíroch: revirZisteniaList nebol nájdený.'
+    );
+    return;
+  }
+
+  const items =
+    Array.isArray(appState.data.revirZistenia)
+      ? appState.data.revirZistenia
+      : [];
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        Zatiaľ nie sú evidované žiadne zistenia na revíroch.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = items.map(item => `
+   <div
+  class="card"
+  style="margin:0 0 12px 0; cursor:pointer;"
+  onclick="openRevirZistenieDetail(${Number(item.id)})"
+>
+      <div>
+        <strong>${escapeHtml(item.revir || '-')}</strong>
+      </div>
+
+      <div class="muted small" style="margin-top:4px;">
+        ${escapeHtml(getRevirZistenieTypeLabel(item.typ_zistenia))}
+      </div>
+
+      <div style="margin-top:8px;">
+        ${escapeHtml(item.popis || '-')}
+      </div>
+
+      <div class="muted small" style="margin-top:8px;">
+        Stav: ${escapeHtml(item.stav || 'Nahlásené')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openRevirZistenieDetail(id) {
+  const items =
+    Array.isArray(appState.data.revirZistenia)
+      ? appState.data.revirZistenia
+      : [];
+
+  const item =
+    items.find(row => Number(row.id) === Number(id));
+
+  if (!item) {
+    console.warn(
+      'Zistenia na revíroch: záznam nebol nájdený.',
+      id
+    );
+
+    alert('Záznam zistenia sa nepodarilo nájsť.');
+    return;
+  }
+
+  const autor =
+    item.created_by_member_id
+      ? getMemberName(item.created_by_member_id)
+      : '-';
+
+  const datum =
+    item.datum_zistenia
+      ? new Date(item.datum_zistenia).toLocaleString('sk-SK')
+      : '-';
+
+  const photos =
+    Array.isArray(item.photos)
+      ? item.photos
+      : [];
+
+const canEdit =
+  Number(item.created_by_member_id) ===
+  Number(appState.currentUserId);
+
+  const overlay = document.createElement('div');
+
+  overlay.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+  `;
+
+  overlay.innerHTML = `
+    <div
+      style="
+        width:min(720px, 100%);
+        max-height:90vh;
+        overflow:auto;
+        background:#fff;
+        border-radius:18px;
+        padding:24px;
+        box-shadow:0 20px 60px rgba(0,0,0,.25);
+      "
+    >
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:16px;
+          margin-bottom:20px;
+        "
+      >
+        <div>
+          <h2 style="margin:0;">
+            Detail zistenia
+          </h2>
+
+          <div
+            class="muted small"
+            style="margin-top:4px;"
+          >
+            Evidencia ochrany a stavu revíru
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="closeRevirZistenieDetail"
+          style="
+            border:0;
+            background:#eee;
+            border-radius:10px;
+            padding:8px 12px;
+            cursor:pointer;
+            font-weight:700;
+          "
+        >
+          ✕
+        </button>
+      </div>
+
+      <div style="display:grid; gap:14px;">
+
+        <div>
+          <div class="muted small">Revír</div>
+          <strong>${escapeHtml(item.revir || '-')}</strong>
+        </div>
+
+        <div>
+          <div class="muted small">Typ zistenia</div>
+          <strong>${escapeHtml(getRevirZistenieTypeLabel(item.typ_zistenia))}</strong>
+        </div>
+
+        <div>
+          <div class="muted small">Dátum a čas zistenia</div>
+          <strong>${escapeHtml(datum)}</strong>
+        </div>
+
+        <div>
+          <div class="muted small">Nahlásil</div>
+          <strong>${escapeHtml(autor || '-')}</strong>
+        </div>
+
+        <div>
+          <div class="muted small">Popis</div>
+          <div>${escapeHtml(item.popis || '-')}</div>
+        </div>
+
+        <div>
+          <div class="muted small">Stav</div>
+          <strong>${escapeHtml(item.stav || 'Nahlásené')}</strong>
+        </div>
+
+        ${
+          item.poznamka_riesenia
+            ? `
+              <div>
+                <div class="muted small">
+                  Poznámka k riešeniu
+                </div>
+                <div>
+                  ${escapeHtml(item.poznamka_riesenia)}
+                </div>
+              </div>
+            `
+            : ''
+        }
+
+        <div>
+          <div class="muted small">
+            Fotografie
+          </div>
+
+       ${
+  photos.length > 0
+    ? `
+      <div
+        style="
+          display:grid;
+          grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+          gap:10px;
+          margin-top:8px;
+        "
+      >
+        ${photos.map(photo => `
+          <a
+            href="${escapeHtml(photo.dataUrl || '')}"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="
+              display:block;
+              text-decoration:none;
+            "
+          >
+            <img
+              src="${escapeHtml(photo.dataUrl || '')}"
+              alt="Fotografia zistenia"
+              loading="lazy"
+              style="
+                display:block;
+                width:100%;
+                height:120px;
+                object-fit:cover;
+                border-radius:10px;
+                border:1px solid #e5e7eb;
+              "
+            >
+          </a>
+        `).join('')}
+      </div>
+
+      <div
+        class="muted small"
+        style="margin-top:6px;"
+      >
+        Fotografie: ${photos.length}
+      </div>
+    `
+    : `
+      <div
+        class="muted"
+        style="margin-top:6px;"
+      >
+        K zisteniu zatiaľ nie sú pridané fotografie.
+      </div>
+    `
+}
+        </div>
+
+        ${
+          canEdit
+            ? `
+              <div
+                style="
+                  margin-top:8px;
+                  padding-top:16px;
+                  border-top:1px solid #e5e7eb;
+                "
+              >
+                <button
+                  type="button"
+                  id="editRevirZistenieButton"
+                  style="
+                    border:0;
+                    border-radius:10px;
+                    padding:10px 16px;
+                    cursor:pointer;
+                    font-weight:700;
+                  "
+                >
+                  Upraviť / Doplniť
+                </button>
+              </div>
+            `
+            : ''
+        }
+
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document
+    .getElementById('closeRevirZistenieDetail')
+    ?.addEventListener('click', () => {
+      overlay.remove();
+    });
+
+document
+  .getElementById('editRevirZistenieButton')
+  ?.addEventListener('click', () => {
+    openRevirZistenieEdit(item, overlay);
+  });
+
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) {
+      overlay.remove();
+    }
+  });
+
+  console.log(
+    'REVIR ZISTENIE – detail otvorený:',
+    item.id
+  );
+}
+
+function openRevirZistenieEdit(item, detailOverlay) {
+  if (!item) {
+    alert('Záznam zistenia sa nepodarilo načítať.');
+    return;
+  }
+
+  const canEdit =
+    Number(item.created_by_member_id) ===
+    Number(appState.currentUserId);
+
+  if (!canEdit) {
+    alert('Tento záznam nemôžete upravovať.');
+    return;
+  }
+
+  const overlay = document.createElement('div');
+
+  overlay.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10001;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+  `;
+
+  overlay.innerHTML = `
+    <div
+      style="
+        width:min(720px, 100%);
+        max-height:90vh;
+        overflow:auto;
+        background:#fff;
+        border-radius:18px;
+        padding:24px;
+        box-shadow:0 20px 60px rgba(0,0,0,.25);
+      "
+    >
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:16px;
+          margin-bottom:20px;
+        "
+      >
+        <div>
+          <h2 style="margin:0;">
+            Upraviť / Doplniť zistenie
+          </h2>
+
+          <div class="muted small" style="margin-top:4px;">
+            ${escapeHtml(item.revir || '-')}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="closeRevirZistenieEdit"
+          style="
+            border:0;
+            background:#eee;
+            border-radius:10px;
+            padding:8px 12px;
+            cursor:pointer;
+            font-weight:700;
+          "
+        >
+          ✕
+        </button>
+      </div>
+
+      <div style="display:grid; gap:16px;">
+
+        <div>
+          <label
+            for="editRevirZisteniePopis"
+            style="
+              display:block;
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+            Popis zistenia
+          </label>
+
+          <textarea
+            id="editRevirZisteniePopis"
+            rows="5"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:10px;
+              border:1px solid #d1d5db;
+              border-radius:10px;
+              resize:vertical;
+            "
+          >${escapeHtml(item.popis || '')}</textarea>
+        </div>
+
+        <div>
+          <label
+            for="editRevirZisteniePoznamka"
+            style="
+              display:block;
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+            Poznámka k riešeniu
+          </label>
+
+          <textarea
+            id="editRevirZisteniePoznamka"
+            rows="4"
+            placeholder="Doplňte priebeh alebo spôsob riešenia..."
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:10px;
+              border:1px solid #d1d5db;
+              border-radius:10px;
+              resize:vertical;
+            "
+          >${escapeHtml(item.poznamka_riesenia || '')}</textarea>
+        </div>
+
+        <div>
+          <label
+            for="editRevirZisteniePhotos"
+            style="
+              display:block;
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+            Fotografie
+          </label>
+
+          <input
+            type="file"
+            id="editRevirZisteniePhotos"
+            accept="image/*"
+            multiple
+            style="
+              width:100%;
+              box-sizing:border-box;
+            "
+          >
+
+          <div
+            id="editRevirZisteniePhotosInfo"
+            class="muted small"
+            style="margin-top:6px;"
+          >
+            Môžete vybrať jednu alebo viac fotografií.
+          </div>
+        </div>
+
+       <div>
+  <label
+    for="editRevirZistenieStav"
+    style="
+      display:block;
+      font-weight:700;
+      margin-bottom:6px;
+    "
+  >
+    Stav zistenia
+  </label>
+
+  <select
+    id="editRevirZistenieStav"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:10px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      background:#fff;
+    "
+  >
+    <option
+      value="Nahlásené"
+      ${item.stav === 'Nahlásené' ? 'selected' : ''}
+    >
+      Nahlásené
+    </option>
+
+    <option
+      value="V riešení"
+      ${item.stav === 'V riešení' ? 'selected' : ''}
+    >
+      V riešení
+    </option>
+
+    <option
+      value="Vyriešené"
+      ${item.stav === 'Vyriešené' ? 'selected' : ''}
+    >
+      Vyriešené
+    </option>
+  </select>
+</div>
+
+        <button
+          type="button"
+          id="saveRevirZistenieEdit"
+          
+          style="
+            border:0;
+            border-radius:10px;
+            padding:11px 16px;
+            font-weight:700;
+            cursor:pointer;
+          "
+        >
+          Uložiť zmeny
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document
+    .getElementById('closeRevirZistenieEdit')
+    ?.addEventListener('click', () => {
+      overlay.remove();
+    });
+
+document
+  .getElementById('saveRevirZistenieEdit')
+  ?.addEventListener('click', async () => {
+    const saveButton =
+      document.getElementById('saveRevirZistenieEdit');
+
+    const popis =
+      document
+        .getElementById('editRevirZisteniePopis')
+        ?.value
+        .trim() || '';
+
+    const poznamkaRiesenia =
+      document
+        .getElementById('editRevirZisteniePoznamka')
+        ?.value
+        .trim() || '';
+
+const stav =
+  document
+    .getElementById('editRevirZistenieStav')
+    ?.value || 'Nahlásené';
+
+    const photoInput =
+      document.getElementById('editRevirZisteniePhotos');
+
+    const newPhotoFiles =
+      photoInput?.files
+        ? Array.from(photoInput.files)
+        : [];
+
+    if (
+      Number(item.created_by_member_id) !==
+      Number(appState.currentUserId)
+    ) {
+      alert('Tento záznam nemôžete upravovať.');
+      return;
+    }
+
+    if (!popis) {
+      alert('Popis zistenia nemôže zostať prázdny.');
+      return;
+    }
+
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent =
+        newPhotoFiles.length > 0
+          ? 'Nahrávam fotografie...'
+          : 'Ukladám...';
+    }
+
+    try {
+      const existingPhotos =
+        Array.isArray(item.photos)
+          ? item.photos
+          : [];
+
+      let uploadedPhotos = [];
+
+      if (newPhotoFiles.length > 0) {
+        uploadedPhotos =
+          await uploadRevirZisteniePhotos(
+            item.id,
+            newPhotoFiles
+          );
+      }
+
+      const photos = [
+        ...existingPhotos,
+        ...uploadedPhotos
+      ];
+
+      if (saveButton) {
+        saveButton.textContent = 'Ukladám...';
+      }
+
+      const { data, error } = await db
+        .from('revir_zistenia')
+        .update({
+  popis: popis,
+  poznamka_riesenia:
+    poznamkaRiesenia || null,
+  photos: photos,
+  stav: stav,
+  datum_vyriesenia:
+    stav === 'Vyriešené'
+      ? (
+          item.stav === 'Vyriešené' &&
+          item.datum_vyriesenia
+            ? item.datum_vyriesenia
+            : new Date().toISOString()
+        )
+      : null
+})
+        .eq('id', item.id)
+        .eq(
+          'created_by_member_id',
+          appState.currentUserId
+        )
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const index =
+        appState.data.revirZistenia.findIndex(
+          row => Number(row.id) === Number(item.id)
+        );
+
+      if (index !== -1) {
+        appState.data.revirZistenia[index] = data;
+      }
+
+      console.log(
+        'REVIR ZISTENIE – úprava a fotografie uložené:',
+        data
+      );
+
+showSaveSuccess(
+  'Zistenie bolo úspešne uložené.'
+);
+
+      overlay.remove();
+
+      if (detailOverlay) {
+        detailOverlay.remove();
+      }
+
+      renderRevirZistenia();
+
+    } catch (error) {
+      console.error(
+        'REVIR ZISTENIE – uloženie úpravy zlyhalo:',
+        error
+      );
+
+      alert(
+        'Úpravu zistenia sa nepodarilo uložiť.'
+      );
+
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = 'Uložiť zmeny';
+      }
+    }
+  });
+
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) {
+      overlay.remove();
+    }
+  });
+
+  console.log(
+    'REVIR ZISTENIE – edit formulár otvorený:',
+    item.id
+  );
+}
+
+async function uploadRevirZisteniePhotos(zistenieId, files) {
+  const uploadedPhotos = [];
+
+  if (!zistenieId) {
+    throw new Error('Chýba ID zistenia.');
+  }
+
+  if (!files || files.length === 0) {
+    return uploadedPhotos;
+  }
+
+  for (const file of files) {
+    const uploadFile =
+      await resizeImageForUpload(file);
+
+    const fileName =
+      Date.now() +
+      '_' +
+      Math.random().toString(36).substring(2) +
+      '.jpg';
+
+    const filePath =
+      'zistenia/' +
+      zistenieId +
+      '/' +
+      fileName;
+
+    const { error } = await db.storage
+      .from('revir-zistenia-photos')
+      .upload(filePath, uploadFile);
+
+    if (error) {
+      console.error(
+        'REVIR ZISTENIE – chyba pri nahrávaní fotografie:',
+        error
+      );
+
+      throw error;
+    }
+
+    const { data } = db.storage
+      .from('revir-zistenia-photos')
+      .getPublicUrl(filePath);
+
+    uploadedPhotos.push({
+      name: uploadFile.name,
+      dataUrl: data.publicUrl,
+      path: filePath
+    });
+  }
+
+  console.log(
+    'REVIR ZISTENIE – fotografie nahrané:',
+    uploadedPhotos
+  );
+
+  return uploadedPhotos;
+}
+
+async function createRevirZistenieFromService(novaSluzba) {
+  if (!novaSluzba || !novaSluzba.id) {
+    return {
+      ok: false,
+      reason: 'MISSING_SERVICE'
+    };
+  }
+
+  const enviroTyp =
+    String(novaSluzba.enviro_typ || '').trim();
+
+  if (!enviroTyp) {
+    return {
+      ok: true,
+      created: false,
+      reason: 'NO_ENVIRO_FINDING'
+    };
+  }
+
+  const payload = {
+    created_by_member_id:
+      Number(appState.currentUserId) || null,
+
+    revir:
+      String(novaSluzba.revir || '').trim(),
+
+    datum_zistenia:
+      novaSluzba.zaciatok ||
+      novaSluzba.created_at ||
+      new Date().toISOString(),
+
+    typ_zistenia: enviroTyp,
+
+    popis:
+      String(novaSluzba.poznamka || '').trim(),
+
+    source_service_id:
+      Number(novaSluzba.id),
+
+    stav: 'Nahlásené'
+  };
+
+  try {
+    const { data, error } = await db
+      .from('revir_zistenia')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) {
+      console.warn(
+        'REVIR ZISTENIE – vytvorenie zlyhalo:',
+        error
+      );
+
+      return {
+        ok: false,
+        reason: 'INSERT_FAILED',
+        error
+      };
+    }
+
+    console.log(
+      'REVIR ZISTENIE – vytvorené:',
+      data
+    );
+
+    return {
+      ok: true,
+      created: true,
+      data
+    };
+
+  } catch (error) {
+    console.warn(
+      'REVIR ZISTENIE – výnimka:',
+      error
+    );
+
+    return {
+      ok: false,
+      reason: 'INSERT_EXCEPTION',
+      error
+    };
+  }
+}
+
 init();
 
 function showAllChecks() {
@@ -29936,6 +31053,30 @@ const trvanieMin = Math.floor(
 if (novaSluzba) {
   appState.data.sluzbyReviry = appState.data.sluzbyReviry || [];
   appState.data.sluzbyReviry.unshift(novaSluzba);
+}
+
+if (enviroTyp && novaSluzba) {
+  console.log(
+    'REVIR ZISTENIE – zdrojová služba pripravená:',
+    {
+      service_id: novaSluzba.id,
+      revir: novaSluzba.revir,
+      enviro_typ: enviroTyp,
+      created_by_member_id: appState.currentUserId
+    }
+  );
+}
+
+if (enviroTyp && novaSluzba) {
+  const revirZistenieResult =
+    await createRevirZistenieFromService(novaSluzba);
+
+  if (!revirZistenieResult.ok) {
+    console.warn(
+      'REVIR ZISTENIE – služba bola uložená, ale zistenie sa nepodarilo vytvoriť:',
+      revirZistenieResult
+    );
+  }
 }
 
 await refreshKontrolyData();
