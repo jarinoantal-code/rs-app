@@ -1,0 +1,22 @@
+
+name: RS APP - Legislation Radar
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    name: Safe diagnostic
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify GitHub Actions runner
+        run: |
+          echo "RS APP - Legislation Radar"
+          echo "GitHub Actions runner is working."
+          echo "No Supabase connection."
+          echo "No database writes."
+          echo "No legislation publication."
