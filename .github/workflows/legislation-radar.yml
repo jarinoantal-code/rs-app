@@ -8,15 +8,33 @@ permissions:
   contents: read
 
 jobs:
-  diagnostic:
-    name: Safe diagnostic
+  connectivity:
+    name: Supabase connectivity test
     runs-on: ubuntu-latest
+    timeout-minutes: 2
 
     steps:
-      - name: Verify GitHub Actions runner
+      - name: Verify Supabase Edge Function connectivity
+        shell: bash
         run: |
-          echo "RS APP - Legislation Radar"
-          echo "GitHub Actions runner is working."
-          echo "No Supabase connection."
-          echo "No database writes."
-          echo "No legislation publication."
+          set -euo pipefail
+
+          URL="https://jcxdlsoxgluuxifhzxxy.supabase.co/functions/v1/legislation-radar-scheduled"
+
+          STATUS=$(curl --silent --show-error \
+            --output /dev/null \
+            --write-out "%{http_code}" \
+            --max-time 20 \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data '{}' \
+            "$URL")
+
+          echo "HTTP status: $STATUS"
+
+          if [ "$STATUS" = "401" ]; then
+            echo "PASS - Supabase reachable, authorization required."
+          else
+            echo "FAIL - Unexpected HTTP status."
+            exit 1
+          fi
