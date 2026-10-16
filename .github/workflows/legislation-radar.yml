@@ -8,20 +8,20 @@ permissions:
 
 jobs:
   auth-test:
-    name: Supabase authorization diagnostic
+    name: Supabase scheduler token diagnostic
     runs-on: ubuntu-latest
     timeout-minutes: 3
 
     steps:
-      - name: Verify authorized connection
+      - name: Verify scheduler authorization
         shell: bash
         env:
-          RADAR_SERVICE_KEY: ${{ secrets.RS_LEGISLATION_RADAR_SERVICE_KEY }}
+          SCHEDULER_TOKEN: ${{ secrets.RS_LEGISLATION_SCHEDULER_TOKEN }}
         run: |
           set -euo pipefail
 
-          if [ -z "$RADAR_SERVICE_KEY" ]; then
-            echo "FAIL - GitHub Secret is missing."
+          if [ -z "$SCHEDULER_TOKEN" ]; then
+            echo "FAIL - Scheduler token missing."
             exit 1
           fi
 
@@ -32,8 +32,7 @@ jobs:
             --write-out "%{http_code}" \
             --max-time 30 \
             --request POST \
-            --header "Authorization: Bearer $RADAR_SERVICE_KEY" \
-            --header "apikey: $RADAR_SERVICE_KEY" \
+            --header "x-rs-scheduler-token: $SCHEDULER_TOKEN" \
             --header "x-rs-radar-test: auth_test" \
             --header "Content-Type: application/json" \
             --data '{}' \
@@ -44,25 +43,24 @@ jobs:
           python3 - <<'PY'
           import json
 
-          try:
-              with open("response.json", encoding="utf-8") as f:
-                  data = json.load(f)
+          with open("response.json", encoding="utf-8") as f:
+              data = json.load(f)
 
-              if not isinstance(data, dict):
-                  print("Response is not a JSON object.")
-              else:
-                  print("Error code:", data.get("code", "not provided"))
-                  print("Error type:", data.get("error", "not provided"))
-                  print("Auth test:", data.get("auth_test", "not provided"))
-                  print("Radar executed:", data.get("radar_executed", "not provided"))
-                  print("Database write:", data.get("database_write", "not provided"))
-          except Exception:
-              print("Response could not be parsed.")
+          if (
+              data.get("ok") is True
+              and data.get("auth_test") is True
+              and data.get("authorization") == "scheduler_token"
+              and data.get("radar_executed") is False
+              and data.get("database_write") is False
+          ):
+              print("PASS - Scheduler token authorized.")
+          else:
+              print("FAIL - Unexpected diagnostic response.")
+              print("Error code:", data.get("code", "not provided"))
+              raise SystemExit(1)
           PY
 
-          if [ "$HTTP_STATUS" = "200" ]; then
-            echo "PASS - Authorization diagnostic successful."
-          else
-            echo "FAIL - Authorization diagnostic unsuccessful."
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "FAIL - HTTP status is not 200."
             exit 1
           fi
