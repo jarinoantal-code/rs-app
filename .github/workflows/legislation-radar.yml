@@ -8,33 +8,43 @@ permissions:
   contents: read
 
 jobs:
-  connectivity:
-    name: Supabase connectivity test
+  auth-test:
+    name: Supabase authorization test
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
 
     steps:
-      - name: Verify Supabase Edge Function connectivity
+      - name: Verify authorized connection
         shell: bash
+        env:
+          RADAR_SERVICE_KEY: ${{ secrets.RS_LEGISLATION_RADAR_SERVICE_KEY }}
         run: |
           set -euo pipefail
+
+          if [ -z "$RADAR_SERVICE_KEY" ]; then
+            echo "FAIL - GitHub Secret is missing."
+            exit 1
+          fi
 
           URL="https://jcxdlsoxgluuxifhzxxy.supabase.co/functions/v1/legislation-radar-scheduled"
 
           STATUS=$(curl --silent --show-error \
             --output /dev/null \
             --write-out "%{http_code}" \
-            --max-time 20 \
+            --max-time 30 \
             --request POST \
+            --header "Authorization: Bearer $RADAR_SERVICE_KEY" \
+            --header "apikey: $RADAR_SERVICE_KEY" \
+            --header "x-rs-radar-test: auth_test" \
             --header "Content-Type: application/json" \
             --data '{}' \
             "$URL")
 
           echo "HTTP status: $STATUS"
 
-          if [ "$STATUS" = "401" ]; then
-            echo "PASS - Supabase reachable, authorization required."
+          if [ "$STATUS" = "200" ]; then
+            echo "PASS - Authorized Supabase connection."
           else
-            echo "FAIL - Unexpected HTTP status."
+            echo "FAIL - Authorization test returned HTTP $STATUS."
             exit 1
           fi
