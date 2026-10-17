@@ -4823,13 +4823,6 @@ button:disabled,
   </div>
 
 <div class="card" style="margin-top:15px;">
-  <h3>🔎 Legislatívny radar – diagnostika</h3>
-  <p class="muted small">Ručná kontrola zdrojov bez zápisu do databázy. Režim zápisu nie je z tohto tlačidla dostupný.</p>
-  <button type="button" id="adminRadarDiagnosticButton" onclick="runAdminLegislationRadarDiagnostic()">Skontrolovať legislatívu teraz</button>
-  <div id="adminRadarDiagnosticStatus" class="muted small" role="status" aria-live="polite" style="margin-top:10px;">Kontrola ešte nebola spustená.</div>
-</div>
-
-<div class="card" style="margin-top:15px;">
   <h3>📚 Evidované právne dokumenty</h3>
 
 <div id="adminLegislativaAlerts"
@@ -11933,7 +11926,6 @@ if (
   container.classList.add('hidden');
   container.replaceChildren();
   delete container.dataset.documentId;
-  document.getElementById('adminLegislativaDocuments')?.classList.remove('hidden');
   return;
 }
 
@@ -11976,158 +11968,6 @@ container.classList.remove('hidden');
   const heading = document.createElement('h3');
   heading.textContent = '📖 ' + documentTitle;
   container.appendChild(heading);
-
-  // RS APP 168Q.231 – isolated manual document publication PREVIEW.
-  // Documents 3/4/5 only. No RPC, Edge Function call or database write.
-  if ([3, 4, 5].includes(Number(documentId))) {
-    const manualBox = document.createElement('section');
-    manualBox.style.cssText = 'margin:12px 0;padding:14px;border:1px solid #d8e3dc;border-radius:12px;background:#f8fbf9';
-    const manualTitle = document.createElement('h4');
-    manualTitle.textContent = '📄 Nová verzia dokumentu – príprava';
-    manualTitle.style.margin = '0 0 8px';
-    const manualInfo = document.createElement('p');
-    manualInfo.className = 'muted small';
-    manualInfo.textContent = 'Bezpečný náhľad. Zatiaľ nič nepublikuje ani nezapisuje do databázy.';
-    const makeField = (labelText, type, placeholder) => {
-      const wrap = document.createElement('label');
-      wrap.style.cssText = 'display:block;margin:9px 0;font-size:13px';
-      wrap.textContent = labelText;
-      const field = document.createElement(type === 'textarea' ? 'textarea' : 'input');
-      if (type !== 'textarea') field.type = type;
-      field.placeholder = placeholder || '';
-      field.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:9px';
-      if (type === 'textarea') field.rows = 2;
-      wrap.appendChild(field);
-      manualBox.appendChild(wrap);
-      return field;
-    };
-    manualBox.append(manualTitle, manualInfo);
-    const nameField = makeField('Názov novej verzie', 'text', 'Napr. Znenie účinné od 01.01.2027');
-    const dateField = makeField('Účinnosť od', 'date', '');
-    const urlField = makeField('HTTPS odkaz na oficiálny dokument', 'url', 'https://...');
-    const noteField = makeField('Poznámka k zmene', 'textarea', 'Čo sa zmenilo a kto to overil');
-    const previewButton = document.createElement('button');
-    previewButton.type = 'button';
-    previewButton.textContent = 'Skontrolovať vyplnené údaje (bez uloženia)';
-    const previewResult = document.createElement('div');
-    previewResult.className = 'muted small';
-    previewResult.style.marginTop = '8px';
-    previewButton.onclick = () => {
-      let validUrl = false;
-      try {
-        const u = new URL(urlField.value.trim());
-        validUrl = u.protocol === 'https:' && !!u.hostname && !u.username && !u.password;
-      } catch (_) { /* invalid URL */ }
-      if (!nameField.value.trim() || !dateField.value || !validUrl || noteField.value.trim().length < 3) {
-        previewResult.textContent = 'Doplň názov, dátum účinnosti, platný HTTPS odkaz a poznámku (min. 3 znaky). Nič sa neuložilo.';
-      } else {
-        previewResult.textContent = 'Údaje sú formálne vyplnené. Publikovanie je stále vypnuté; nič sa neuložilo.';
-      }
-    };
-    // RS APP 168Q.232 – server connection diagnostic ONLY.
-    // Explicitly false: cannot publish, regardless of server switch.
-    const connectionButton = document.createElement('button');
-    connectionButton.type = 'button';
-    connectionButton.textContent = 'Overiť spojenie so serverom (bez publikovania)';
-    connectionButton.style.marginLeft = '8px';
-    const connectionResult = document.createElement('div');
-    connectionResult.className = 'muted small';
-    connectionResult.style.marginTop = '8px';
-    connectionButton.onclick = async () => {
-      connectionButton.disabled = true;
-      connectionResult.textContent = 'Overujem prihlásenie a ADMIN oprávnenie...';
-      try {
-        const { data, error } = await db.functions.invoke('publish-manual-legislation', {
-          body: { confirm_publish: false }
-        });
-        let response = data;
-        let status = null;
-        if (error && error.context) {
-          status = error.context.status;
-          try { response = await error.context.json(); } catch (_) { response = null; }
-        }
-        if (status === 400 && response?.ok === false &&
-            response?.error === 'Explicit publication confirmation required') {
-          connectionResult.textContent = 'PASS – server overil prihlásenie a ADMIN rolu. Publikovanie bolo bezpečne odmietnuté; nič sa nezapísalo.';
-        } else {
-          connectionResult.textContent = 'NEPOTVRDENÉ – server nevrátil očakávanú diagnostickú odpoveď. Nič sa z tohto tlačidla nepublikuje.';
-          console.warn('MANUAL LEGISLATION DIAGNOSTIC', { status, response, error });
-        }
-      } catch (err) {
-        connectionResult.textContent = 'FAIL – spojenie sa nepodarilo overiť. Bez publikovania.';
-        console.warn('MANUAL LEGISLATION DIAGNOSTIC ERROR', err);
-      } finally {
-        connectionButton.disabled = false;
-      }
-    };
-    // RS APP 168Q.247 – manual publication UI, documents 3/4/5 ONLY.
-    // Explicit double confirmation, server-side ADMIN check and server switch remain mandatory.
-    const publishButton = document.createElement('button');
-    publishButton.type = 'button';
-    publishButton.textContent = 'Skontrolovať a potvrdiť publikovanie';
-    publishButton.style.cssText = 'display:block;margin-top:12px';
-    const publishInfo = document.createElement('div');
-    publishInfo.className = 'muted small';
-    publishInfo.style.marginTop = '6px';
-    publishInfo.textContent = 'Publikovanie vyžaduje výslovné potvrdenie a povolenie na serveri. Pri vypnutom serverovom prepínači sa nič nezapíše.';
-    publishButton.onclick = async () => {
-      const name = nameField.value.trim();
-      const effectiveFrom = dateField.value;
-      const sourceUrl = urlField.value.trim();
-      const note = noteField.value.trim();
-      let validUrl = false;
-      try {
-        const u = new URL(sourceUrl);
-        validUrl = u.protocol === 'https:' && !!u.hostname && !u.username && !u.password;
-      } catch (_) {}
-      if (!name || name.length > 200 || !/^\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
-          !validUrl || sourceUrl.length > 2000 || note.length < 3 || note.length > 2000) {
-        publishInfo.textContent = 'STOP – skontroluj názov, dátum, HTTPS odkaz a poznámku. Nič sa nepublikovalo.';
-        return;
-      }
-      const summary = 'Dokument: ' + documentTitle + ' (ID ' + documentId + ')\n' +
-        'Nová verzia: ' + name + '\nÚčinnosť od: ' + effectiveFrom +
-        '\nZdroj: ' + sourceUrl + '\nPoznámka: ' + note +
-        '\n\nPOZOR: Potvrdením môže vzniknúť nová aktuálna verzia dokumentu. Pokračovať?';
-      if (!window.confirm(summary)) {
-        publishInfo.textContent = 'Publikovanie zrušené. Nič sa neodoslalo.';
-        return;
-      }
-      if (!window.confirm('POSLEDNÉ POTVRDENIE: naozaj publikovať novú verziu dokumentu ID ' + documentId + '?')) {
-        publishInfo.textContent = 'Publikovanie zrušené. Nič sa neodoslalo.';
-        return;
-      }
-      publishButton.disabled = true;
-      publishInfo.textContent = 'Overujem publikovanie na serveri...';
-      try {
-        const { data, error } = await db.functions.invoke('publish-manual-legislation', {
-          body: {
-            document_id: Number(documentId), version_name: name,
-            effective_from: effectiveFrom, source_url: sourceUrl,
-            note, confirm_publish: true
-          }
-        });
-        if (error || data?.ok !== true || Number(data?.document_id) !== Number(documentId) ||
-            !data?.published_version_id) {
-          publishInfo.textContent = 'NEPUBLIKOVANÉ / NEPOTVRDENÉ – server nepotvrdil publikovanie. Skontroluj stav v ADMIN Legislatíve pred ďalším pokusom.';
-          console.warn('MANUAL LEGISLATION PUBLISH NOT CONFIRMED', { error, data });
-          return;
-        }
-        publishInfo.textContent = 'PASS – server potvrdil novú verziu ID ' + data.published_version_id + '. Obnov detail dokumentu na kontrolu histórie.';
-        publishButton.disabled = true;
-        return;
-      } catch (err) {
-        publishInfo.textContent = 'NEPOTVRDENÉ – chyba spojenia. Pred opakovaním over históriu dokumentu, aby nevznikla duplicita.';
-        console.warn('MANUAL LEGISLATION PUBLISH ERROR', err);
-      } finally {
-        // On uncertain outcomes, prevent accidental duplicate submission from this view.
-        publishButton.disabled = true;
-      }
-    };
-    manualBox.append(publishButton, publishInfo);
-    manualBox.append(previewButton, previewResult, connectionButton, connectionResult);
-    container.appendChild(manualBox);
-  }
 
   const loading = document.createElement('p');
   loading.textContent = 'Načítavam verzie dokumentu...';
@@ -12384,9 +12224,6 @@ async function loadAdminLegislativaDocuments() {
   const container = document.getElementById('adminLegislativaDocuments');
   if (!container) return;
 
-  // Pri opätovnom otvorení ADMIN Legislatívy obnovíme viditeľnosť zoznamu.
-  container.classList.remove('hidden');
-
 // Pri novom načítaní zoznamu zavrieme starý detail.
 const detail = document.getElementById('adminLegislativaDetail');
 
@@ -12497,7 +12334,7 @@ async function loadAdminLegislativaAlerts() {
     const { data: checks, error: checksError } = await db
       .from('legislation_checks')
       .select(
-        'id,document_id,check_status,review_status,checked_at,note,published_version_id,published_at'
+        'id,document_id,check_status,review_status,checked_at,note'
       )
       .order('checked_at', { ascending: false })
       .order('id', { ascending: false });
@@ -12545,12 +12382,6 @@ async function loadAdminLegislativaAlerts() {
 
 // Otvorené a potvrdené podnety legislatívneho radaru
 const radarAlerts = (checks || []).filter(check => {
-
-  // WORK 168Q.221: Publikovane podnety zostavaju v DB/historii,
-  // ale uz nepatria medzi otvorene upozornenia.
-  if (check.published_version_id != null || check.published_at != null) {
-    return false;
-  }
 
   // Zamietnuté podnety nezobrazujeme
   if (check.review_status === 'dismissed') {
@@ -12642,55 +12473,6 @@ const radarAlerts = (checks || []).filter(check => {
 
       row.append(label, description);
 
-// WORK 168Q.220: Iba diagnostika schvaleneho podnetu.
-// Ziadny publish:true, ziadna zmena SQL ani serveroveho prepinaca.
-if (check.review_status === 'confirmed' && check.check_status === 'possible_change') {
-  const verifyBox = document.createElement('div');
-  verifyBox.style.marginTop = '10px';
-  const verifyButton = document.createElement('button');
-  verifyButton.type = 'button';
-  verifyButton.textContent = '🔍 Overiť pripravenosť publikovania';
-  const verifyStatus = document.createElement('div');
-  verifyStatus.className = 'muted small';
-  verifyStatus.style.marginTop = '6px';
-  verifyStatus.textContent = 'Len diagnostika. Publikovanie je v tomto rozhraní vypnuté.';
-  verifyButton.onclick = async () => {
-    const activeUser = getCurrentUser();
-    if (!activeUser || !hasAppRole(activeUser.id, 'ADMIN')) {
-      verifyStatus.textContent = 'STOP – vyžaduje sa ADMIN.';
-      return;
-    }
-    verifyButton.disabled = true;
-    verifyStatus.textContent = 'Preverujem oficiálny zdroj a pripravenosť, bez zápisu...';
-    try {
-      const { data, error } = await db.functions.invoke('approve-legislation-check', {
-        body: { check_id: Number(check.id), source_diagnostic: true, publish: false }
-      });
-      if (error) throw error;
-      if (data?.mode !== 'diagnostic_only' || data?.database_write !== false ||
-          data?.admin_verified !== true || data?.check_id !== check.id) {
-        verifyStatus.textContent = 'STOP – neočakávaná odpoveď diagnostiky. Publikovanie sa nespustilo z tohto tlačidla.';
-        console.warn('LEGISLATION PUBLICATION DIAGNOSTIC RESPONSE', data);
-        return;
-      }
-      if (data.eligible_for_verification === true && data.verification_passed === true &&
-          data.matches_approved_check === true && data.newer_than_current === true) {
-        verifyStatus.textContent = 'PASS – podnet je podľa serverovej diagnostiky pripravený. Nová verzia NEBOLA publikovaná.';
-      } else {
-        verifyStatus.textContent = 'NEPRIPRAVENÉ – podnet alebo oficiálny zdroj nespĺňa podmienky. Bez publikovania.';
-        console.info('LEGISLATION PUBLICATION DIAGNOSTIC DETAILS', data);
-      }
-    } catch (err) {
-      console.error('LEGISLATION PUBLICATION DIAGNOSTIC ERROR', err);
-      verifyStatus.textContent = 'FAIL – diagnostiku sa nepodarilo dokončiť. Bez potvrdeného PASS.';
-    } finally {
-      verifyButton.disabled = false;
-    }
-  };
-  verifyBox.append(verifyButton, verifyStatus);
-  row.appendChild(verifyBox);
-}
-
 // Rozhodovanie iba pri otvorenom podnete
 if (
   check.review_status === null ||
@@ -12774,46 +12556,6 @@ container.appendChild(row);
   } catch (err) {
     console.error('ADMIN LEGISLATIVA ALERTS ERROR:', err);
     container.textContent = 'Nepodarilo sa načítať upozornenia.';
-  }
-}
-
-// WORK 168Q – iba diagnostické spustenie existujúcej Edge Function.
-// Bez zmeny offline, databázových zápisov alebo iných modulov.
-let adminRadarDiagnosticRunning = false;
-async function runAdminLegislationRadarDiagnostic() {
-  const status = document.getElementById('adminRadarDiagnosticStatus');
-  const button = document.getElementById('adminRadarDiagnosticButton');
-  if (!status || !button || adminRadarDiagnosticRunning) return;
-
-  const currentUser = getCurrentUser();
-  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
-    status.textContent = 'STOP – vyžaduje sa rola ADMIN.';
-    return;
-  }
-
-  adminRadarDiagnosticRunning = true;
-  button.disabled = true;
-  status.textContent = 'Prebieha diagnostická kontrola legislatívy. Bez zápisu do databázy...';
-  try {
-    const { data, error } = await db.functions.invoke('legislation-radar-admin', {
-      body: { mode: 'diagnostic' }
-    });
-    if (error) throw error;
-    if (!data || data.ok !== true || data.mode !== 'diagnostic_only' ||
-        data.database_write !== false || data.documents_checked !== 4 ||
-        data.all_successful !== true) {
-      status.textContent = 'STOP – diagnostika nevrátila očakávaný výsledok. Bez potvrdeného PASS.';
-      console.warn('ADMIN RADAR DIAGNOSTIC UNEXPECTED RESPONSE', data);
-      return;
-    }
-    status.textContent = 'PASS – skontrolované 4/4 dokumenty. Diagnostický režim, bez zápisu do databázy.';
-    await loadAdminLegislativaAlerts();
-  } catch (error) {
-    console.error('ADMIN RADAR DIAGNOSTIC ERROR:', error);
-    status.textContent = 'FAIL – kontrolu sa nepodarilo dokončiť. Žiadny PASS nepotvrdený.';
-  } finally {
-    adminRadarDiagnosticRunning = false;
-    button.disabled = false;
   }
 }
 
@@ -17843,6 +17585,67 @@ async function runTrackedSyncPackageDryRunByServiceId(serviceLocalId) {
   };
 }
 
+// KROK 52 – jednorazové lokálne zotavenie, iba 3 presné ID.
+// ŽIADNE zápisy do Supabase. Nevykonáva sa automaticky.
+let rsRecovery246BackupReady = false;
+const RS_RECOVERY_246_SERVICE = 'service_750298ee-49c2-40e0-8dc1-46c87733f734';
+const RS_RECOVERY_246_CHECKS = [
+  ['check_7af502cf-f050-4cad-8fdf-140f1bebc39d', 697],
+  ['check_27c19ed4-7d6c-474d-baf9-b2733a80da88', 698]
+];
+
+async function rsRecovery246Inspect() {
+  const service = await rsLocalGet(RS_LOCAL_STORES.services, RS_RECOVERY_246_SERVICE);
+  if (!service || service.sync_status !== 'SYNC_RUNNING') throw new Error('Lokálna služba nemá očakávaný stav SYNC_RUNNING.');
+  const allChecks = await rsLocalGetAll(RS_LOCAL_STORES.checks);
+  const allPhotos = await rsLocalGetAll(RS_LOCAL_STORES.photos);
+  const serviceChecks = allChecks.filter(c => c.service_local_id === RS_RECOVERY_246_SERVICE && !String(c.local_id || '').startsWith('legacy_check_'));
+  const expected = new Set(RS_RECOVERY_246_CHECKS.map(x => x[0]));
+  if (serviceChecks.length !== 2 || serviceChecks.some(c => !expected.has(c.local_id))) throw new Error('Lokálne kontroly nesedia presne na očakávané 2 ID.');
+  if (serviceChecks.some(c => c.sync_status !== 'SYNC_RUNNING' || c.pending_sync !== true)) throw new Error('Stav lokálnych kontrol je iný, než sa očakáva.');
+  const relatedPhotos = allPhotos.filter(p => expected.has(p.check_local_id));
+  if (relatedPhotos.length) throw new Error('Našli sa lokálne fotografie; oprava je zablokovaná.');
+  const remoteService = await findCentralServiceByLocalId(RS_RECOVERY_246_SERVICE);
+  if (remoteService.status !== 'FOUND' || Number(remoteService.data?.id) !== 246) throw new Error('Centrálna služba 246 sa nepotvrdila.');
+  for (const [id, centralId] of RS_RECOVERY_246_CHECKS) {
+    const remote = await findCentralCheckByLocalId(id);
+    if (remote.status !== 'FOUND' || Number(remote.data?.id) !== centralId) throw new Error('Centrálna kontrola ' + centralId + ' sa nepotvrdila.');
+    const photos = remote.data?.photos;
+    if (Array.isArray(photos) ? photos.length !== 0 : (photos != null && photos !== '[]' && photos !== '')) throw new Error('Centrálna kontrola má neočakávané fotografie.');
+  }
+  return { service, checks: serviceChecks, photos: relatedPhotos };
+}
+
+async function rsRecovery246Manual() {
+  try {
+    const data = await rsRecovery246Inspect();
+    if (!rsRecovery246BackupReady) {
+      const backup = {created_at: new Date().toISOString(), purpose: 'RS APP 246 local recovery backup', service: data.service, checks: data.checks, photos: data.photos};
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'RS_APP_BACKUP_LOCAL_246_697_698.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      rsRecovery246BackupReady = true;
+      alert('Záloha bola ponúknutá na stiahnutie. Over, že súbor JSON je skutočne uložený v telefóne. Potom znova ťukni na indikátor synchronizácie a zvoľ obnovu. Ak súbor nemáš, nepokračuj.');
+      return;
+    }
+    if (!confirm('Máš SKUTOČNE uložený súbor RS_APP_BACKUP_LOCAL_246_697_698.json v telefóne? Ak nie, stlač Zrušiť.')) return;
+    if (!confirm('Potvrdiť jednorazové LOKÁLNE označenie kontrol 697, 698 a služby 246 ako SYNCED? Supabase sa nemení.')) return;
+    // Opätovné overenie tesne pred prvým lokálnym zápisom.
+    await rsRecovery246Inspect();
+    for (const [id, centralId] of RS_RECOVERY_246_CHECKS) await markLocalCheckAsSynced(id, centralId);
+    const result = await finalizeLocalServiceSync(RS_RECOVERY_246_SERVICE, 246);
+    if (!result.ok) throw new Error('Službu sa nepodarilo uzavrieť: ' + result.reason);
+    rsRecovery246BackupReady = false;
+    await updateSyncStatusIndicator();
+    alert('Lokálne zotavenie dokončené. Skontroluj stav hlavičky.');
+  } catch (error) {
+    alert('Zotavenie sa zastavilo: ' + String(error?.message || error) + '\nŽiadne záznamy v Supabase sa nemenili.');
+  }
+}
+
 async function updateSyncStatusIndicator() {
   const indicator =
     document.getElementById('syncStatusIndicator');
@@ -17864,6 +17667,12 @@ indicator.onclick = async function () {
         'SYNC DIAGNOSTIKA\n\n' +
         'Žiadny čakajúci balík.'
       );
+      return;
+    }
+
+    if (item.service_local_id === RS_RECOVERY_246_SERVICE &&
+        confirm('Zobraziť jednorazovú obnovu zaseknutej služby 246?\n\nOK = pokračovať k zálohe/obnove, Zrušiť = pôvodná diagnostika.')) {
+      await rsRecovery246Manual();
       return;
     }
 
