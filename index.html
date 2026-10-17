@@ -166,6 +166,62 @@
     flex-wrap: wrap;
 }
 
+/* LEGISLATÍVA – KARTY DOKUMENTOV */
+
+#legislativaDocumentsList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+#legislativaDocumentsList .legislation-card {
+  margin: 0;
+  padding: 18px;
+  min-height: 0;
+  height: auto;
+}
+
+#legislativaDocumentsList .legislation-card h3 {
+  line-height: 1.25;
+}
+
+/* LEGISLATÍVA – KATEGÓRIE */
+
+#legislativaDocumentsList .legislation-category {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#legislativaDocumentsList .legislation-category > h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 4px 0 !important;
+}
+
+#legislativaDocumentsList .legislation-category .legislation-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
+}
+
+@media (max-width: 700px) {
+  #legislativaDocumentsList .legislation-category {
+    grid-template-columns: 1fr;
+  }
+}
+
+#legislativaDocumentsList .legislation-category > h3 {
+  margin: 8px 0 2px 0 !important;
+}
+
+#legislativaDocumentsList .legislation-category + .legislation-category {
+  margin-top: 6px;
+}
+
 .secondary-main-menu-cards {
     display: contents;
 }
@@ -212,16 +268,84 @@
   padding-right: 6px;
 }
 
+@media (min-width: 769px) {
+
+  #mobileGraphSelector {
+    display: block;
+    grid-column: 1 / -1;
+    margin-bottom: 4px;
+    padding: 14px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  #mobileGraphSelector label {
+    display: block;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  #mobileGraphSelector select {
+    width: 100%;
+  }
+
+  #graphsOnlySection .graph-card {
+    display: none;
+  }
+
+  #graphsOnlySection .graph-card.mobile-active {
+    display: flex;
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
 @media (max-width: 1200px) {
   #graphsOnlySection {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+.statistics-filter-toggle {
+    display: none;
+}
+
 @media (max-width: 768px) {
   #graphsOnlySection {
     display: block;
   }
+
+    .statistics-filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .statistics-filter-header h3 {
+        margin: 0;
+    }
+
+    .statistics-filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .statistics-filter-toggle-icon {
+        font-size: 10px;
+        line-height: 1;
+    }
 
   .mobile-graph-selector {
     display: block;
@@ -4067,34 +4191,54 @@ button:disabled,
     <span>Disciplinárna komisia</span>
   </button>
 
-<button
-  id="disciplinarnyPoriadokMenuItem"
-  type="button"
-  class="app-side-menu-item"
-  onclick="window.open('https://jarinoantal-code.github.io/rs-app/DISCIPLINARNY-PORIADOK-SRZ-ucinny-od-1-3-2025.pdf', '_blank');"
->
+</div>
+
+<!-- LEGISLATÍVA A PREDPISY -->
+<div class="app-side-menu-section">
+
+  <div class="app-side-menu-section-title">
+    Legislatíva a predpisy
+  </div>
+
+  <button
+    id="legislativaMenuItem"
+    type="button"
+    class="app-side-menu-item"
+    onclick="closeAppSideMenu(); openLegislativaModule();"
+  >
     <span class="app-side-menu-item-icon" aria-hidden="true">
-      <svg
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
-        <path d="M8 7h8"/>
-        <path d="M8 11h6"/>
-      </svg>
+      ⚖️
     </span>
 
-    <span>Disciplinárny poriadok SRZ</span>
+    <span>Legislatíva</span>
   </button>
 
 </div>
+
+<!-- ADMIN CENTRUM -->
+<div
+  id="adminCentrumMenuSection"
+  class="app-side-menu-section"
+>
+  <div class="app-side-menu-section-title">
+    Administrácia
+  </div>
+
+<button
+  id="adminCentrumMenuItem"
+  type="button"
+  class="app-side-menu-item"
+  onclick="closeAppSideMenu(); openAdminCentrum();"
+>
+    <span class="app-side-menu-item-icon" aria-hidden="true">
+      ⚙️
+    </span>
+
+    <span class="admin-centrum-menu-label">ADMIN CENTRUM</span>
+  </button>
+</div>
+
+</nav>
 
 </nav>
 
@@ -4256,9 +4400,22 @@ button:disabled,
   </div>
 </section>
 
-    <div id="filterSection" class="card hidden" style="margin:20px 0;">
-      <h3>Filter</h3>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+   <div id="filterSection" class="card hidden" style="margin:20px 0;">
+    <div class="statistics-filter-header">
+        <h3>Filter</h3>
+
+        <button
+            type="button"
+            id="statisticsFilterToggle"
+            class="statistics-filter-toggle"
+            aria-expanded="true"
+            onclick="toggleStatisticsFilter()"
+        >
+            <span>Skryť filter</span>
+            <span class="statistics-filter-toggle-icon">▲</span>
+        </button>
+    </div>
+      <div id="statisticsFilterContent" style="display:flex; gap:10px; flex-wrap:wrap;">
         <div>
           <label>Dátum od</label><br>
           <input type="date" id="filterDatumOd">
@@ -4624,6 +4781,573 @@ button:disabled,
     <button class="btn-secondary" onclick="showMainMenu()">
         ← Späť do hlavného menu
     </button>
+</div>
+
+<!-- =====================================================
+     LEGISLATÍVA A PREDPISY
+     ===================================================== -->
+<div id="legislativaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">⚖️ Legislatíva a predpisy</h2>
+
+      <div class="muted small">
+        Aktuálne právne predpisy a dokumenty súvisiace s rybárstvom
+      </div>
+    </div>
+  </div>
+
+ <div
+  id="legislativaDocumentsList"
+  class="list"
+  style="margin-top:15px;"
+>
+  <div class="muted small">
+    Načítavam aktuálnu legislatívu...
+  </div>
+</div>
+
+</div>
+
+<!-- ADMIN LEGISLATIVA -->
+<div id="adminLegislativaSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">⚖️ ADMIN – Legislatíva</h2>
+      <div class="muted small">
+        Správa právnych predpisov a ich verzií
+      </div>
+    </div>
+  </div>
+
+<div class="card" style="margin-top:15px;">
+  <h3>🔎 Legislatívny radar – diagnostika</h3>
+  <p class="muted small">Ručná kontrola zdrojov bez zápisu do databázy. Režim zápisu nie je z tohto tlačidla dostupný.</p>
+  <button type="button" id="adminRadarDiagnosticButton" onclick="runAdminLegislationRadarDiagnostic()">Skontrolovať legislatívu teraz</button>
+  <div id="adminRadarDiagnosticStatus" class="muted small" role="status" aria-live="polite" style="margin-top:10px;">Kontrola ešte nebola spustená.</div>
+</div>
+
+<div class="card" style="margin-top:15px;">
+  <h3>📚 Evidované právne dokumenty</h3>
+
+<div id="adminLegislativaAlerts"
+     style="padding:12px; margin-bottom:16px;
+            border:1px solid #ddd; border-radius:10px;">
+
+  <h3 style="margin-top:0;">
+    🔔 Dokumenty vyžadujúce pozornosť
+  </h3>
+
+  <p class="muted small" style="margin-bottom:0;">
+    Zatiaľ nie sú evidované žiadne upozornenia.
+  </p>
+
+</div>
+
+  <div id="adminLegislativaDocuments" class="muted small">
+    Dokumenty zatiaľ neboli načítané.
+  </div>
+
+<div
+  id="adminLegislativaDetail"
+  class="hidden"
+  style="margin-top:16px;"
+></div>
+
+</div>
+
+</div>
+
+<!-- =================================================
+     ADMIN CENTRUM
+     ================================================= -->
+<div id="adminCentrumSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">⚙️ ADMIN CENTRUM</h2>
+
+      <div class="muted small">
+        Správa a konfigurácia RS APP
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="adminCentrumModules"
+    class="list"
+    style="margin-top:15px;"
+  >
+
+   <div
+  class="card"
+  role="button"
+  tabindex="0"
+  onclick="openAdminUsers();"
+  style="cursor:pointer;"
+>
+  <h3>👥 Používatelia</h3>
+
+  <div class="muted small">
+    Správa používateľov aplikácie.
+  </div>
+</div>
+
+ <div
+  class="card"
+  role="button"
+  tabindex="0"
+  onclick="openAdminRoles();"
+  style="cursor:pointer;"
+>
+  <h3>🔐 Roly a oprávnenia</h3>
+
+  <div class="muted small">
+    Správa rolí a prístupových oprávnení
+  </div>
+</div>
+
+<div
+  class="card"
+  onclick="openAdminLegislativaModule()"
+  style="cursor:pointer;"
+>
+  <h3>⚖️ Legislatíva</h3>
+  <div class="muted small">
+    Správa dokumentov, verzií a legislatívnych zmien.
+  </div>
+</div>
+
+    <div class="card">
+      <h3>🎣 Revíry</h3>
+      <div class="muted small">
+        Správa konfiguračných údajov revírov.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================================================
+     ADMIN CENTRUM – ROLY A OPRÁVNENIA
+================================================ -->
+<div id="adminRolesSection" class="hidden">
+
+<div style="margin-bottom:12px;">
+  <button
+    type="button"
+    class="btn-secondary"
+    onclick="openAdminCentrum();"
+  >
+    ← Späť
+  </button>
+</div>
+
+<div>
+  <h2 style="margin:0;">🔐 Roly a oprávnenia</h2>
+
+  <div class="muted small">
+    Správa rolí a prístupových oprávnení RS APP
+  </div>
+</div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Roly RS APP</h3>
+
+    <div class="muted small">
+      Nastavenie oprávnení jednotlivých rolí aplikácie.
+    </div>
+
+<div
+  id="adminRolesReadOnly"
+  style="margin-top:16px;"
+>
+  <div class="muted small">
+    Načítavam roly a oprávnenia...
+  </div>
+</div>
+  </div>
+
+</div>
+
+<!-- =================================================
+     ADMIN CENTRUM – POUŽÍVATELIA
+     ================================================= -->
+<div id="adminUsersSection" class="hidden">
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">👥 Používatelia</h2>
+
+      <div class="muted small">
+        Správa používateľov RS APP
+      </div>
+    </div>
+  </div>
+
+<div style="margin-top:14px;">
+  <button
+    type="button"
+    class="btn-primary"
+    onclick="openAdminCreateUser();"
+  >
+    ➕ Pridať používateľa
+  </button>
+</div>
+
+  <div
+    id="adminUsersList"
+    class="list"
+    style="margin-top:15px;"
+  >
+    <div class="muted small">
+      Zoznam používateľov bude načítaný v ďalšom kroku.
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================
+     ADMIN CENTRUM – NOVÝ POUŽÍVATEĽ
+     ================================================ -->
+
+<div id="adminCreateUserSection" class="hidden">
+
+  <button
+    type="button"
+    onclick="backToAdminUsersFromCreate();"
+    style="
+      margin-bottom:12px;
+      background:#ffffff;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-weight:700;
+      color:#08783f;
+    "
+  >
+    ← Späť na používateľov
+  </button>
+
+  <div class="toolbar">
+    <div>
+      <h2 style="margin:0;">➕ Nový používateľ</h2>
+
+      <div class="muted small">
+        Pridanie používateľa do RS APP
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:15px;">
+
+    <h3 style="margin-bottom:14px;">
+      Základné údaje
+    </h3>
+
+    <div class="row">
+
+      <div class="field">
+        <label for="adminCreateUserName">
+          Meno a priezvisko
+        </label>
+
+        <input
+          id="adminCreateUserName"
+          type="text"
+          placeholder="Napr. Ján Novák"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="field">
+        <label for="adminCreateUserBadge">
+          Číslo odznaku RS
+        </label>
+
+        <input
+          id="adminCreateUserBadge"
+          type="text"
+          placeholder="Napr. GA-0080"
+          autocomplete="off"
+        />
+
+        <div class="muted small">
+          Voliteľné – iba pre člena rybárskej stráže.
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="adminCreateUserAccessCode">
+          Prístupový kód
+        </label>
+
+        <input
+          id="adminCreateUserAccessCode"
+          type="text"
+          placeholder="Napr. JNO-001"
+          autocomplete="off"
+        />
+
+        <div class="muted small">
+          Voliteľné – pre používateľa bez čísla odznaku.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+<div class="card">
+
+  <h3 style="margin-bottom:8px;">
+    🔐 Roly a funkcie
+  </h3>
+
+  <div class="muted small" style="margin-bottom:14px;">
+    Vyberte funkcie a oprávnenia nového používateľa.
+  </div>
+
+<div
+  class="admin-create-roles"
+  style="
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-top:6px;
+  "
+  oninput="
+    this.querySelectorAll('label').forEach(label => {
+      label.style.display = 'flex';
+      label.style.alignItems = 'center';
+      label.style.justifyContent = 'flex-start';
+      label.style.gap = '10px';
+      label.style.width = 'max-content';
+
+      const checkbox = label.querySelector('input[type=checkbox]');
+
+      if (checkbox) {
+        checkbox.style.width = 'auto';
+        checkbox.style.margin = '0';
+        checkbox.style.flex = '0 0 auto';
+      }
+    });
+  "
+>
+
+ <label style="
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  width:max-content;
+  cursor:pointer;
+">
+  <input
+    type="checkbox"
+    data-admin-create-role
+    value="CLEN_RS"
+    style="width:auto; margin:0; flex:0 0 auto;"
+  />
+  Člen RS
+</label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="VELITEL_RS"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Veliteľ RS
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="DK"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Disciplinárna komisia
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="PRESEDA"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Predseda
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="PODPRESEDA"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Podpredseda
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="TAJOMNIK"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Tajomník
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="HOSPODAR"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Hospodár
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="POMOCNY_HOSPODAR"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Pomocný hospodár
+    </label>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:max-content;
+      cursor:pointer;
+    ">
+      <input
+        type="checkbox"
+        data-admin-create-role
+        value="ADMIN"
+        style="width:auto; margin:0; flex:0 0 auto;"
+      />
+      Administrátor
+    </label>
+  </div>
+
+  <div style="margin-top:20px;">
+    <button
+      type="button"
+      class="btn-primary"
+      onclick="previewAdminCreateUser();"
+    >
+      ➕ Vytvoriť používateľa
+    </button>
+  </div>
+
+</div>
+
+</div>
+
+<!-- =================================================
+     ADMIN CENTRUM – DETAIL POUŽÍVATEĽA
+     ================================================= -->
+<div id="adminUserDetailSection" class="hidden">
+
+<button
+  type="button"
+  onclick="backToAdminUsers();"
+  style="
+    margin-bottom:12px;
+    background:#ffffff;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    padding:8px 12px;
+    cursor:pointer;
+    font-weight:700;
+    color:#08783f;
+  "
+>
+  ← Späť na používateľov
+</button>
+
+  <div class="toolbar">
+    <div>
+      <h2 id="adminUserDetailTitle" style="margin:0;">
+        👤 Používateľ
+      </h2>
+
+      <div class="muted small">
+        Detail používateľa RS APP
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="adminUserDetailContent"
+    class="list"
+    style="margin-top:15px;"
+  >
+  </div>
+
 </div>
 
 <!-- =====================================================
@@ -5234,6 +5958,7 @@ button:disabled,
   <label for="mobileGraphSelect">Vyber graf</label>
 
   <select id="mobileGraphSelect" onchange="showSelectedMobileGraph()">
+    <option value="">Vyberte štatistiku...</option>
     <option value="grafKontrolyReviry">Kontroly podľa revírov</option>
     <option value="grafAktivitaClenov">Aktivita členov RS</option>
     <option value="grafHodinyClenov">Odslúžené hodiny členov RS</option>
@@ -6525,6 +7250,8 @@ const appState = {
   activeRevirStart: '',
   activeServiceLocalId: '',
   kontrolyLoaded: false,
+
+  permissions: {},
 
 data: {
   fishers: [],
@@ -8778,23 +9505,270 @@ function hasAppRole(memberId, roleCode) {
   );
 }
 
-function getDkAccessLevel() {
-  const currentUser = getCurrentUser();
-
-  if (!currentUser) {
+async function getCurrentPermissionLevel(permissionCode) {
+  if (!permissionCode) {
     return 'NONE';
   }
 
-  if (hasAppRole(currentUser.id, 'DK')) {
+  try {
+    const { data, error } = await db.rpc(
+      'current_member_permission_level',
+      {
+        p_permission_code: String(permissionCode).trim()
+      }
+    );
+
+    if (error) {
+      console.error(
+        'PERMISSION LEVEL ERROR:',
+        permissionCode,
+        error
+      );
+
+      return 'NONE';
+    }
+
+    const level = String(data || 'NONE')
+      .trim()
+      .toUpperCase();
+
+    if (
+      level !== 'NONE' &&
+      level !== 'ALLOW' &&
+      level !== 'READ' &&
+      level !== 'EDIT' &&
+      level !== 'MANAGE'
+    ) {
+      console.warn(
+        'PERMISSION LEVEL UNKNOWN:',
+        permissionCode,
+        data
+      );
+
+      return 'NONE';
+    }
+
+    return level;
+  } catch (error) {
+    console.error(
+      'PERMISSION LEVEL EXCEPTION:',
+      permissionCode,
+      error
+    );
+
+    return 'NONE';
+  }
+}
+
+async function loadCurrentPermissions() {
+  try {
+    const { data, error } = await db.rpc(
+      'current_member_permissions'
+    );
+
+    if (error) {
+      console.error(
+        'PERMISSIONS LOAD ERROR:',
+        error
+      );
+
+      appState.permissions = {};
+      return false;
+    }
+
+    const permissions = {};
+
+    for (const item of Array.isArray(data) ? data : []) {
+      const code = String(
+        item.permission_code || ''
+      ).trim();
+
+      const level = String(
+        item.access_level || 'NONE'
+      ).trim().toUpperCase();
+
+      if (!code) {
+        continue;
+      }
+
+      if (
+        level !== 'NONE' &&
+        level !== 'ALLOW' &&
+        level !== 'READ' &&
+        level !== 'EDIT' &&
+        level !== 'MANAGE'
+      ) {
+        console.warn(
+          'PERMISSION LOAD UNKNOWN LEVEL:',
+          code,
+          item.access_level
+        );
+
+        permissions[code] = 'NONE';
+        continue;
+      }
+
+      permissions[code] = level;
+    }
+
+appState.permissions = permissions;
+
+// Aktualizácia zámkov po načítaní oprávnení.
+updateModulePermissionLocks();
+
+return true;
+
+  } catch (error) {
+    console.error(
+      'PERMISSIONS LOAD EXCEPTION:',
+      error
+    );
+
+    appState.permissions = {};
+    return false;
+  }
+}
+
+function getCachedPermissionLevel(permissionCode) {
+  if (!permissionCode) {
+    return 'NONE';
+  }
+
+  const permissions =
+    appState.permissions &&
+    typeof appState.permissions === 'object'
+      ? appState.permissions
+      : {};
+
+  const code = String(permissionCode).trim();
+
+  if (!code) {
+    return 'NONE';
+  }
+
+  const level = String(
+    permissions[code] || 'NONE'
+  ).trim().toUpperCase();
+
+  if (
+    level !== 'NONE' &&
+    level !== 'ALLOW' &&
+    level !== 'READ' &&
+    level !== 'EDIT' &&
+    level !== 'MANAGE'
+  ) {
+    return 'NONE';
+  }
+
+  return level;
+}
+
+function savePermissionsToOfflineCache(memberId) {
+  if (!memberId) {
+    return false;
+  }
+
+  const permissions =
+    appState.permissions &&
+    typeof appState.permissions === 'object'
+      ? appState.permissions
+      : {};
+
+  try {
+    localStorage.setItem(
+      'rs_app_permissions_cache_' + String(memberId),
+      JSON.stringify(permissions)
+    );
+
+    return true;
+
+  } catch (error) {
+    console.warn(
+      'PERMISSIONS CACHE - uloženie zlyhalo:',
+      error
+    );
+
+    return false;
+  }
+}
+
+function loadPermissionsFromOfflineCache(memberId) {
+  if (!memberId) {
+    appState.permissions = {};
+    return false;
+  }
+
+  try {
+    const raw = localStorage.getItem(
+      'rs_app_permissions_cache_' + String(memberId)
+    );
+
+    if (!raw) {
+      appState.permissions = {};
+      return false;
+    }
+
+    const cached = JSON.parse(raw);
+
+    if (
+      !cached ||
+      typeof cached !== 'object' ||
+      Array.isArray(cached)
+    ) {
+      appState.permissions = {};
+      return false;
+    }
+
+    const permissions = {};
+
+    for (const [code, rawLevel] of Object.entries(cached)) {
+      const permissionCode = String(code || '').trim();
+      const level = String(
+        rawLevel || 'NONE'
+      ).trim().toUpperCase();
+
+      if (!permissionCode) {
+        continue;
+      }
+
+      if (
+        level !== 'NONE' &&
+        level !== 'ALLOW' &&
+        level !== 'READ' &&
+        level !== 'EDIT' &&
+        level !== 'MANAGE'
+      ) {
+        permissions[permissionCode] = 'NONE';
+        continue;
+      }
+
+      permissions[permissionCode] = level;
+    }
+
+    appState.permissions = permissions;
+
+    return true;
+
+  } catch (error) {
+    console.warn(
+      'PERMISSIONS CACHE - načítanie zlyhalo:',
+      error
+    );
+
+    appState.permissions = {};
+    return false;
+  }
+}
+
+function getDkAccessLevel() {
+  const level =
+    getCachedPermissionLevel('module.dk');
+
+  if (level === 'EDIT') {
     return 'EDIT';
   }
 
-  if (
-    hasAppRole(currentUser.id, 'VELITEL_RS') ||
-    hasAppRole(currentUser.id, 'PRESEDA') ||
-    hasAppRole(currentUser.id, 'TAJOMNIK') ||
-    hasAppRole(currentUser.id, 'ADMIN')
-  ) {
+  if (level === 'READ') {
     return 'READ_ONLY';
   }
 
@@ -8805,25 +9779,28 @@ function applyDkDetailAccess() {
   const accessLevel = getDkAccessLevel();
   const isReadOnly = accessLevel !== 'EDIT';
 
-  const fieldIds = [
-    'dkStavPripadu',
-    'dkDatumPrerokovania',
-    'dkVysledok',
-    'dkVyskaPokuty',
-    'dkDobaOpatrenia',
-    'dkDisciplinarnePrevinenie',
-    'dkStupenPrevinenia',
-    'dkZavinenie',
-    'dkVzniklaSkoda',
-    'dkPredchadzajuceOpatrenie',
-    'dkPolahcujuceOkolnosti',
-    'dkPritazujuceOkolnosti',
-    'dkPorusenyPredpis',
-    'dkUstanovenie',
-    'dkPravnePosudenie',
-    'dkPoznamka',
-    'dkDokumenty'
-  ];
+const fieldIds = [
+  'dkStavPripadu',
+  'dkDatumPrerokovania',
+  'dkVysledok',
+  'dkVyskaPokuty',
+  'dkDobaOpatrenia',
+  'dkDisciplinarnePrevinenie',
+  'dkDovodZastavenia',
+  'dkStupenPrevinenia',
+  'dkZavinenie',
+  'dkVzniklaSkoda',
+  'dkPredchadzajuceOpatrenie',
+  'dkPolahcujuceOkolnosti',
+  'dkPritazujuceOkolnosti',
+  'dkPorusenyPredpis',
+  'dkUstanovenie',
+  'dkPravnePosudenie',
+  'dkPoznamka',
+  'dkVzdanieSaOdvolania',
+  'dkDatumVzdaniaSaOdvolania',
+  'dkDokumenty'
+];
 
   fieldIds.forEach(id => {
     const element = document.getElementById(id);
@@ -8851,57 +9828,127 @@ function updateDkAccess() {
   const menuItem =
     document.getElementById('disciplinarnaKomisiaMenuItem');
 
-  const accessLevel =
-    getDkAccessLevel();
+  const hasAccess = getDkAccessLevel() !== 'NONE';
 
-  const hasAccess =
-    accessLevel !== 'NONE';
+  [card, menuItem].forEach(element => {
+    if (!element) return;
 
-  card?.classList.toggle(
-    'hidden',
-    !hasAccess
-  );
+    // Karta aj menu zostávajú viditeľné.
+    element.classList.remove('hidden');
 
-  menuItem?.classList.toggle(
-    'hidden',
-    !hasAccess
-  );
+    // Odstránenie predchádzajúceho zámku.
+    element.querySelector('.rs-permission-lock')?.remove();
+
+    if (!hasAccess) {
+      const lock = document.createElement('span');
+      lock.className = 'rs-permission-lock';
+      lock.textContent = '🔒';
+      lock.title = 'Nemáte oprávnenie na prístup';
+      lock.setAttribute('aria-label', 'Prístup zamknutý');
+
+      lock.style.marginLeft = 'auto';
+      lock.style.fontSize = '16px';
+
+      element.appendChild(lock);
+    }
+  });
 }
 
 function updateInfoVelitelaAccess() {
   const card =
-    document.getElementById(
-      'infoVelitelaCard'
-    );
+    document.getElementById('infoVelitelaCard');
 
   const menuItem =
-    document.getElementById(
-      'infoVelitelaMenuItem'
-    );
+    document.getElementById('infoVelitelaMenuItem');
 
   const hasAccess = canAccessInfoVelitela();
 
-  if (hasAccess) {
-    card?.classList.remove('hidden');
-    menuItem?.classList.remove('hidden');
-  } else {
-    card?.classList.add('hidden');
-    menuItem?.classList.add('hidden');
-  }
+  [card, menuItem].forEach(element => {
+    if (!element) return;
+
+    // Položka zostáva viditeľná aj bez oprávnenia.
+    element.classList.remove('hidden');
+
+    // Odstránenie predchádzajúceho zámku.
+    element.querySelector('.rs-permission-lock')?.remove();
+
+    if (!hasAccess) {
+      const lock = document.createElement('span');
+      lock.className = 'rs-permission-lock';
+      lock.textContent = '🔒';
+      lock.title = 'Nemáte oprávnenie na prístup';
+      lock.setAttribute('aria-label', 'Prístup zamknutý');
+
+      lock.style.marginLeft = 'auto';
+      lock.style.fontSize = '16px';
+
+      element.appendChild(lock);
+    }
+  });
+}
+
+function updateModulePermissionLocks() {
+  const modulePermissions = {
+    openKontrolyModule: 'module.checks',
+    showReviryInfo: 'module.reviry',
+    openAsistentRSModule: 'module.assistant',
+    openRybariModule: 'module.fishers',
+    openSluzobneVozidlaModule: 'module.vehicles',
+    openStatistikyModule: 'module.statistics',
+    openReportyModule: 'module.reports',
+    openEvidenciaUlovkovModule: 'module.catches',
+    openRevirZisteniaModule: 'module.findings',
+    openInfoVelitelaModule: 'module.commander_info',
+    openDisciplinarnaKomisiaModule: 'module.dk'
+  };
+
+  const elements = document.querySelectorAll(
+    '#mainMenuSection .card, #appSideMenu .app-side-menu-item'
+  );
+
+  elements.forEach(element => {
+    const onclick = element.getAttribute('onclick') || '';
+
+    const functionName = Object.keys(modulePermissions)
+      .find(name => onclick.includes(name + '('));
+
+    if (!functionName) return;
+
+    const permissionCode = modulePermissions[functionName];
+    const level = getCachedPermissionLevel(permissionCode);
+    const hasAccess = level !== 'NONE';
+
+    element.classList.remove('hidden');
+
+    element.querySelector('.rs-permission-lock')?.remove();
+
+    if (!hasAccess) {
+      const lock = document.createElement('span');
+      lock.className = 'rs-permission-lock';
+      lock.textContent = '🔒';
+      lock.title = 'Nemáte oprávnenie na prístup';
+      lock.setAttribute('aria-label', 'Prístup zamknutý');
+      lock.style.marginLeft = 'auto';
+      lock.style.fontSize = '16px';
+
+      element.appendChild(lock);
+    }
+  });
 }
 
 function canAccessInfoVelitela() {
-  const currentUser = getCurrentUser();
+  return getCachedPermissionLevel('module.commander_info') === 'ALLOW';
+}
 
-  if (!currentUser) {
-    return false;
-  }
-
-  return (
-    hasAppRole(currentUser.id, 'VELITEL_RS') ||
-    hasAppRole(currentUser.id, 'PRESEDA') ||
-    hasAppRole(currentUser.id, 'ADMIN')
+async function getInfoVelitelaPermissionShadow() {
+  const level = await getCurrentPermissionLevel(
+    'module.commander_info'
   );
+
+  return {
+    level,
+    allowed: level === 'ALLOW'
+  };
 }
 
    function getMemberName(id) {
@@ -9173,6 +10220,2688 @@ if (!member) {
   rememberedUserInfo.classList.remove('hidden');
 }
 
+function renderAdminUsers() {
+  const container =
+    document.getElementById('adminUsersList');
+
+  if (!container) {
+    return;
+  }
+
+  const members =
+    Array.isArray(appState.data.members)
+      ? appState.data.members
+      : [];
+
+  const memberRoles =
+    Array.isArray(appState.data.memberAppRoles)
+      ? appState.data.memberAppRoles
+      : [];
+
+  if (members.length === 0) {
+    container.innerHTML =
+      '<div class="muted small">Nenašli sa žiadni používatelia.</div>';
+    return;
+  }
+
+  const sortedMembers = [...members].sort((a, b) =>
+    String(a.name || '').localeCompare(
+      String(b.name || ''),
+      'sk'
+    )
+  );
+
+  container.innerHTML = sortedMembers.map(member => {
+
+    const roles = memberRoles
+      .filter(role =>
+        Number(role.member_id) === Number(member.id)
+      )
+      .map(role =>
+        String(role.role_code || '').trim()
+      )
+      .filter(Boolean);
+
+    const rolesText =
+      roles.length > 0
+        ? roles.join(' · ')
+        : 'Bez pridelenej role';
+
+    const badge =
+      member.badge ||
+      member.cislo_odznaku ||
+      '—';
+
+    const status =
+      member.status ||
+      '—';
+
+   return `
+      <div
+        class="card"
+        role="button"
+        tabindex="0"
+        style="cursor:pointer;"
+        onclick="openAdminUserDetail(${Number(member.id)});"
+        onkeydown="
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openAdminUserDetail(${Number(member.id)});
+          }
+        "
+      >
+        <h3 style="margin-bottom:8px;">
+          ${escapeHtml(member.name || 'Bez mena')}
+        </h3>
+
+        <div class="muted small">
+          Odznak: ${escapeHtml(badge)}
+        </div>
+
+        <div class="muted small">
+          Stav: ${escapeHtml(status)}
+        </div>
+
+        <div class="muted small">
+          Roly: ${escapeHtml(rolesText)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openAdminUserDetail(memberId) {
+  const member =
+    appState.data.members.find(
+      item => Number(item.id) === Number(memberId)
+    );
+
+  if (!member) {
+    alert('Používateľ nebol nájdený.');
+    return;
+  }
+
+  const memberRoles =
+    Array.isArray(appState.data.memberAppRoles)
+      ? appState.data.memberAppRoles
+      : [];
+
+  const roles = memberRoles
+    .filter(role =>
+      Number(role.member_id) === Number(member.id)
+    )
+    .map(role =>
+      String(role.role_code || '').trim()
+    )
+    .filter(Boolean);
+
+  const badge =
+    member.badge ||
+    member.cislo_odznaku ||
+    '—';
+
+  const accessCode =
+    member.access_code ||
+    '—';
+
+  const status =
+    member.status ||
+    '—';
+
+  const loginStatus =
+    member.auth_user_id
+      ? 'Aktivované'
+      : 'Neaktivované';
+
+ const availableRoles = [
+  { code: 'CLEN_RS', label: 'Člen RS' },
+  { code: 'VELITEL_RS', label: 'Veliteľ RS' },
+  { code: 'DK', label: 'Disciplinárna komisia' },
+  { code: 'PRESEDA', label: 'Predseda' },
+  { code: 'PODPRESEDA', label: 'Podpredseda' },
+  { code: 'TAJOMNIK', label: 'Tajomník' },
+  { code: 'HOSPODAR', label: 'Hospodár' },
+  { code: 'POMOCNY_HOSPODAR', label: 'Pomocný hospodár' },
+  { code: 'ADMIN', label: 'Administrátor' }
+];
+
+const normalizedRoles =
+  roles.map(role =>
+    String(role).trim().toUpperCase()
+  );
+
+const rolesHtml =
+  availableRoles.map(role => {
+
+    const checked =
+      normalizedRoles.includes(role.code)
+        ? 'checked'
+        : '';
+
+    return `
+      <label
+        style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          padding:10px 0;
+          cursor:pointer;
+        "
+      >
+        <input
+          type="checkbox"
+          value="${role.code}"
+          ${checked}
+          data-admin-role="${role.code}"
+          style="
+            width:18px;
+            height:18px;
+          "
+        >
+
+        <span>
+          ${escapeHtml(role.label)}
+        </span>
+      </label>
+    `;
+  }).join('');
+
+  const title =
+    document.getElementById('adminUserDetailTitle');
+
+  const content =
+    document.getElementById('adminUserDetailContent');
+
+  const usersSection =
+    document.getElementById('adminUsersSection');
+
+  const detailSection =
+    document.getElementById('adminUserDetailSection');
+
+  if (!content || !detailSection) {
+    console.error(
+      'ADMIN USER DETAIL – chýba detail UI.'
+    );
+    return;
+  }
+
+  if (title) {
+    title.textContent =
+      '👤 ' + (member.name || 'Používateľ');
+  }
+
+  content.innerHTML = `
+    <div class="card">
+
+      <h3 style="margin-bottom:12px;">
+        Základné údaje
+      </h3>
+
+      <div class="muted small">
+        Meno:
+        <strong>${escapeHtml(member.name || '—')}</strong>
+      </div>
+
+      <div class="muted small">
+        Odznak:
+        <strong>${escapeHtml(badge)}</strong>
+      </div>
+
+      <div class="muted small">
+        Prístupový kód:
+        <strong>${escapeHtml(accessCode)}</strong>
+      </div>
+
+      <div class="muted small">
+        Stav:
+        <strong>${escapeHtml(status)}</strong>
+      </div>
+
+      <div class="muted small">
+        Prihlasovanie:
+        <strong>${escapeHtml(loginStatus)}</strong>
+      </div>
+
+    </div>
+
+<div class="card">
+
+  <h3 style="margin-bottom:6px;">
+    🔐 Roly a funkcie
+  </h3>
+
+  <div
+    class="muted small"
+    style="margin-bottom:10px;"
+  >
+    Aktuálne pridelené oprávnenia používateľa
+  </div>
+
+<div>
+  ${rolesHtml}
+</div>
+
+<div style="margin-top:16px;">
+  <button
+    type="button"
+    class="btn-primary"
+    onclick="saveAdminRoleChanges(${Number(member.id)});"
+  >
+    Uložiť zmeny rolí
+  </button>
+</div>
+
+</div>
+
+<div class="card">
+
+  <h3 style="margin-bottom:6px;">
+    👤 Stav používateľa
+  </h3>
+
+  <div
+    class="muted small"
+    style="margin-bottom:14px;"
+  >
+    ${
+      String(member.status || '')
+        .trim()
+        .toLowerCase() === 'neaktivny'
+        ? 'Používateľ je momentálne neaktívny.'
+        : 'Používateľ je momentálne aktívny.'
+    }
+  </div>
+
+  <button
+    type="button"
+    onclick="toggleAdminMemberActive(
+      ${Number(member.id)},
+      ${
+        String(member.status || '')
+          .trim()
+          .toLowerCase() === 'neaktivny'
+          ? 'true'
+          : 'false'
+      }
+    );"
+    style="
+      background:${
+        String(member.status || '')
+          .trim()
+          .toLowerCase() === 'neaktivny'
+          ? '#08783f'
+          : '#ffffff'
+      };
+      color:${
+        String(member.status || '')
+          .trim()
+          .toLowerCase() === 'neaktivny'
+          ? '#ffffff'
+          : '#b91c1c'
+      };
+      border:1px solid ${
+        String(member.status || '')
+          .trim()
+          .toLowerCase() === 'neaktivny'
+          ? '#08783f'
+          : '#b91c1c'
+      };
+      border-radius:10px;
+      padding:9px 13px;
+      cursor:pointer;
+      font-weight:700;
+    "
+  >
+    ${
+      String(member.status || '')
+        .trim()
+        .toLowerCase() === 'neaktivny'
+        ? '✓ Aktivovať používateľa'
+        : 'Deaktivovať používateľa'
+    }
+  </button>
+
+</div>
+  `;
+
+  usersSection?.classList.add('hidden');
+  detailSection.classList.remove('hidden');
+
+  detailSection.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+  console.log(
+    'ADMIN USER DETAIL:',
+    {
+      member,
+      roles
+    }
+  );
+}
+
+async function toggleAdminMemberActive(
+  memberId,
+  makeActive
+) {
+  const member =
+    appState.data.members.find(
+      item => Number(item.id) === Number(memberId)
+    );
+
+  if (!member) {
+    alert('Používateľ nebol nájdený.');
+    return;
+  }
+
+  const actionText =
+    makeActive
+      ? 'aktivovať'
+      : 'deaktivovať';
+
+  const confirmed = confirm(
+    `Naozaj chcete ${actionText} používateľa?\n\n` +
+    `Používateľ: ${member.name || 'Bez mena'}\n\n` +
+    (
+      makeActive
+        ? 'Používateľ bude znovu aktívny.'
+        : 'Historické údaje používateľa zostanú zachované.'
+    )
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const { data, error } = await db.rpc(
+      'admin_set_member_active',
+      {
+        p_member_id: Number(memberId),
+        p_active: Boolean(makeActive)
+      }
+    );
+
+    if (error || data !== true) {
+      throw error || new Error(
+        'Nepodarilo sa zmeniť stav používateľa.'
+      );
+    }
+
+    const newStatus =
+      makeActive
+        ? 'Aktivny'
+        : 'Neaktivny';
+
+    const memberIndex =
+      appState.data.members.findIndex(
+        item => Number(item.id) === Number(memberId)
+      );
+
+    if (memberIndex >= 0) {
+      appState.data.members[memberIndex] = {
+        ...appState.data.members[memberIndex],
+        status: newStatus
+      };
+    }
+
+    alert(
+      makeActive
+        ? 'Používateľ bol úspešne aktivovaný.'
+        : 'Používateľ bol úspešne deaktivovaný.'
+    );
+
+    openAdminUserDetail(memberId);
+
+  } catch (error) {
+    console.error(
+      'ADMIN MEMBER STATUS ERROR:',
+      error
+    );
+
+    alert(
+      'Stav používateľa sa nepodarilo zmeniť.\n\n' +
+      (
+        error?.message ||
+        'Skontrolujte konzolu.'
+      )
+    );
+  }
+}
+
+function previewAdminRoleChanges(memberId) {
+  const member =
+    appState.data.members.find(
+      item => Number(item.id) === Number(memberId)
+    );
+
+  if (!member) {
+    alert('Používateľ nebol nájdený.');
+    return;
+  }
+
+  const currentRoles =
+    (Array.isArray(appState.data.memberAppRoles)
+      ? appState.data.memberAppRoles
+      : []
+    )
+      .filter(role =>
+        Number(role.member_id) === Number(memberId)
+      )
+      .map(role =>
+        String(role.role_code || '')
+          .trim()
+          .toUpperCase()
+      )
+      .filter(Boolean);
+
+  const selectedRoles =
+    Array.from(
+      document.querySelectorAll(
+        '#adminUserDetailContent input[data-admin-role]:checked'
+      )
+    )
+      .map(input =>
+        String(input.value || '')
+          .trim()
+          .toUpperCase()
+      )
+      .filter(Boolean);
+
+  const rolesToAdd =
+    selectedRoles.filter(
+      role => !currentRoles.includes(role)
+    );
+
+  const rolesToRemove =
+    currentRoles.filter(
+      role => !selectedRoles.includes(role)
+    );
+
+  console.log(
+    'ADMIN ROLE CHANGES:',
+    {
+      memberId: Number(memberId),
+      memberName: member.name,
+      currentRoles,
+      selectedRoles,
+      rolesToAdd,
+      rolesToRemove
+    }
+  );
+
+  if (
+    rolesToAdd.length === 0 &&
+    rolesToRemove.length === 0
+  ) {
+    alert(
+      'Neboli vykonané žiadne zmeny rolí.'
+    );
+    return;
+  }
+
+  const addText =
+    rolesToAdd.length > 0
+      ? rolesToAdd.join(', ')
+      : '—';
+
+  const removeText =
+    rolesToRemove.length > 0
+      ? rolesToRemove.join(', ')
+      : '—';
+
+  alert(
+    'TEST – zmeny sa zatiaľ NEULOŽILI.\n\n' +
+    'Používateľ: ' +
+    (member.name || 'Bez mena') +
+    '\n\n' +
+    'PRIDAŤ:\n' +
+    addText +
+    '\n\n' +
+    'ODOBRAŤ:\n' +
+    removeText
+  );
+}
+
+async function saveAdminRoleChanges(memberId) {
+  const member =
+    appState.data.members.find(
+      item => Number(item.id) === Number(memberId)
+    );
+
+  if (!member) {
+    alert('Používateľ nebol nájdený.');
+    return;
+  }
+
+  const currentRoles =
+    (Array.isArray(appState.data.memberAppRoles)
+      ? appState.data.memberAppRoles
+      : []
+    )
+      .filter(role =>
+        Number(role.member_id) === Number(memberId)
+      )
+      .map(role =>
+        String(role.role_code || '')
+          .trim()
+          .toUpperCase()
+      )
+      .filter(Boolean);
+
+  const selectedRoles =
+    Array.from(
+      document.querySelectorAll(
+        '#adminUserDetailContent input[data-admin-role]:checked'
+      )
+    )
+      .map(input =>
+        String(input.value || '')
+          .trim()
+          .toUpperCase()
+      )
+      .filter(Boolean);
+
+  const rolesToAdd =
+    selectedRoles.filter(
+      role => !currentRoles.includes(role)
+    );
+
+  const rolesToRemove =
+    currentRoles.filter(
+      role => !selectedRoles.includes(role)
+    );
+
+  console.log(
+    'ADMIN ROLE SAVE PREPARED:',
+    {
+      memberId: Number(memberId),
+      memberName: member.name,
+      currentRoles,
+      selectedRoles,
+      rolesToAdd,
+      rolesToRemove
+    }
+  );
+
+  if (
+    rolesToAdd.length === 0 &&
+    rolesToRemove.length === 0
+  ) {
+    alert('Neboli vykonané žiadne zmeny rolí.');
+    return;
+  }
+
+  const addText =
+    rolesToAdd.length > 0
+      ? rolesToAdd.join(', ')
+      : '—';
+
+  const removeText =
+    rolesToRemove.length > 0
+      ? rolesToRemove.join(', ')
+      : '—';
+
+  const confirmed = confirm(
+    'Naozaj chcete uložiť zmeny rolí?\n\n' +
+    'Používateľ: ' +
+    (member.name || 'Bez mena') +
+    '\n\n' +
+    'PRIDAŤ:\n' +
+    addText +
+    '\n\n' +
+    'ODOBRAŤ:\n' +
+    removeText
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    for (const roleCode of rolesToAdd) {
+      const { data, error } = await db.rpc(
+        'admin_add_member_role',
+        {
+          p_member_id: Number(memberId),
+          p_role_code: roleCode
+        }
+      );
+
+      if (error || data !== true) {
+        throw error || new Error(
+          'Nepodarilo sa pridať rolu ' + roleCode
+        );
+      }
+    }
+
+    for (const roleCode of rolesToRemove) {
+      const { data, error } = await db.rpc(
+        'admin_remove_member_role',
+        {
+          p_member_id: Number(memberId),
+          p_role_code: roleCode
+        }
+      );
+
+      if (error || data !== true) {
+        throw error || new Error(
+          'Nepodarilo sa odobrať rolu ' + roleCode
+        );
+      }
+    }
+
+    const { data: freshRoles, error: freshRolesError } =
+      await db
+        .from('member_app_roles')
+        .select('member_id, role_code')
+        .order('member_id', { ascending: true });
+
+    if (freshRolesError) {
+      throw freshRolesError;
+    }
+
+    appState.data.memberAppRoles =
+      freshRoles || [];
+
+    try {
+      localStorage.setItem(
+        'rs_app_member_roles_cache',
+        JSON.stringify(
+          appState.data.memberAppRoles
+        )
+      );
+    } catch (cacheError) {
+      console.warn(
+        'ADMIN ROLES – cache sa nepodarilo aktualizovať:',
+        cacheError
+      );
+    }
+
+    console.log(
+      'ADMIN ROLE SAVE SUCCESS:',
+      {
+        memberId: Number(memberId),
+        memberName: member.name,
+        rolesToAdd,
+        rolesToRemove
+      }
+    );
+
+    alert('Zmeny rolí boli úspešne uložené.');
+
+    openAdminUserDetail(memberId);
+
+  } catch (error) {
+    console.error(
+      'ADMIN ROLE SAVE ERROR:',
+      error
+    );
+
+    alert(
+      'Zmeny rolí sa nepodarilo úplne uložiť.\n\n' +
+      'Nebudeme pokračovať v ďalších zmenách. ' +
+      'Skontrolujte konzolu.'
+    );
+  }
+}
+
+function backToAdminUsers() {
+  const detailSection =
+    document.getElementById('adminUserDetailSection');
+
+  const usersSection =
+    document.getElementById('adminUsersSection');
+
+  detailSection?.classList.add('hidden');
+  usersSection?.classList.remove('hidden');
+
+  usersSection?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function openAdminCreateUser() {
+  const usersSection =
+    document.getElementById('adminUsersSection');
+
+  const detailSection =
+    document.getElementById('adminUserDetailSection');
+
+  const createSection =
+    document.getElementById('adminCreateUserSection');
+
+  if (!createSection) {
+    console.error(
+      'ADMIN CREATE USER – chýba create UI.'
+    );
+    return;
+  }
+
+  usersSection?.classList.add('hidden');
+  detailSection?.classList.add('hidden');
+
+  createSection.classList.remove('hidden');
+
+  document.getElementById('adminCreateUserName').value = '';
+  document.getElementById('adminCreateUserBadge').value = '';
+  document.getElementById('adminCreateUserAccessCode').value = '';
+
+document
+  .querySelectorAll(
+    '#adminCreateUserSection input[data-admin-create-role]'
+  )
+  .forEach(input => {
+    input.checked = false;
+  });
+
+  createSection.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+
+function backToAdminUsersFromCreate() {
+  const usersSection =
+    document.getElementById('adminUsersSection');
+
+  const createSection =
+    document.getElementById('adminCreateUserSection');
+
+  createSection?.classList.add('hidden');
+  usersSection?.classList.remove('hidden');
+
+  usersSection?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function previewAdminCreateUser() {
+  const name = (
+    document.getElementById('adminCreateUserName')?.value || ''
+  ).trim();
+
+  const badge = (
+    document.getElementById('adminCreateUserBadge')?.value || ''
+  ).trim().toUpperCase();
+
+  const accessCode = (
+    document.getElementById('adminCreateUserAccessCode')?.value || ''
+  ).trim().toUpperCase();
+
+  const selectedRoles = Array.from(
+    document.querySelectorAll(
+      '#adminCreateUserSection input[data-admin-create-role]:checked'
+    )
+  ).map(input => input.value);
+
+  if (!name) {
+    alert('Zadajte meno a priezvisko používateľa.');
+    return;
+  }
+
+  if (!badge && !accessCode) {
+    alert(
+      'Zadajte číslo odznaku RS alebo prístupový kód.'
+    );
+    return;
+  }
+
+  if (badge && accessCode) {
+    alert(
+      'Použite iba číslo odznaku RS alebo prístupový kód, nie oboje súčasne.'
+    );
+    return;
+  }
+
+  if (selectedRoles.length === 0) {
+    alert(
+      'Vyberte používateľovi aspoň jednu rolu alebo funkciu.'
+    );
+    return;
+  }
+
+  const roleNames = {
+    CLEN_RS: 'Člen RS',
+    VELITEL_RS: 'Veliteľ RS',
+    DK: 'Disciplinárna komisia',
+    PRESEDA: 'Predseda',
+    PODPRESEDA: 'Podpredseda',
+    TAJOMNIK: 'Tajomník',
+    HOSPODAR: 'Hospodár',
+    POMOCNY_HOSPODAR: 'Pomocný hospodár',
+    ADMIN: 'Administrátor'
+  };
+
+  const rolesText = selectedRoles
+    .map(role => '• ' + (roleNames[role] || role))
+    .join('\n');
+
+  const identityText = badge
+    ? `Číslo odznaku RS: ${badge}`
+    : `Prístupový kód: ${accessCode}`;
+
+  const confirmed = confirm(
+    `Vytvoriť nového používateľa?\n\n` +
+    `Meno: ${name}\n` +
+    `${identityText}\n` +
+    `Stav: Aktívny\n\n` +
+    `Roly a funkcie:\n${rolesText}\n\n` +
+    `Skontrolujte údaje pred pokračovaním.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  createAdminUserWithRoles({
+    name,
+    badge,
+    accessCode,
+    roles: selectedRoles
+  });
+}
+
+async function createAdminUserWithRoles({
+  name,
+  badge,
+  accessCode,
+  roles
+}) {
+  try {
+    const { data, error } = await db.rpc(
+      'admin_create_member_with_roles',
+      {
+        p_name: name,
+        p_badge: badge || null,
+        p_access_code: accessCode || null,
+        p_roles: roles
+      }
+    );
+
+    if (error) {
+      console.error(
+        'ADMIN CREATE USER – chyba:',
+        error
+      );
+
+      alert(
+        'Používateľa sa nepodarilo vytvoriť.\n\n' +
+        error.message
+      );
+
+      return;
+    }
+
+    const newMemberId = Number(data);
+
+    if (!newMemberId) {
+      console.error(
+        'ADMIN CREATE USER – neplatné member ID:',
+        data
+      );
+
+      alert(
+        'Používateľ bol spracovaný, ale aplikácia nezískala jeho ID.'
+      );
+
+      return;
+    }
+
+      const { data: freshMembers, error: membersError } =
+      await db
+        .from('members')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (membersError) {
+      throw membersError;
+    }
+
+    const { data: freshRoles, error: rolesError } =
+      await db
+        .from('member_app_roles')
+        .select('member_id, role_code')
+        .order('member_id', { ascending: true });
+
+    if (rolesError) {
+      throw rolesError;
+    }
+
+    appState.data.members = freshMembers || [];
+    appState.data.memberAppRoles = freshRoles || [];
+
+    alert(
+      'Používateľ bol úspešne vytvorený.\n\n' +
+      'ID používateľa: ' + newMemberId
+    );
+
+    document
+      .getElementById('adminCreateUserSection')
+      ?.classList.add('hidden');
+
+    document
+      .getElementById('adminUsersSection')
+      ?.classList.remove('hidden');
+
+    renderAdminUsers();
+
+  } catch (err) {
+    console.error(
+      'ADMIN CREATE USER – neočakávaná chyba:',
+      err
+    );
+
+    alert(
+      'Pri vytváraní používateľa nastala neočakávaná chyba.'
+    );
+  }
+}
+
+function openAdminUsers() {
+  const currentUser = getCurrentUser();
+
+  const hasAdminAccess =
+    currentUser &&
+    hasAppRole(currentUser.id, 'ADMIN');
+
+  if (!hasAdminAccess) {
+    alert(
+      'Nemáte oprávnenie na prístup k tejto časti aplikácie.'
+    );
+    return;
+  }
+
+  document
+    .getElementById('adminCentrumSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('adminUsersSection')
+    ?.classList.remove('hidden');
+
+  renderAdminUsers();
+
+  document
+    .getElementById('adminUsersSection')
+    ?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+}
+
+async function loadAdminRolesReadOnly() {
+  const container =
+    document.getElementById('adminRolesReadOnly');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML =
+    '<div class="muted small">Načítavam roly a oprávnenia...</div>';
+
+  try {
+    const { data: roles, error: rolesError } = await db
+      .from('app_roles')
+      .select('id, role_code, role_name, is_system, is_active')
+      .eq('is_active', true)
+      .order('role_name', { ascending: true });
+
+    if (rolesError) {
+      throw rolesError;
+    }
+
+    const { data: permissions, error: permissionsError } = await db
+      .from('permissions')
+      .select(
+        'id, permission_code, permission_name, permission_category, access_type, sort_order'
+      )
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (permissionsError) {
+      throw permissionsError;
+    }
+
+    const { data: rolePermissions, error: rolePermissionsError } =
+      await db
+        .from('role_permissions')
+        .select('role_id, permission_id, access_level');
+
+    if (rolePermissionsError) {
+      throw rolePermissionsError;
+    }
+
+    const permissionMap = new Map(
+      (permissions || []).map(item => [
+        Number(item.id),
+        item
+      ])
+    );
+
+    const rolePermissionMap = new Map();
+
+    for (const item of rolePermissions || []) {
+      const roleId = Number(item.role_id);
+
+      if (!rolePermissionMap.has(roleId)) {
+        rolePermissionMap.set(roleId, []);
+      }
+
+      const permission =
+        permissionMap.get(Number(item.permission_id));
+
+      if (!permission) {
+        continue;
+      }
+
+      rolePermissionMap.get(roleId).push({
+        ...permission,
+        access_level:
+          String(item.access_level || 'NONE')
+            .trim()
+            .toUpperCase()
+      });
+    }
+
+    const activeRoles = roles || [];
+
+    if (!activeRoles.length) {
+      container.innerHTML =
+        '<div class="muted small">Neboli nájdené žiadne aktívne roly.</div>';
+      return;
+    }
+
+const getAdminRoleChanges = roleId => {
+  const detail = document.getElementById(
+    'adminRolePermissionDetail'
+  );
+
+  if (!detail) return [];
+
+  const items =
+    rolePermissionMap.get(Number(roleId)) || [];
+
+  const changes = [];
+
+  for (const permission of items) {
+    if (permission.access_type === 'SYSTEM') continue;
+
+    const code = String(permission.permission_code || '');
+    const original = String(
+      permission.access_level || 'NONE'
+    ).toUpperCase();
+
+    const controls = Array.from(
+      detail.querySelectorAll('[data-permission-code]')
+    ).filter(el => el.dataset.permissionCode === code);
+
+    if (!controls.length) continue;
+
+    let selected = 'NONE';
+
+    if (permission.access_type === 'LEVEL') {
+      const checked = controls.find(
+        el => el.type === 'radio' && el.checked
+      );
+
+      if (!checked) continue;
+
+      selected = checked.value;
+    } else {
+      selected = controls[0].checked ? 'ALLOW' : 'NONE';
+    }
+
+    if (selected !== original) {
+      changes.push({
+        permission_id: Number(permission.id),
+        permission_code: code,
+        old_level: original,
+        access_level: selected
+      });
+    }
+  }
+
+  return changes;
+};
+
+    const renderSelectedRole = roleId => {
+      const selectedRole = activeRoles.find(
+        role => Number(role.id) === Number(roleId)
+      );
+
+      const detail =
+        document.getElementById('adminRolePermissionDetail');
+
+      if (!selectedRole || !detail) {
+        return;
+      }
+
+      const items =
+        rolePermissionMap.get(Number(selectedRole.id)) || [];
+
+         const rows = items
+        .sort(
+          (a, b) =>
+            Number(a.sort_order || 0) -
+            Number(b.sort_order || 0)
+        )
+        .filter(
+          permission =>
+            permission.access_type !== 'SYSTEM'
+        )
+        .map(permission => {
+          const permissionCode =
+            String(permission.permission_code || '');
+
+          const accessLevel =
+            String(permission.access_level || 'NONE')
+              .trim()
+              .toUpperCase();
+
+          if (permission.access_type === 'LEVEL') {
+            return `
+              <div
+                style="
+                  padding:12px 0;
+                  border-bottom:1px solid #e5e7eb;
+                "
+              >
+                <div
+                  style="
+                    font-weight:700;
+                    margin-bottom:9px;
+                  "
+                >
+                  ${escapeHtml(permission.permission_name)}
+                </div>
+
+                <div
+                  style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:8px;
+                  "
+                >
+                  <div
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:9px;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="adminRole_${escapeHtml(permissionCode)}"
+                      data-permission-code="${escapeHtml(permissionCode)}"
+                      value="NONE"
+                      ${accessLevel === 'NONE' ? 'checked' : ''}
+                      style="
+                        width:auto;
+                        margin:0;
+                        flex:0 0 auto;
+                      "
+                    >
+
+                    <span>Bez prístupu</span>
+                  </div>
+
+                  <div
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:9px;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="adminRole_${escapeHtml(permissionCode)}"
+                      data-permission-code="${escapeHtml(permissionCode)}"
+                      value="READ"
+                      ${accessLevel === 'READ' ? 'checked' : ''}
+                      style="
+                        width:auto;
+                        margin:0;
+                        flex:0 0 auto;
+                      "
+                    >
+
+                    <span>Čítanie</span>
+                  </div>
+
+                  <div
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:9px;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="adminRole_${escapeHtml(permissionCode)}"
+                      data-permission-code="${escapeHtml(permissionCode)}"
+                      value="EDIT"
+                      ${accessLevel === 'EDIT' ? 'checked' : ''}
+                      style="
+                        width:auto;
+                        margin:0;
+                        flex:0 0 auto;
+                      "
+                    >
+
+                    <span>Úprava</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                gap:9px;
+                padding:9px 0;
+                border-bottom:1px solid #e5e7eb;
+              "
+            >
+              <input
+                type="checkbox"
+                data-permission-code="${escapeHtml(permissionCode)}"
+                ${accessLevel !== 'NONE' ? 'checked' : ''}
+                style="
+                  width:auto;
+                  margin:0;
+                  flex:0 0 auto;
+                "
+              >
+
+              <span>
+                ${escapeHtml(permission.permission_name)}
+              </span>
+            </div>
+          `;
+        })
+        .join('');
+
+      detail.innerHTML = `
+        <div style="margin-bottom:14px;">
+          <strong style="font-size:16px;">
+            ${escapeHtml(selectedRole.role_name)}
+          </strong>
+
+          <div class="muted small">
+            ${escapeHtml(selectedRole.role_code)}
+          </div>
+        </div>
+
+        <div>
+          ${rows}
+        </div>
+
+       <div
+  id="adminRoleUnsavedStatus"
+  class="muted small"
+  style="margin-top:12px;"
+>
+  Žiadne neuložené zmeny.
+</div>
+
+<div
+  style="
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:14px;
+  "
+>
+  <button
+    type="button"
+    id="adminRoleSaveBtn"
+    disabled
+  >
+    Uložiť zmeny
+  </button>
+
+  <button
+    type="button"
+    id="adminRoleCancelBtn"
+    disabled
+  >
+    Zrušiť zmeny
+  </button>
+</div>
+      `;
+    };
+
+    const roleOptions = activeRoles
+      .map(role => `
+        <option value="${Number(role.id)}">
+          ${escapeHtml(role.role_name)}
+        </option>
+      `)
+      .join('');
+
+    container.innerHTML = `
+      <div style="margin-top:14px;">
+        <label
+          for="adminRoleSelect"
+          style="
+            display:block;
+            font-weight:700;
+            margin-bottom:7px;
+          "
+        >
+          Vyberte rolu
+        </label>
+
+        <select
+          id="adminRoleSelect"
+          style="
+            width:100%;
+            max-width:420px;
+            padding:10px;
+          "
+        >
+          ${roleOptions}
+        </select>
+      </div>
+
+      <div
+        id="adminRolePermissionDetail"
+        style="
+          margin-top:16px;
+          padding:14px;
+          border:1px solid #e5e7eb;
+          border-radius:12px;
+        "
+      ></div>
+    `;
+
+    const roleSelect =
+      document.getElementById('adminRoleSelect');
+
+if (roleSelect) {
+
+  const detail = document.getElementById(
+    'adminRolePermissionDetail'
+  );
+
+  let displayedRoleId = roleSelect.value;
+  let adminRoleSaving = false;
+
+  const updateRoleChangesUI = () => {
+    const changes = getAdminRoleChanges(displayedRoleId);
+
+    const status = document.getElementById(
+      'adminRoleUnsavedStatus'
+    );
+
+    const saveBtn = document.getElementById(
+      'adminRoleSaveBtn'
+    );
+
+    const cancelBtn = document.getElementById(
+      'adminRoleCancelBtn'
+    );
+
+    if (status) {
+      status.textContent = changes.length
+        ? `Neuložené zmeny: ${changes.length}`
+        : 'Žiadne neuložené zmeny.';
+    }
+
+    if (saveBtn) {
+      saveBtn.disabled = changes.length === 0;
+    }
+
+    if (cancelBtn) {
+      cancelBtn.disabled = changes.length === 0;
+    }
+  };
+
+  roleSelect.addEventListener('change', () => {
+  if (adminRoleSaving) {
+    roleSelect.value = displayedRoleId;
+    return;
+  }
+
+  const changes = getAdminRoleChanges(displayedRoleId);
+
+    if (changes.length > 0) {
+      const confirmed = confirm(
+        'Máte neuložené zmeny oprávnení. ' +
+        'Pri prepnutí roly sa zahodia. Pokračovať?'
+      );
+
+      if (!confirmed) {
+        roleSelect.value = displayedRoleId;
+        return;
+      }
+    }
+
+    displayedRoleId = roleSelect.value;
+    renderSelectedRole(displayedRoleId);
+    updateRoleChangesUI();
+  });
+
+  detail?.addEventListener('change', () => {
+    updateRoleChangesUI();
+  });
+
+detail?.addEventListener('click', async event => {
+
+  if (adminRoleSaving) return;
+
+  const cancelBtn = event.target.closest(
+    '#adminRoleCancelBtn'
+  );
+
+    if (cancelBtn) {
+      renderSelectedRole(displayedRoleId);
+      updateRoleChangesUI();
+      return;
+    }
+
+    const saveBtn = event.target.closest(
+      '#adminRoleSaveBtn'
+    );
+
+ if (saveBtn) {
+  const changes = getAdminRoleChanges(displayedRoleId);
+
+  if (!changes.length) return;
+
+  const confirmed = confirm(
+    `Naozaj uložiť ${changes.length} zmien oprávnení?`
+  );
+
+if (!confirmed) return;
+
+adminRoleSaving = true;
+roleSelect.disabled = true;
+
+detail.querySelectorAll(
+  'input[data-permission-code]'
+).forEach(input => {
+  input.disabled = true;
+});
+
+saveBtn.disabled = true;
+  const cancelButton = document.getElementById(
+    'adminRoleCancelBtn'
+  );
+  if (cancelButton) cancelButton.disabled = true;
+
+  try {
+    const payload = changes.map(change => ({
+      permission_id: change.permission_id,
+      access_level: change.access_level
+    }));
+
+    const { data, error } = await db.rpc(
+      'admin_set_role_permissions_batch',
+      {
+        p_role_id: Number(displayedRoleId),
+        p_changes: payload
+      }
+    );
+
+    if (error) throw error;
+
+    alert(`Úspešne uložených oprávnení: ${data}`);
+
+    await loadAdminRolesReadOnly();
+
+} catch (error) {
+  console.error('ADMIN ROLE SAVE ERROR:', error);
+
+  alert(
+    'Uloženie oprávnení zlyhalo. ' +
+    'Databázová dávka sa neuložila.'
+  );
+
+} finally {
+  adminRoleSaving = false;
+  roleSelect.disabled = false;
+
+  detail.querySelectorAll(
+    'input[data-permission-code]'
+  ).forEach(input => {
+    input.disabled = false;
+  });
+
+  updateRoleChangesUI();
+}
+}
+  });
+
+  renderSelectedRole(displayedRoleId);
+  updateRoleChangesUI();
+}
+
+    console.log(
+      'ADMIN ROLES READ ONLY:',
+      {
+        roles: (roles || []).length,
+        permissions: (permissions || []).length,
+        rolePermissions: (rolePermissions || []).length
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      'ADMIN ROLES READ ONLY ERROR:',
+      error
+    );
+
+    container.innerHTML =
+      '<div class="muted small">Roly a oprávnenia sa nepodarilo načítať.</div>';
+  }
+}
+
+function openAdminRoles() {
+  const accessLevel =
+    getCachedPermissionLevel('admin.roles');
+
+  if (accessLevel !== 'ALLOW' && accessLevel !== 'MANAGE') {
+    alert(
+      'Nemáte oprávnenie na prístup k tejto časti aplikácie.'
+    );
+    return;
+  }
+
+  document
+    .getElementById('mainMenuSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('adminCentrumSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('adminUsersSection')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('adminRolesSection')
+    ?.classList.remove('hidden');
+
+  loadAdminRolesReadOnly();
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}
+
+async function loadAdminLegislativaReviews(versionId, container) {
+  if (!container) return;
+
+  container.textContent = 'Načítavam históriu preverení...';
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    container.textContent = 'Nemáte oprávnenie.';
+    return;
+  }
+
+  try {
+    const { data, error } = await db
+      .from('legislation_reviews')
+      .select('id,review_status,reviewed_on,review_note,reviewed_by,created_at')
+      .eq('version_id', versionId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    container.replaceChildren();
+
+    if (!data || data.length === 0) {
+      container.textContent = 'Zatiaľ neexistuje žiadne zaznamenané preverenie.';
+      return;
+    }
+
+    const statusLabels = {
+      no_change: '✅ Bez zistenej zmeny',
+      possible_change: '⚠️ Možná zmena – vyžaduje preverenie',
+      confirmed_change: '🔔 Potvrdená zmena – čaká na spracovanie'
+    };
+
+    for (const review of data) {
+
+      let authorName = 'Neuvedený';
+
+      try {
+        const { data: name, error: authorError } = await db.rpc(
+          'get_legislation_review_author',
+          { p_review_id: review.id }
+        );
+
+        if (authorError) throw authorError;
+
+        authorName = name || 'Neuvedený';
+
+      } catch (err) {
+        console.error('ADMIN LEGISLATIVA AUTHOR ERROR:', err);
+        authorName = 'Nepodarilo sa načítať';
+      }
+
+      const item = document.createElement('div');
+      item.style.padding = '10px 0';
+      item.style.borderBottom = '1px solid #ddd';
+
+      const heading = document.createElement('strong');
+      heading.textContent =
+        statusLabels[review.review_status] || review.review_status;
+
+      const details = document.createElement('div');
+      details.className = 'muted small';
+      details.style.whiteSpace = 'pre-line';
+      details.textContent =
+        'Dátum preverenia: ' + (review.reviewed_on || 'Neuvedený') +
+        '\nPreveril: ' + authorName +
+        '\nPoznámka: ' + (review.review_note || 'Bez poznámky');
+
+      item.append(heading, details);
+      container.appendChild(item);
+    }
+
+  } catch (err) {
+    console.error('ADMIN LEGISLATIVA REVIEWS ERROR:', err);
+    container.textContent = 'Nepodarilo sa načítať históriu preverení.';
+  }
+}
+
+async function showAdminLegislativaDetail(documentId, documentTitle) {
+  const container = document.getElementById('adminLegislativaDetail');
+  if (!container) return;
+
+// Ak klikneme na už otvorený dokument, detail zatvoríme.
+if (
+  !container.classList.contains('hidden') &&
+  container.dataset.documentId === String(documentId)
+) {
+  container.classList.add('hidden');
+  container.replaceChildren();
+  delete container.dataset.documentId;
+  document.getElementById('adminLegislativaDocuments')?.classList.remove('hidden');
+  return;
+}
+
+// Pri otvorení iného dokumentu prepíšeme predchádzajúci detail.
+container.dataset.documentId = String(documentId);
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    alert('Nemáte oprávnenie na správu legislatívy.');
+    return;
+  }
+
+// Skryjeme zoznam dokumentov.
+document.getElementById('adminLegislativaDocuments')
+  ?.classList.add('hidden');
+
+// Zobrazíme samostatný detail.
+container.classList.remove('hidden');
+container.replaceChildren();
+
+// Návrat na zoznam.
+const backButton = document.createElement('button');
+backButton.type = 'button';
+backButton.textContent = '← Späť na zoznam dokumentov';
+
+backButton.onclick = () => {
+  container.classList.add('hidden');
+  container.replaceChildren();
+  delete container.dataset.documentId;
+
+  document.getElementById('adminLegislativaDocuments')
+    ?.classList.remove('hidden');
+};
+
+container.appendChild(backButton);
+
+container.classList.remove('hidden');
+
+  const heading = document.createElement('h3');
+  heading.textContent = '📖 ' + documentTitle;
+  container.appendChild(heading);
+
+  // RS APP 168Q.231 – isolated manual document publication PREVIEW.
+  // Documents 3/4/5 only. No RPC, Edge Function call or database write.
+  if ([3, 4, 5].includes(Number(documentId))) {
+    const manualBox = document.createElement('section');
+    manualBox.style.cssText = 'margin:12px 0;padding:14px;border:1px solid #d8e3dc;border-radius:12px;background:#f8fbf9';
+    const manualTitle = document.createElement('h4');
+    manualTitle.textContent = '📄 Nová verzia dokumentu – príprava';
+    manualTitle.style.margin = '0 0 8px';
+    const manualInfo = document.createElement('p');
+    manualInfo.className = 'muted small';
+    manualInfo.textContent = 'Bezpečný náhľad. Zatiaľ nič nepublikuje ani nezapisuje do databázy.';
+    const makeField = (labelText, type, placeholder) => {
+      const wrap = document.createElement('label');
+      wrap.style.cssText = 'display:block;margin:9px 0;font-size:13px';
+      wrap.textContent = labelText;
+      const field = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+      if (type !== 'textarea') field.type = type;
+      field.placeholder = placeholder || '';
+      field.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:9px';
+      if (type === 'textarea') field.rows = 2;
+      wrap.appendChild(field);
+      manualBox.appendChild(wrap);
+      return field;
+    };
+    manualBox.append(manualTitle, manualInfo);
+    const nameField = makeField('Názov novej verzie', 'text', 'Napr. Znenie účinné od 01.01.2027');
+    const dateField = makeField('Účinnosť od', 'date', '');
+    const urlField = makeField('HTTPS odkaz na oficiálny dokument', 'url', 'https://...');
+    const noteField = makeField('Poznámka k zmene', 'textarea', 'Čo sa zmenilo a kto to overil');
+    const previewButton = document.createElement('button');
+    previewButton.type = 'button';
+    previewButton.textContent = 'Skontrolovať vyplnené údaje (bez uloženia)';
+    const previewResult = document.createElement('div');
+    previewResult.className = 'muted small';
+    previewResult.style.marginTop = '8px';
+    previewButton.onclick = () => {
+      let validUrl = false;
+      try {
+        const u = new URL(urlField.value.trim());
+        validUrl = u.protocol === 'https:' && !!u.hostname && !u.username && !u.password;
+      } catch (_) { /* invalid URL */ }
+      if (!nameField.value.trim() || !dateField.value || !validUrl || noteField.value.trim().length < 3) {
+        previewResult.textContent = 'Doplň názov, dátum účinnosti, platný HTTPS odkaz a poznámku (min. 3 znaky). Nič sa neuložilo.';
+      } else {
+        previewResult.textContent = 'Údaje sú formálne vyplnené. Publikovanie je stále vypnuté; nič sa neuložilo.';
+      }
+    };
+    // RS APP 168Q.232 – server connection diagnostic ONLY.
+    // Explicitly false: cannot publish, regardless of server switch.
+    const connectionButton = document.createElement('button');
+    connectionButton.type = 'button';
+    connectionButton.textContent = 'Overiť spojenie so serverom (bez publikovania)';
+    connectionButton.style.marginLeft = '8px';
+    const connectionResult = document.createElement('div');
+    connectionResult.className = 'muted small';
+    connectionResult.style.marginTop = '8px';
+    connectionButton.onclick = async () => {
+      connectionButton.disabled = true;
+      connectionResult.textContent = 'Overujem prihlásenie a ADMIN oprávnenie...';
+      try {
+        const { data, error } = await db.functions.invoke('publish-manual-legislation', {
+          body: { confirm_publish: false }
+        });
+        let response = data;
+        let status = null;
+        if (error && error.context) {
+          status = error.context.status;
+          try { response = await error.context.json(); } catch (_) { response = null; }
+        }
+        if (status === 400 && response?.ok === false &&
+            response?.error === 'Explicit publication confirmation required') {
+          connectionResult.textContent = 'PASS – server overil prihlásenie a ADMIN rolu. Publikovanie bolo bezpečne odmietnuté; nič sa nezapísalo.';
+        } else {
+          connectionResult.textContent = 'NEPOTVRDENÉ – server nevrátil očakávanú diagnostickú odpoveď. Nič sa z tohto tlačidla nepublikuje.';
+          console.warn('MANUAL LEGISLATION DIAGNOSTIC', { status, response, error });
+        }
+      } catch (err) {
+        connectionResult.textContent = 'FAIL – spojenie sa nepodarilo overiť. Bez publikovania.';
+        console.warn('MANUAL LEGISLATION DIAGNOSTIC ERROR', err);
+      } finally {
+        connectionButton.disabled = false;
+      }
+    };
+    // RS APP 168Q.247 – manual publication UI, documents 3/4/5 ONLY.
+    // Explicit double confirmation, server-side ADMIN check and server switch remain mandatory.
+    const publishButton = document.createElement('button');
+    publishButton.type = 'button';
+    publishButton.textContent = 'Skontrolovať a potvrdiť publikovanie';
+    publishButton.style.cssText = 'display:block;margin-top:12px';
+    const publishInfo = document.createElement('div');
+    publishInfo.className = 'muted small';
+    publishInfo.style.marginTop = '6px';
+    publishInfo.textContent = 'Publikovanie vyžaduje výslovné potvrdenie a povolenie na serveri. Pri vypnutom serverovom prepínači sa nič nezapíše.';
+    publishButton.onclick = async () => {
+      const name = nameField.value.trim();
+      const effectiveFrom = dateField.value;
+      const sourceUrl = urlField.value.trim();
+      const note = noteField.value.trim();
+      let validUrl = false;
+      try {
+        const u = new URL(sourceUrl);
+        validUrl = u.protocol === 'https:' && !!u.hostname && !u.username && !u.password;
+      } catch (_) {}
+      if (!name || name.length > 200 || !/^\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
+          !validUrl || sourceUrl.length > 2000 || note.length < 3 || note.length > 2000) {
+        publishInfo.textContent = 'STOP – skontroluj názov, dátum, HTTPS odkaz a poznámku. Nič sa nepublikovalo.';
+        return;
+      }
+      const summary = 'Dokument: ' + documentTitle + ' (ID ' + documentId + ')\n' +
+        'Nová verzia: ' + name + '\nÚčinnosť od: ' + effectiveFrom +
+        '\nZdroj: ' + sourceUrl + '\nPoznámka: ' + note +
+        '\n\nPOZOR: Potvrdením môže vzniknúť nová aktuálna verzia dokumentu. Pokračovať?';
+      if (!window.confirm(summary)) {
+        publishInfo.textContent = 'Publikovanie zrušené. Nič sa neodoslalo.';
+        return;
+      }
+      if (!window.confirm('POSLEDNÉ POTVRDENIE: naozaj publikovať novú verziu dokumentu ID ' + documentId + '?')) {
+        publishInfo.textContent = 'Publikovanie zrušené. Nič sa neodoslalo.';
+        return;
+      }
+      publishButton.disabled = true;
+      publishInfo.textContent = 'Overujem publikovanie na serveri...';
+      try {
+        const { data, error } = await db.functions.invoke('publish-manual-legislation', {
+          body: {
+            document_id: Number(documentId), version_name: name,
+            effective_from: effectiveFrom, source_url: sourceUrl,
+            note, confirm_publish: true
+          }
+        });
+        if (error || data?.ok !== true || Number(data?.document_id) !== Number(documentId) ||
+            !data?.published_version_id) {
+          publishInfo.textContent = 'NEPUBLIKOVANÉ / NEPOTVRDENÉ – server nepotvrdil publikovanie. Skontroluj stav v ADMIN Legislatíve pred ďalším pokusom.';
+          console.warn('MANUAL LEGISLATION PUBLISH NOT CONFIRMED', { error, data });
+          return;
+        }
+        publishInfo.textContent = 'PASS – server potvrdil novú verziu ID ' + data.published_version_id + '. Obnov detail dokumentu na kontrolu histórie.';
+        publishButton.disabled = true;
+        return;
+      } catch (err) {
+        publishInfo.textContent = 'NEPOTVRDENÉ – chyba spojenia. Pred opakovaním over históriu dokumentu, aby nevznikla duplicita.';
+        console.warn('MANUAL LEGISLATION PUBLISH ERROR', err);
+      } finally {
+        // On uncertain outcomes, prevent accidental duplicate submission from this view.
+        publishButton.disabled = true;
+      }
+    };
+    manualBox.append(publishButton, publishInfo);
+    manualBox.append(previewButton, previewResult, connectionButton, connectionResult);
+    container.appendChild(manualBox);
+  }
+
+  const loading = document.createElement('p');
+  loading.textContent = 'Načítavam verzie dokumentu...';
+  container.appendChild(loading);
+
+  try {
+    const { data, error } = await db
+      .from('legislation_versions')
+      .select(
+        'id,version_name,effective_from,effective_to,status,source_url,checked_at,note'
+      )
+      .eq('document_id', documentId)
+      .order('effective_from', { ascending: false });
+
+    if (error) throw error;
+
+    loading.remove();
+
+    if (!data || data.length === 0) {
+      const empty = document.createElement('p');
+      empty.textContent = 'K dokumentu zatiaľ nie sú evidované verzie.';
+      container.appendChild(empty);
+      return;
+    }
+
+    data.forEach(version => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginTop = '8px';
+
+      const title = document.createElement('strong');
+      title.textContent = version.version_name || 'Verzia bez názvu';
+
+ const info = document.createElement('div');
+info.className = 'muted small';
+
+info.style.marginTop = '6px';
+info.style.lineHeight = '1.7';
+
+const formatDate = value => {
+  if (!value) return 'Neuvedené';
+
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  return match
+    ? `${match[3]}.${match[2]}.${match[1]}`
+    : String(value);
+};
+
+info.textContent =
+  'Stav verzie: ' + (version.status || 'Neuvedený') +
+  '\nÚčinnosť od: ' + formatDate(version.effective_from) +
+  '\nÚčinnosť do: ' +
+    (version.effective_to ? formatDate(version.effective_to) : 'Neurčené') +
+  '\nPosledné overenie: ' + formatDate(version.checked_at) +
+  '\nZdroj: ' + (version.source_url || 'Neuvedený') +
+  '\nPoznámka: ' + (version.note || 'Bez poznámky');
+
+info.style.whiteSpace = 'pre-line';
+
+card.append(title, info);
+
+      if (version.source_url) {
+        const link = document.createElement('a');
+        link.href = version.source_url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Otvoriť zdroj ↗';
+        link.style.display = 'block';
+        link.style.marginTop = '8px';
+        card.appendChild(link);
+      }
+
+// ADMIN LEGISLATIVA – KROK 7
+// Príprava formulára preverenia – zatiaľ bez zápisu do DB.
+
+const reviewBox = document.createElement('div');
+reviewBox.style.marginTop = '14px';
+reviewBox.style.paddingTop = '12px';
+reviewBox.style.borderTop = '1px solid #ddd';
+
+const reviewTitle = document.createElement('h4');
+reviewTitle.textContent = '🔎 Preverenie legislatívy';
+reviewTitle.style.margin = '0 0 10px 0';
+
+const reviewStatus = document.createElement('select');
+reviewStatus.style.width = '100%';
+reviewStatus.style.marginBottom = '10px';
+
+[
+  ['', 'Vyber výsledok preverenia'],
+  ['no_change', 'Bez zistenej zmeny'],
+  ['possible_change', 'Možná zmena – vyžaduje preverenie'],
+  ['confirmed_change', 'Zmena potvrdená – čaká na spracovanie']
+].forEach(([value, label]) => {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = label;
+  reviewStatus.appendChild(option);
+});
+
+const reviewDateLabel = document.createElement('div');
+reviewDateLabel.className = 'muted small';
+reviewDateLabel.textContent = 'Dátum preverenia';
+
+const reviewDate = document.createElement('input');
+reviewDate.type = 'date';
+reviewDate.style.width = '100%';
+reviewDate.style.marginBottom = '10px';
+
+const reviewNoteLabel = document.createElement('div');
+reviewNoteLabel.className = 'muted small';
+reviewNoteLabel.textContent = 'Poznámka k prevereniu';
+
+const reviewNote = document.createElement('textarea');
+reviewNote.rows = 3;
+reviewNote.placeholder = 'Čo bolo overené, zdroj, zistenia...';
+reviewNote.style.width = '100%';
+reviewNote.style.boxSizing = 'border-box';
+
+const draftInfo = document.createElement('div');
+draftInfo.className = 'muted small';
+draftInfo.style.marginTop = '10px';
+draftInfo.textContent =
+  'Preverenie sa po uložení zaznamená do histórie. ' +
+  'Uloženie preverenia nemení obsah právneho dokumentu ani jeho verziu.';
+
+// ADMIN LEGISLATIVA – KROK 9E
+// Uloženie preverenia cez serverové RPC.
+
+const saveReviewButton = document.createElement('button');
+saveReviewButton.type = 'button';
+saveReviewButton.textContent = '💾 Uložiť preverenie';
+saveReviewButton.style.marginTop = '12px';
+
+const saveReviewMessage = document.createElement('div');
+saveReviewMessage.className = 'muted small';
+saveReviewMessage.style.marginTop = '8px';
+
+saveReviewButton.addEventListener('click', async () => {
+  if (saveReviewButton.disabled) return;
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    alert('Nemáte oprávnenie na uloženie preverenia.');
+    return;
+  }
+
+  const status = reviewStatus.value;
+  const date = reviewDate.value;
+  const note = reviewNote.value.trim();
+
+  if (!status) {
+    alert('Vyber výsledok preverenia.');
+    return;
+  }
+
+  if (!date) {
+    alert('Vyplň dátum preverenia.');
+    return;
+  }
+
+  if (!version.id) {
+    alert('Chýba identifikátor verzie dokumentu.');
+    return;
+  }
+
+  saveReviewButton.disabled = true;
+  saveReviewButton.textContent = 'Ukladám...';
+  saveReviewMessage.textContent = '';
+
+  try {
+    const { data, error } = await db.rpc(
+      'save_legislation_review',
+      {
+        p_version_id: version.id,
+        p_review_status: status,
+        p_reviewed_on: date,
+        p_review_note: note || null
+      }
+    );
+
+    if (error) throw error;
+
+    saveReviewMessage.textContent =
+      '✅ Preverenie bolo uložené. ID záznamu: ' + data;
+
+saveReviewButton.textContent = '✅ Uložené';
+
+// Obnovenie histórie po úspešnom uložení preverenia
+await loadAdminLegislativaReviews(version.id, historyContent);
+
+// Obnovenie upozornení ADMIN Legislatívy
+await loadAdminLegislativaAlerts();
+
+    // Zabránime opakovanému uloženiu toho istého formulára.
+    // Pri ďalšom preverení sa formulár otvorí nanovo.
+
+  } catch (err) {
+    console.error('ADMIN LEGISLATIVA SAVE REVIEW ERROR:', err);
+
+    saveReviewMessage.textContent =
+      '❌ Uloženie sa nepodarilo: ' +
+      (err.message || 'Neznáma chyba');
+
+    saveReviewButton.disabled = false;
+    saveReviewButton.textContent = '💾 Uložiť preverenie';
+  }
+});
+
+reviewBox.append(
+  reviewTitle,
+  reviewStatus,
+  reviewDateLabel,
+  reviewDate,
+  reviewNoteLabel,
+  reviewNote,
+  draftInfo,
+  saveReviewButton,
+  saveReviewMessage
+);
+
+card.appendChild(reviewBox);
+
+const historyBox = document.createElement('div');
+historyBox.style.marginTop = '18px';
+historyBox.style.paddingTop = '12px';
+historyBox.style.borderTop = '1px solid #ddd';
+
+const historyTitle = document.createElement('h4');
+historyTitle.textContent = '📋 História preverení';
+historyTitle.style.margin = '0 0 10px 0';
+
+const historyContent = document.createElement('div');
+historyContent.className = 'muted small';
+
+historyBox.append(historyTitle, historyContent);
+card.appendChild(historyBox);
+
+loadAdminLegislativaReviews(version.id, historyContent);
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('ADMIN LEGISLATIVA DETAIL ERROR:', err);
+    container.replaceChildren();
+    container.textContent = 'Nepodarilo sa načítať verzie dokumentu.';
+  }
+}
+
+async function loadAdminLegislativaDocuments() {
+  const container = document.getElementById('adminLegislativaDocuments');
+  if (!container) return;
+
+  // Pri opätovnom otvorení ADMIN Legislatívy obnovíme viditeľnosť zoznamu.
+  container.classList.remove('hidden');
+
+// Pri novom načítaní zoznamu zavrieme starý detail.
+const detail = document.getElementById('adminLegislativaDetail');
+
+if (detail) {
+  detail.classList.add('hidden');
+  detail.replaceChildren();
+  delete detail.dataset.documentId;
+}
+
+  const currentUser = getCurrentUser();
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    container.textContent = 'Nemáte oprávnenie.';
+    return;
+  }
+
+  container.textContent = 'Načítavam dokumenty...';
+
+  try {
+    const { data, error } = await db
+      .from('legislation_documents')
+      .select('id,title,official_number,category,document_type')
+      .order('title', { ascending: true });
+
+    if (error) throw error;
+
+    container.replaceChildren();
+
+    if (!data || data.length === 0) {
+      container.textContent = 'V databáze nie sú evidované žiadne dokumenty.';
+      return;
+    }
+
+    data.forEach(doc => {
+      const item = document.createElement('div');
+      item.className = 'card';
+      item.style.marginTop = '8px';
+
+      const title = document.createElement('strong');
+      title.textContent = doc.title || 'Bez názvu';
+
+      const detail = document.createElement('div');
+      detail.className = 'muted small';
+      detail.textContent = [
+        doc.official_number,
+        doc.category,
+        doc.document_type
+      ].filter(Boolean).join(' · ');
+
+item.style.cursor = 'pointer';
+
+item.setAttribute('role', 'button');
+item.tabIndex = 0;
+
+const openDetail = () => {
+  showAdminLegislativaDetail(doc.id, doc.title || 'Bez názvu');
+};
+
+item.addEventListener('click', openDetail);
+
+item.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    openDetail();
+  }
+});
+
+      item.append(title, detail);
+      container.appendChild(item);
+    });
+
+  } catch (err) {
+    console.error('ADMIN LEGISLATIVA LOAD ERROR:', err);
+    container.textContent = 'Nepodarilo sa načítať dokumenty.';
+  }
+}
+
+async function loadAdminLegislativaAlerts() {
+  const container = document.getElementById('adminLegislativaAlerts');
+  if (!container) return;
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    container.replaceChildren();
+    return;
+  }
+
+  container.textContent = '🔔 Načítavam upozornenia...';
+
+  try {
+    // 1. Evidované dokumenty a ich verzie
+    const { data: versions, error: versionsError } = await db
+      .from('legislation_versions')
+      .select('id,version_name,document_id,legislation_documents(title)');
+
+    if (versionsError) throw versionsError;
+
+    // 2. Ručné preverenia ADMINOM
+    const { data: reviews, error: reviewsError } = await db
+      .from('legislation_reviews')
+      .select('id,version_id,review_status,created_at')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false });
+
+    if (reviewsError) throw reviewsError;
+
+    // 3. Záznamy legislatívneho radaru
+    const { data: checks, error: checksError } = await db
+      .from('legislation_checks')
+      .select(
+        'id,document_id,check_status,review_status,checked_at,note,published_version_id,published_at'
+      )
+      .order('checked_at', { ascending: false })
+      .order('id', { ascending: false });
+
+    if (checksError) throw checksError;
+
+    // Mapa dokumentov podľa ID
+    const documentsById = new Map();
+
+    for (const version of versions || []) {
+      const key = String(version.document_id);
+
+      if (!documentsById.has(key)) {
+        documentsById.set(
+          key,
+          version.legislation_documents?.title || 'Neznámy dokument'
+        );
+      }
+    }
+
+    // Posledné ručné preverenie každej verzie
+    const latestByVersion = new Map();
+
+    for (const review of reviews || []) {
+      const key = String(review.version_id);
+
+      if (!latestByVersion.has(key)) {
+        latestByVersion.set(key, review);
+      }
+    }
+
+    // Upozornenia z ručných preverení
+    const manualAlerts = (versions || [])
+      .map(version => ({
+        version,
+        review: latestByVersion.get(String(version.id))
+      }))
+      .filter(item =>
+        item.review &&
+        (
+          item.review.review_status === 'possible_change' ||
+          item.review.review_status === 'confirmed_change'
+        )
+      );
+
+// Otvorené a potvrdené podnety legislatívneho radaru
+const radarAlerts = (checks || []).filter(check => {
+
+  // WORK 168Q.221: Publikovane podnety zostavaju v DB/historii,
+  // ale uz nepatria medzi otvorene upozornenia.
+  if (check.published_version_id != null || check.published_at != null) {
+    return false;
+  }
+
+  // Zamietnuté podnety nezobrazujeme
+  if (check.review_status === 'dismissed') {
+    return false;
+  }
+
+  // Potvrdené zmeny zostávajú viditeľné
+  if (check.review_status === 'confirmed') {
+    return check.check_status === 'possible_change';
+  }
+
+  // Nové podnety čakajúce na preverenie
+  return (
+    check.review_status === null ||
+    check.review_status === 'pending'
+  ) && (
+    check.check_status === 'possible_change' ||
+    check.check_status === 'source_error'
+  );
+
+});
+
+    // 4. Vykreslenie panelu
+    container.replaceChildren();
+
+    const heading = document.createElement('h3');
+    heading.textContent = '🔔 Dokumenty vyžadujúce pozornosť';
+    heading.style.marginTop = '0';
+    container.appendChild(heading);
+
+    if (manualAlerts.length === 0 && radarAlerts.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'muted small';
+      empty.textContent =
+        'Žiadne otvorené upozornenia zo zaznamenaných preverení a kontrol radaru.';
+      container.appendChild(empty);
+      return;
+    }
+
+    // 5. Ručné preverenia
+    for (const item of manualAlerts) {
+      const row = document.createElement('div');
+      row.style.padding = '10px 0';
+      row.style.borderBottom = '1px solid #ddd';
+
+      const label = document.createElement('strong');
+      label.textContent =
+        item.review.review_status === 'confirmed_change'
+          ? '🔔 Potvrdená zmena – čaká na spracovanie'
+          : '⚠️ Možná zmena – vyžaduje preverenie';
+
+      const description = document.createElement('div');
+      description.className = 'muted small';
+      description.style.whiteSpace = 'pre-line';
+      description.textContent =
+        'Dokument: ' +
+        (item.version.legislation_documents?.title || 'Neznámy dokument') +
+        '\nVerzia: ' +
+        (item.version.version_name || 'Bez názvu');
+
+      row.append(label, description);
+      container.appendChild(row);
+    }
+
+    // 6. Podnety legislatívneho radaru
+    for (const check of radarAlerts) {
+      const row = document.createElement('div');
+      row.style.padding = '10px 0';
+      row.style.borderBottom = '1px solid #ddd';
+
+      const label = document.createElement('strong');
+
+     label.textContent =
+  check.review_status === 'confirmed'
+    ? '🔔 Radar – potvrdená zmena, čaká na spracovanie'
+    : check.check_status === 'source_error'
+      ? '⚙️ Radar – problém pri kontrole zdroja'
+      : '⚠️ Radar – možná zmena legislatívy';
+
+      const description = document.createElement('div');
+      description.className = 'muted small';
+      description.style.whiteSpace = 'pre-line';
+
+      description.textContent =
+        'Dokument: ' +
+        (documentsById.get(String(check.document_id)) || 'Neznámy dokument') +
+        '\nKontrola: ' + (check.checked_at || 'Neuvedená') +
+        '\nPoznámka: ' + (check.note || 'Bez poznámky');
+
+      row.append(label, description);
+
+// WORK 168Q.220: Iba diagnostika schvaleneho podnetu.
+// Ziadny publish:true, ziadna zmena SQL ani serveroveho prepinaca.
+if (check.review_status === 'confirmed' && check.check_status === 'possible_change') {
+  const verifyBox = document.createElement('div');
+  verifyBox.style.marginTop = '10px';
+  const verifyButton = document.createElement('button');
+  verifyButton.type = 'button';
+  verifyButton.textContent = '🔍 Overiť pripravenosť publikovania';
+  const verifyStatus = document.createElement('div');
+  verifyStatus.className = 'muted small';
+  verifyStatus.style.marginTop = '6px';
+  verifyStatus.textContent = 'Len diagnostika. Publikovanie je v tomto rozhraní vypnuté.';
+  verifyButton.onclick = async () => {
+    const activeUser = getCurrentUser();
+    if (!activeUser || !hasAppRole(activeUser.id, 'ADMIN')) {
+      verifyStatus.textContent = 'STOP – vyžaduje sa ADMIN.';
+      return;
+    }
+    verifyButton.disabled = true;
+    verifyStatus.textContent = 'Preverujem oficiálny zdroj a pripravenosť, bez zápisu...';
+    try {
+      const { data, error } = await db.functions.invoke('approve-legislation-check', {
+        body: { check_id: Number(check.id), source_diagnostic: true, publish: false }
+      });
+      if (error) throw error;
+      if (data?.mode !== 'diagnostic_only' || data?.database_write !== false ||
+          data?.admin_verified !== true || data?.check_id !== check.id) {
+        verifyStatus.textContent = 'STOP – neočakávaná odpoveď diagnostiky. Publikovanie sa nespustilo z tohto tlačidla.';
+        console.warn('LEGISLATION PUBLICATION DIAGNOSTIC RESPONSE', data);
+        return;
+      }
+      if (data.eligible_for_verification === true && data.verification_passed === true &&
+          data.matches_approved_check === true && data.newer_than_current === true) {
+        verifyStatus.textContent = 'PASS – podnet je podľa serverovej diagnostiky pripravený. Nová verzia NEBOLA publikovaná.';
+      } else {
+        verifyStatus.textContent = 'NEPRIPRAVENÉ – podnet alebo oficiálny zdroj nespĺňa podmienky. Bez publikovania.';
+        console.info('LEGISLATION PUBLICATION DIAGNOSTIC DETAILS', data);
+      }
+    } catch (err) {
+      console.error('LEGISLATION PUBLICATION DIAGNOSTIC ERROR', err);
+      verifyStatus.textContent = 'FAIL – diagnostiku sa nepodarilo dokončiť. Bez potvrdeného PASS.';
+    } finally {
+      verifyButton.disabled = false;
+    }
+  };
+  verifyBox.append(verifyButton, verifyStatus);
+  row.appendChild(verifyBox);
+}
+
+// Rozhodovanie iba pri otvorenom podnete
+if (
+  check.review_status === null ||
+  check.review_status === 'pending'
+) {
+  const actions = document.createElement('div');
+  actions.style.marginTop = '10px';
+
+  const reviewNote = document.createElement('textarea');
+  reviewNote.rows = 2;
+  reviewNote.placeholder = 'Povinný dôvod rozhodnutia ADMINA...';
+  reviewNote.style.width = '100%';
+  reviewNote.style.boxSizing = 'border-box';
+
+  const confirmButton = document.createElement('button');
+  confirmButton.type = 'button';
+  confirmButton.textContent = '✅ Potvrdiť zmenu';
+
+  const dismissButton = document.createElement('button');
+  dismissButton.type = 'button';
+  dismissButton.textContent = '❌ Zamietnuť podnet';
+  dismissButton.style.marginLeft = '8px';
+
+  const saveDecision = async (status) => {
+    const note = reviewNote.value.trim();
+
+    if (!note) {
+      alert('Vyplň dôvod rozhodnutia.');
+      return;
+    }
+
+    const decisionName =
+      status === 'confirmed' ? 'potvrdiť' : 'zamietnuť';
+
+    if (!confirm(
+      'Naozaj chceš ' + decisionName +
+      ' tento legislatívny podnet?'
+    )) {
+      return;
+    }
+
+    confirmButton.disabled = true;
+    dismissButton.disabled = true;
+
+    try {
+      const { error } = await db.rpc(
+        'review_legislation_check',
+        {
+          p_check_id: check.id,
+          p_review_status: status,
+          p_review_note: note
+        }
+      );
+
+      if (error) throw error;
+
+      await loadAdminLegislativaAlerts();
+
+    } catch (err) {
+      console.error('LEGISLATION REVIEW ERROR:', err);
+      alert(
+        'Rozhodnutie sa nepodarilo uložiť: ' +
+        (err.message || 'Neznáma chyba')
+      );
+
+      confirmButton.disabled = false;
+      dismissButton.disabled = false;
+    }
+  };
+
+  confirmButton.onclick = () => saveDecision('confirmed');
+  dismissButton.onclick = () => saveDecision('dismissed');
+
+  actions.append(reviewNote, confirmButton, dismissButton);
+  row.appendChild(actions);
+}
+
+container.appendChild(row);
+    }
+
+  } catch (err) {
+    console.error('ADMIN LEGISLATIVA ALERTS ERROR:', err);
+    container.textContent = 'Nepodarilo sa načítať upozornenia.';
+  }
+}
+
+// WORK 168Q – iba diagnostické spustenie existujúcej Edge Function.
+// Bez zmeny offline, databázových zápisov alebo iných modulov.
+let adminRadarDiagnosticRunning = false;
+async function runAdminLegislationRadarDiagnostic() {
+  const status = document.getElementById('adminRadarDiagnosticStatus');
+  const button = document.getElementById('adminRadarDiagnosticButton');
+  if (!status || !button || adminRadarDiagnosticRunning) return;
+
+  const currentUser = getCurrentUser();
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    status.textContent = 'STOP – vyžaduje sa rola ADMIN.';
+    return;
+  }
+
+  adminRadarDiagnosticRunning = true;
+  button.disabled = true;
+  status.textContent = 'Prebieha diagnostická kontrola legislatívy. Bez zápisu do databázy...';
+  try {
+    const { data, error } = await db.functions.invoke('legislation-radar-admin', {
+      body: { mode: 'diagnostic' }
+    });
+    if (error) throw error;
+    if (!data || data.ok !== true || data.mode !== 'diagnostic_only' ||
+        data.database_write !== false || data.documents_checked !== 4 ||
+        data.all_successful !== true) {
+      status.textContent = 'STOP – diagnostika nevrátila očakávaný výsledok. Bez potvrdeného PASS.';
+      console.warn('ADMIN RADAR DIAGNOSTIC UNEXPECTED RESPONSE', data);
+      return;
+    }
+    status.textContent = 'PASS – skontrolované 4/4 dokumenty. Diagnostický režim, bez zápisu do databázy.';
+    await loadAdminLegislativaAlerts();
+  } catch (error) {
+    console.error('ADMIN RADAR DIAGNOSTIC ERROR:', error);
+    status.textContent = 'FAIL – kontrolu sa nepodarilo dokončiť. Žiadny PASS nepotvrdený.';
+  } finally {
+    adminRadarDiagnosticRunning = false;
+    button.disabled = false;
+  }
+}
+
+function openAdminLegislativaModule() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || !hasAppRole(currentUser.id, 'ADMIN')) {
+    alert('Nemáte oprávnenie na správu legislatívy.');
+    return;
+  }
+
+  document.getElementById('mainMenuSection')?.classList.add('hidden');
+  document.getElementById('adminCentrumSection')?.classList.add('hidden');
+
+  document.getElementById('backToMenuSection')?.classList.remove('hidden');
+  document.getElementById('adminLegislativaSection')?.classList.remove('hidden');
+
+loadAdminLegislativaDocuments();
+loadAdminLegislativaAlerts();
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openAdminCentrum() {
+  const currentUser = getCurrentUser();
+
+  const hasAdminAccess =
+    currentUser &&
+    hasAppRole(currentUser.id, 'ADMIN');
+
+  if (!hasAdminAccess) {
+    alert(
+      'Nemáte oprávnenie na prístup k tejto časti aplikácie.'
+    );
+    return;
+  }
+
+  document.getElementById('mainMenuSection')?.classList.add('hidden');
+  document.getElementById('backToMenuSection')?.classList.remove('hidden');
+
+  document.getElementById('appSection')?.classList.add('hidden');
+  document.getElementById('dashboardSection')?.classList.add('hidden');
+  document.getElementById('legacyTabs')?.classList.add('hidden');
+
+  document.getElementById('graphsOnlySection')?.classList.add('hidden');
+  document.getElementById('dashboardCardsSection')?.classList.add('hidden');
+  document.getElementById('appOverviewSection')?.classList.add('hidden');
+  document.getElementById('filterSection')?.classList.add('hidden');
+
+  document.getElementById('asistentRSSection')?.classList.add('hidden');
+  document.getElementById('disciplinarnaKomisiaSection')?.classList.add('hidden');
+  document.getElementById('sluzobneVozidlaSection')?.classList.add('hidden');
+  document.getElementById('infoVelitelaSection')?.classList.add('hidden');
+  document.getElementById('revirZisteniaSection')?.classList.add('hidden');
+  document.getElementById('evidenciaUlovkovSection')?.classList.add('hidden');
+  document.getElementById('legislativaSection')?.classList.add('hidden');
+  document.getElementById('adminRolesSection')?.classList.add('hidden');
+  document.getElementById('adminCentrumSection')?.classList.remove('hidden');
+
+  document
+    .getElementById('adminCentrumSection')
+    ?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+}
+
+function updateAdminCentrumMenuAccess() {
+  const currentUser = getCurrentUser();
+  const menuItem = document.getElementById('adminCentrumMenuItem');
+
+  if (!menuItem) {
+    return;
+  }
+
+  const hasAdminAccess =
+    currentUser &&
+    hasAppRole(currentUser.id, 'ADMIN');
+
+  const label = menuItem.querySelector('.admin-centrum-menu-label');
+
+  if (label) {
+    label.textContent = hasAdminAccess
+      ? 'ADMIN CENTRUM'
+      : 'ADMIN CENTRUM 🔒';
+  }
+}
+
 function finishLogin(member) {
   appState.currentUserId = member.id;
 
@@ -9239,8 +12968,9 @@ function finishLogin(member) {
   document.getElementById('checkTimeFrom').value = teraz;
   document.getElementById('checkTimeTo').value = teraz;
 
- renderAll();
+renderAll();
 updateDkAccess();
+updateAdminCentrumMenuAccess();
 updateSyncStatusIndicator();
 updateMainWelcome();
 updateNotificationBadge();
@@ -9882,9 +13612,22 @@ if (!navigator.onLine) {
     member.name
   );
 
-  finishLogin(member);
-  return;
+const cachedPermissionsLoaded =
+  loadPermissionsFromOfflineCache(member.id);
+
+if (!cachedPermissionsLoaded) {
+  appState.permissions = {};
+
+  console.warn(
+    'PERMISSIONS - offline cache nebola dostupná pre:',
+    member.name
+  );
 }
+
+finishLogin(member);
+return;
+}
+
 
 const authResult =
   await db.auth.signInWithPassword({
@@ -9935,6 +13678,20 @@ if (!offlineVerifierCreated) {
 } else {
   console.log(
     'OFFLINE AUTH – verifier pripravený pre:',
+    member.name
+  );
+}
+
+const permissionsLoaded =
+  await loadCurrentPermissions();
+
+if (permissionsLoaded) {
+  savePermissionsToOfflineCache(member.id);
+} else {
+  appState.permissions = {};
+
+  console.warn(
+    'PERMISSIONS - online načítanie po prihlásení zlyhalo pre:',
     member.name
   );
 }
@@ -9994,12 +13751,32 @@ async function restoreAuthSession() {
       return false;
     }
 
-    finishLogin(member);
+ const permissionsLoaded =
+  await loadCurrentPermissions();
 
-    console.log(
-      'AUTH RESTORE – session úspešne obnovená:',
+if (permissionsLoaded) {
+  savePermissionsToOfflineCache(member.id);
+} else {
+  const cachedPermissionsLoaded =
+    loadPermissionsFromOfflineCache(member.id);
+
+  if (!cachedPermissionsLoaded) {
+    appState.permissions = {};
+
+    console.warn(
+      'PERMISSIONS - pri obnovení session neboli dostupné serverové ani lokálne permissions pre:',
       member.name
     );
+  }
+}
+
+
+finishLogin(member);
+
+console.log(
+  'AUTH RESTORE – session úspešne obnovená:',
+  member.name
+);
 
     return true;
 
@@ -10023,9 +13800,10 @@ async function restoreAuthSession() {
       return;
     }
 
-    appState.currentUserId = null;
+appState.currentUserId = null;
+appState.permissions = {};
 
-    document.getElementById('appSection').classList.add('hidden');
+document.getElementById('appSection').classList.add('hidden');
     document.getElementById('dashboardSection').classList.add('hidden');
     document.getElementById('mainMenuSection').classList.add('hidden');
     document.getElementById('filterSection').classList.add('hidden');
@@ -16905,6 +20683,16 @@ document.getElementById('revirZisteniaSection')?.classList.add('hidden');
 
 document.getElementById('evidenciaUlovkovSection')?.classList.add('hidden');
 
+document.getElementById('legislativaSection')?.classList.add('hidden');
+
+document.getElementById('adminCentrumSection')?.classList.add('hidden');
+
+document.getElementById('adminLegislativaSection')?.classList.add('hidden');
+
+document.getElementById('adminUsersSection')?.classList.add('hidden');
+
+document.getElementById('adminRolesSection')?.classList.add('hidden');
+
 updateInfoVelitelaAccess();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -18497,6 +22285,15 @@ const ASISTENT_RS_FISH_IMAGES = {
 };
 
 function openAsistentRSModule() {
+
+  const assistantAccess =
+    getCachedPermissionLevel('module.assistant');
+
+  if (assistantAccess !== 'ALLOW' && assistantAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Asistentovi RS.');
+    return;
+  }
+
   document.getElementById('mainMenuSection').classList.add('hidden');
   document.getElementById('backToMenuSection').classList.remove('hidden');
 
@@ -18516,7 +22313,463 @@ function openAsistentRSModule() {
   document.getElementById('asistentRSSection').scrollIntoView({ behavior: 'smooth' });
 }
 
+async function loadCurrentLegislation() {
+  try {
+   const { data, error } = await db
+  .from('legislation_versions')
+      .select(`
+        id,
+        document_id,
+        version_name,
+        effective_from,
+        effective_to,
+        status,
+        source_url,
+        checked_at,
+        note,
+        legislation_documents (
+          id,
+          title,
+          category,
+          document_type,
+          official_number,
+          source_name,
+          official_url,
+          scope,
+          organization_id,
+          is_active
+        )
+      `)
+      .eq('status', 'current');
+
+    if (error) {
+      console.error('LEG-11A ERROR:', error);
+      return;
+    }
+
+    console.log('LEG-11A CURRENT LEGISLATION:', data);
+const list = document.getElementById('legislativaDocumentsList');
+
+if (!list) return;
+
+if (!data || data.length === 0) {
+  list.innerHTML = `
+    <div class="note">
+      Momentálne nie sú dostupné žiadne aktuálne legislatívne dokumenty.
+    </div>
+  `;
+  return;
+}
+
+const categoryConfig = {
+  rybarstvo: {
+    title: '🎣 Rybárstvo',
+    order: 1
+  },
+
+  rybarska_straz: {
+    title: '🛡️ Rybárska stráž',
+    order: 2
+  },
+
+  predpisy_srz: {
+    title: '📘 Predpisy SRZ',
+    order: 3
+  },
+
+  miestne_predpisy: {
+    title: '📍 Miestne predpisy',
+    order: 4
+  },
+
+  ochrana_revirov_prirody: {
+    title: '🌿 Ochrana revírov a prírody',
+    order: 5
+  },
+
+  suvisiaca_legislativa: {
+    title: '⚖️ Súvisiaca legislatíva',
+    order: 6
+  }
+};
+
+const groupedDocuments = {};
+
+data.forEach(item => {
+  const doc = item.legislation_documents;
+
+  if (!doc) return;
+
+  const category = doc.category || 'ostatne';
+
+  if (!groupedDocuments[category]) {
+    groupedDocuments[category] = [];
+  }
+
+  groupedDocuments[category].push(item);
+});
+
+const sortedCategories = Object.keys(groupedDocuments)
+  .sort((a, b) => {
+    const orderA =
+      categoryConfig[a]?.order ?? 999;
+
+    const orderB =
+      categoryConfig[b]?.order ?? 999;
+
+    return orderA - orderB;
+  });
+
+list.innerHTML = sortedCategories.map(category => {
+
+  const categoryInfo =
+    categoryConfig[category] || {
+      title: '📄 Ostatné dokumenty',
+      order: 999
+    };
+
+  const items = groupedDocuments[category];
+
+  return `
+    <div class="legislation-category">
+
+      <h3 style="margin:6px 0 12px 0;">
+        ${categoryInfo.title}
+      </h3>
+
+      ${items.map(item => {
+        const doc = item.legislation_documents;
+
+        return `
+          <div class="card legislation-card">
+
+            <div
+              class="muted small"
+              style="margin-bottom:6px;"
+            >
+         ${ 
+  doc.document_type === 'zakon'
+    ? 'Zákon'
+    : doc.document_type === 'vyhlaska'
+      ? 'Vyhláška'
+      : doc.document_type === 'rybarsky_poriadok'
+        ? 'Miestny rybársky poriadok'
+        : doc.document_type === 'disciplinarny_poriadok'
+  ? 'Disciplinárny poriadok SRZ'
+  : doc.document_type === 'usmernenie_rs'
+    ? 'Usmernenie RS'
+    : 'Dokument'
+}
+            </div>
+
+            <h3 style="margin:0 0 8px 0;">
+              ${
+                doc.official_number
+                  ? (
+                     doc.document_type === 'zakon'
+  ? (
+      doc.official_number === '216/2018 Z. z.'
+        ? 'Zákon č. 216/2018 Z. z. o rybárstve'
+        : doc.title
+    )
+                        : doc.document_type === 'vyhlaska'
+                          ? `Vyhláška č. ${doc.official_number}`
+                          : doc.title
+                    )
+                  : doc.title
+              }
+            </h3>
+
+            <div class="small">
+              ✓ Aktuálne znenie
+            </div>
+
+            <div
+              class="muted small"
+              style="margin-top:4px;"
+            >
+              ${
+                item.effective_from
+                  ? `Účinné od ${new Date(
+                      item.effective_from
+                    ).toLocaleDateString('sk-SK')}`
+                  : item.version_name || ''
+              }
+            </div>
+
+            <div
+              class="muted small"
+              style="margin-top:4px;"
+            >
+              Zdroj: ${doc.source_name || 'Oficiálny zdroj'}
+            </div>
+
+            <div
+              style="
+                margin-top:12px;
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+
+              ${item.source_url ? `
+                <button
+                  type="button"
+                  class="legislation-open-btn"
+                  onclick="window.open('${item.source_url}', '_blank');"
+                >
+                  Otvoriť dokument
+                </button>
+              ` : ''}
+
+              <button
+                type="button"
+                class="legislation-history-btn"
+                onclick="loadLegislationHistory(
+                  ${doc.id},
+                  '${doc.title.replace(/'/g, "\\'")}'
+                );"
+              >
+                História verzií
+              </button>
+
+            </div>
+
+          </div>
+        `;
+      }).join('')}
+
+    </div>
+  `;
+}).join('');  } catch (err) {
+    console.error('LEG-11A EXCEPTION:', err);
+  }
+}
+
+async function loadLegislationHistory(documentId, documentTitle = '') {
+  try {
+    const { data, error } = await db
+      .from('legislation_versions')
+      .select(`
+        id,
+        document_id,
+        version_name,
+        effective_from,
+        effective_to,
+        status,
+        source_url,
+        checked_at,
+        note
+      `)
+      .eq('document_id', documentId)
+      .order('effective_from', { ascending: false });
+
+    if (error) {
+      console.error('LEG-14D HISTORY ERROR:', error);
+      return [];
+    }
+
+    console.log(
+      `LEG-14D HISTORY document_id=${documentId}:`,
+      data
+    );
+
+    const versions = data || [];
+
+    if (versions.length === 0) {
+      alert('Pre tento dokument nie je dostupná história verzií.');
+      return [];
+    }
+
+    const existing =
+      document.getElementById('legislationHistoryOverlay');
+
+    if (existing) {
+      existing.remove();
+    }
+
+    const overlay = document.createElement('div');
+
+    overlay.id = 'legislationHistoryOverlay';
+
+    overlay.style.cssText = `
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      z-index:99999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      box-sizing:border-box;
+    `;
+
+    overlay.innerHTML = `
+      <div style="
+        width:min(560px, 100%);
+        max-height:85vh;
+        overflow:auto;
+        background:#fff;
+        border-radius:16px;
+        padding:20px;
+        box-sizing:border-box;
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:12px;
+          margin-bottom:16px;
+        ">
+         <div>
+  <h3 style="margin:0;">
+    História verzií
+  </h3>
+
+  ${documentTitle ? `
+    <div class="muted small" style="margin-top:4px;">
+      ${documentTitle}
+    </div>
+  ` : ''}
+</div>
+
+          <button
+            type="button"
+            id="closeLegislationHistory"
+            style="
+              border:0;
+              background:#f3f4f6;
+              border-radius:10px;
+              padding:8px 12px;
+              cursor:pointer;
+            "
+          >
+            Zavrieť
+          </button>
+        </div>
+
+        ${versions.map(version => `
+          <div style="
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            padding:14px;
+            margin-bottom:10px;
+          ">
+
+            <strong>
+              ${version.status === 'current'
+                ? '✓ Aktuálne znenie'
+                : 'Predchádzajúce znenie'}
+            </strong>
+
+            <div style="margin-top:6px;">
+              ${version.version_name || ''}
+            </div>
+
+            <div class="muted small" style="margin-top:5px;">
+              ${
+                version.effective_from
+                  ? `Účinné od ${new Date(
+                      version.effective_from
+                    ).toLocaleDateString('sk-SK')}`
+                  : ''
+              }
+
+              ${
+                version.effective_to
+                  ? ` do ${new Date(
+                      version.effective_to
+                    ).toLocaleDateString('sk-SK')}`
+                  : ''
+              }
+            </div>
+
+            ${version.source_url ? `
+              <div style="margin-top:10px;">
+                <button
+                  type="button"
+                  class="legislation-open-btn"
+                  onclick="window.open('${version.source_url}', '_blank');"
+                >
+                  Otvoriť túto verziu
+                </button>
+              </div>
+            ` : ''}
+
+          </div>
+        `).join('')}
+
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document
+      .getElementById('closeLegislationHistory')
+      ?.addEventListener('click', () => {
+        overlay.remove();
+      });
+
+    overlay.addEventListener('click', event => {
+      if (event.target === overlay) {
+        overlay.remove();
+      }
+    });
+
+    return versions;
+
+  } catch (err) {
+    console.error('LEG-14D HISTORY EXCEPTION:', err);
+    return [];
+  }
+}
+
+function openLegislativaModule() {
+
+  document.getElementById('mainMenuSection')?.classList.add('hidden');
+  document.getElementById('backToMenuSection')?.classList.remove('hidden');
+
+  document.getElementById('appSection')?.classList.add('hidden');
+  document.getElementById('dashboardSection')?.classList.add('hidden');
+  document.getElementById('legacyTabs')?.classList.add('hidden');
+
+  document.getElementById('graphsOnlySection')?.classList.add('hidden');
+  document.getElementById('dashboardCardsSection')?.classList.add('hidden');
+  document.getElementById('appOverviewSection')?.classList.add('hidden');
+  document.getElementById('filterSection')?.classList.add('hidden');
+
+  document.getElementById('asistentRSSection')?.classList.add('hidden');
+  document.getElementById('disciplinarnaKomisiaSection')?.classList.add('hidden');
+  document.getElementById('sluzobneVozidlaSection')?.classList.add('hidden');
+  document.getElementById('infoVelitelaSection')?.classList.add('hidden');
+  document.getElementById('revirZisteniaSection')?.classList.add('hidden');
+  document.getElementById('evidenciaUlovkovSection')?.classList.add('hidden');
+
+  document.getElementById('legislativaSection')?.classList.remove('hidden');
+
+  document
+    .getElementById('legislativaSection')
+    ?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+loadCurrentLegislation();
+
+}
+
 function openSluzobneVozidlaModule() {
+
+  const vehiclesAccess =
+    getCachedPermissionLevel('module.vehicles');
+
+  if (vehiclesAccess !== 'ALLOW' && vehiclesAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Služobným vozidlám.');
+    return;
+  }
+
   document.getElementById('mainMenuSection').classList.add('hidden');
   document.getElementById('backToMenuSection').classList.remove('hidden');
 
@@ -18643,6 +22896,7 @@ async function loadDisciplinarnePripady() {
       doba_opatrenia,
       stupen_previnenia,
       disciplinarne_previnenie,
+      dovod_zastavenia,
       zavinenie,
       vznikla_skoda,
       predchadzajuce_opatrenie,
@@ -19321,12 +23575,59 @@ function showDisciplinarnyPripadDetail(id) {
     Disciplinárne previnenie
   </label>
 
-  <input
+<input
     id="dkDisciplinarnePrevinenie"
     type="text"
     placeholder="Uveď disciplinárne previnenie"
     autocomplete="off"
   >
+</div>
+
+<div
+  id="dkDovodZastaveniaBox"
+  class="field hidden"
+>
+  <label for="dkDovodZastavenia">
+    Dôvod zastavenia disciplinárneho konania
+  </label>
+
+  <select id="dkDovodZastavenia">
+    <option value="">
+      Vyber dôvod podľa § 18 ods. 1 DP SRZ
+    </option>
+
+    <option value="a">
+      § 18 ods. 1 písm. a)
+    </option>
+
+    <option value="b">
+      § 18 ods. 1 písm. b)
+    </option>
+
+    <option value="c">
+      § 18 ods. 1 písm. c)
+    </option>
+
+    <option value="d">
+      § 18 ods. 1 písm. d)
+    </option>
+
+    <option value="e">
+      § 18 ods. 1 písm. e)
+    </option>
+
+    <option value="f">
+      § 18 ods. 1 písm. f)
+    </option>
+
+    <option value="g">
+      § 18 ods. 1 písm. g)
+    </option>
+  </select>
+
+  <div class="muted small" style="margin-top:4px;">
+    Dôvod zastavenia podľa § 18 ods. 1 Disciplinárneho poriadku SRZ.
+  </div>
 </div>
 
 <div class="field">
@@ -19595,14 +23896,46 @@ function showDisciplinarnyPripadDetail(id) {
     Uložiť riešenie
   </button>
 
+<div style="
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+">
+  <strong>📁 Dokumenty disciplinárneho konania</strong>
+
+  <div
+    class="muted small"
+    style="margin-top:3px; margin-bottom:10px;"
+  >
+    Procesné a rozhodovacie dokumenty disciplinárneho prípadu.
+  </div>
+
 <button
-  id="dkOfficialDocumentButton"
+  id="dkZacatieKonaniaButton"
+  type="button"
+  class="btn-secondary"
+  onclick="openDkZacatieKonania()">
+  📄 Rozhodnutie o začatí disciplinárneho konania
+</button>
+
+<button
+  id="dkZacatiePredvolanieButton"
   type="button"
   class="btn-secondary"
   style="margin-top:10px;"
-  onclick="openDkOfficialDocument()">
-  📄 Oficiálny dokument DK
+  onclick="openDkZacatiePredvolanie()">
+  📄 Rozhodnutie o začatí konania + predvolanie
 </button>
+
+<button
+  id="dkOfficialDocumentButton"
+    type="button"
+    class="btn-secondary"
+    style="margin-top:10px;"
+    onclick="openDkOfficialDocument()">
+    📄 Oficiálny dokument DK
+  </button>
+</div>
 
 </div>
   `;
@@ -19626,6 +23959,9 @@ function showDisciplinarnyPripadDetail(id) {
 
 const dkDisciplinarnePrevinenie =
   document.getElementById('dkDisciplinarnePrevinenie');
+
+const dkDovodZastavenia =
+  document.getElementById('dkDovodZastavenia');
 
   const dkStupenPrevinenia =
     document.getElementById('dkStupenPrevinenia');
@@ -19693,6 +24029,11 @@ const dkDatumVzdaniaSaOdvolania =
 if (dkDisciplinarnePrevinenie) {
   dkDisciplinarnePrevinenie.value =
     dk.disciplinarne_previnenie || '';
+}
+
+if (dkDovodZastavenia) {
+  dkDovodZastavenia.value =
+    dk.dovod_zastavenia || '';
 }
 
 if (dkVzdanieSaOdvolania) {
@@ -19786,6 +24127,1714 @@ function closeDisciplinarnyPripadModal() {
     ?.classList.add('hidden');
 }
 
+function openDkZacatiePredvolanie() {
+  const checkId =
+    document.getElementById('dkCheckId')?.value || '';
+
+  if (!checkId) {
+    alert('Nie je určený disciplinárny prípad.');
+    return;
+  }
+
+  const item = (appState.data.disciplinarnePripady || [])
+    .find(check => String(check.id) === String(checkId));
+
+  if (!item) {
+    alert('Disciplinárny prípad sa nenašiel.');
+    return;
+  }
+
+  const dk = item.dk || {};
+
+  const meno =
+    item.fisher_name ||
+    item.fisherName ||
+    item.fisher_id_no ||
+    '';
+
+  const datumSkutku =
+    formatDateTime(
+      item.created_at ||
+      item.date ||
+      ''
+    );
+
+  const miestoSkutku =
+    item.location ||
+    item.place ||
+    '';
+
+  const opisSkutku =
+    item.poznamka ||
+    item.note ||
+    '';
+
+  const porusenyPredpis =
+    document.getElementById('dkPorusenyPredpis')?.value ||
+    dk.poruseny_predpis ||
+    '';
+
+  const ustanovenie =
+    document.getElementById('dkUstanovenie')?.value ||
+    dk.ustanovenie ||
+    '';
+
+  const pravnePosudenie =
+    document.getElementById('dkPravnePosudenie')?.value ||
+    dk.pravne_posudenie ||
+    '';
+
+  const preparationWindow =
+    window.open('', '_blank', 'width=1000,height=900');
+
+  if (!preparationWindow) {
+    alert('Prehliadač zablokoval otvorenie okna dokumentu.');
+    return;
+  }
+
+  preparationWindow.document.open();
+
+  preparationWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>Príprava rozhodnutia a predvolania</title>
+
+<style>
+  body {
+    font-family:Arial, sans-serif;
+    background:#f3f4f6;
+    margin:0;
+    padding:24px;
+    color:#111827;
+  }
+
+  .card {
+    max-width:850px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:14px;
+    padding:24px;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+
+  h1 {
+    margin-top:0;
+    font-size:24px;
+  }
+
+  .info {
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:20px;
+  }
+
+  .section-title {
+    margin:24px 0 12px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+    font-weight:700;
+    font-size:18px;
+  }
+
+  .field {
+    margin-bottom:14px;
+  }
+
+  label {
+    display:block;
+    font-weight:700;
+    margin-bottom:5px;
+  }
+
+  input,
+  textarea {
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font:inherit;
+  }
+
+  textarea {
+    resize:vertical;
+  }
+
+  .readonly {
+    background:#f3f4f6;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h1>
+    Príprava – Rozhodnutie o začatí disciplinárneho konania + predvolanie
+  </h1>
+
+  <div class="info">
+    Procesný dokument podľa § 16 a § 19
+    Disciplinárneho poriadku SRZ.
+  </div>
+
+  <div class="section-title">
+    Identifikácia disciplinárne stíhanej osoby
+  </div>
+
+  <div class="field">
+    <label>Meno a priezvisko</label>
+    <input
+      id="docPredvolanieMeno"
+      class="readonly"
+      value="${escapeHtml(meno)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum narodenia</label>
+    <input
+      id="docPredvolanieDatumNarodenia"
+      type="date"
+    >
+  </div>
+
+  <div class="field">
+    <label>Trvalé bydlisko</label>
+    <input
+      id="docPredvolanieBydlisko"
+      type="text"
+    >
+  </div>
+
+  <div class="section-title">
+    Údaje rozhodnutia
+  </div>
+
+<div class="field">
+  <label>§ 16 – prvý odsek</label>
+  <input
+    id="docPredvolanieParagraf16Odsek1"
+    type="number"
+    min="1"
+    step="1"
+    placeholder="Uveď prvý odsek podľa § 16 DP SRZ"
+  >
+</div>
+
+<div class="field">
+  <label>§ 16 – druhý odsek</label>
+  <input
+    id="docPredvolanieParagraf16Odsek2"
+    type="number"
+    min="1"
+    step="1"
+    placeholder="Uveď druhý odsek podľa § 16 DP SRZ"
+  >
+</div>
+
+  <div class="field">
+    <label>Spisová značka</label>
+    <input
+      id="docPredvolanieSpisovaZnacka"
+      type="text"
+    >
+  </div>
+
+  <div class="field">
+    <label>Názov disciplinárneho orgánu</label>
+    <input
+      id="docPredvolanieOrgan"
+      type="text"
+      value="Disciplinárna komisia pri výbore MsO SRZ Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto vydania rozhodnutia</label>
+    <input
+      id="docPredvolanieMiestoRozhodnutia"
+      type="text"
+      value="Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum vydania rozhodnutia</label>
+    <input
+      id="docPredvolanieDatumRozhodnutia"
+      type="date"
+    >
+  </div>
+
+  <div class="section-title">
+    Disciplinárne rokovanie
+  </div>
+
+<div class="field">
+  <label>Spôsob doručenia predvolania</label>
+  <select
+    id="docPredvolanieSposobDorucenia"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:10px;
+      border:1px solid #cbd5e1;
+      border-radius:8px;
+      font:inherit;
+      background:#fff;
+    "
+  >
+    <option value="">Vyber spôsob doručenia</option>
+    <option value="pisomne">
+      Písomne
+    </option>
+    <option value="email">
+      Elektronicky – e-mail
+    </option>
+  </select>
+</div>
+
+  <div class="field">
+    <label>Dátum rokovania</label>
+    <input
+      id="docPredvolanieDatumRokovania"
+      type="date"
+    >
+  </div>
+
+  <div class="field">
+    <label>Čas rokovania</label>
+    <input
+      id="docPredvolanieCasRokovania"
+      type="time"
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto / presná adresa rokovania</label>
+    <input
+      id="docPredvolanieAdresaRokovania"
+      type="text"
+      placeholder="Presná adresa a názov organizácie SRZ"
+    >
+  </div>
+
+  <div class="section-title">
+    Skutok a právne posúdenie
+  </div>
+
+  <div class="field">
+    <label>Dátum kontroly / skutku</label>
+    <input
+      class="readonly"
+      value="${escapeHtml(datumSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto / revír</label>
+    <input
+      class="readonly"
+      value="${escapeHtml(miestoSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Porušený predpis</label>
+    <input
+      id="docPredvolaniePorusenyPredpis"
+      class="readonly"
+      value="${escapeHtml(porusenyPredpis)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Konkrétne ustanovenie</label>
+    <input
+      id="docPredvolanieUstanovenie"
+      class="readonly"
+      value="${escapeHtml(ustanovenie)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Stručný opis skutku</label>
+    <textarea
+      id="docPredvolanieOpisSkutku"
+      class="readonly"
+      rows="5"
+      readonly
+    >${escapeHtml(opisSkutku)}</textarea>
+  </div>
+
+<div class="field">
+  <label>Odôvodnenie</label>
+  <textarea
+    id="docPredvolanieOdovodnenie"
+    rows="5"
+    placeholder="Doplň odôvodnenie..."
+  >${escapeHtml(pravnePosudenie)}</textarea>
+</div>
+
+<div class="section-title">
+  Podpisujúca osoba
+</div>
+
+<div class="field">
+  <label>Meno a priezvisko</label>
+  <input
+    id="docPredvolaniePredseda"
+    type="text"
+    placeholder="Meno a priezvisko predsedu alebo poverenej osoby"
+  >
+</div>
+
+<div class="field">
+  <label>Funkcia podpisujúcej osoby</label>
+  <input
+    id="docPredvolaniePredsedaFunkcia"
+    type="text"
+    value="Predseda disciplinárneho orgánu"
+  >
+</div>
+
+<div
+  style="
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+  "
+>
+  <button
+    type="button"
+    onclick="window.opener.generateDkZacatiePredvolanie(this.ownerDocument)"
+    style="
+      width:100%;
+      padding:12px 16px;
+      border:0;
+      border-radius:9px;
+      background:#166534;
+      color:#fff;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+    "
+  >
+    📄 Vytvoriť dokument
+  </button>
+</div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  preparationWindow.document.close();
+}
+
+function openDkZacatieKonania() {
+  const checkId =
+    document.getElementById('dkCheckId')?.value || '';
+
+  if (!checkId) {
+    alert('Nie je určený disciplinárny prípad.');
+    return;
+  }
+
+  const item = (appState.data.disciplinarnePripady || [])
+    .find(check => String(check.id) === String(checkId));
+
+  if (!item) {
+    alert('Disciplinárny prípad sa nenašiel.');
+    return;
+  }
+
+  const dk = item.dk || {};
+
+  const meno =
+    item.fisher_name ||
+    item.fisherName ||
+    item.fisher_id_no ||
+    '';
+
+  const datumSkutku =
+    formatDateTime(
+      item.created_at ||
+      item.date ||
+      ''
+    );
+
+  const miestoSkutku =
+    item.location ||
+    item.place ||
+    '';
+
+  const opisSkutku =
+    item.poznamka ||
+    item.note ||
+    '';
+
+  const porusenyPredpis =
+    document.getElementById('dkPorusenyPredpis')?.value ||
+    dk.poruseny_predpis ||
+    '';
+
+  const ustanovenie =
+    document.getElementById('dkUstanovenie')?.value ||
+    dk.ustanovenie ||
+    '';
+
+  const disciplinarnePrevinenie =
+    document.getElementById('dkDisciplinarnePrevinenie')?.value ||
+    dk.disciplinarne_previnenie ||
+    '';
+
+  const pravnePosudenie =
+    document.getElementById('dkPravnePosudenie')?.value ||
+    dk.pravne_posudenie ||
+    '';
+
+  const preparationWindow =
+    window.open('', '_blank', 'width=1000,height=850');
+
+  if (!preparationWindow) {
+    alert('Prehliadač zablokoval otvorenie okna dokumentu.');
+    return;
+  }
+
+  preparationWindow.document.open();
+
+  preparationWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>Príprava rozhodnutia o začatí disciplinárneho konania</title>
+
+<style>
+
+  body {
+    font-family: Arial, sans-serif;
+    background:#f3f4f6;
+    margin:0;
+    padding:24px;
+    color:#111827;
+  }
+
+  .card {
+    max-width:850px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:14px;
+    padding:24px;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+
+  h1 {
+    margin-top:0;
+    font-size:24px;
+  }
+
+  .info {
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:20px;
+  }
+
+  .field {
+    margin-bottom:14px;
+  }
+
+  label {
+    display:block;
+    font-weight:700;
+    margin-bottom:5px;
+  }
+
+  input,
+  textarea {
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font:inherit;
+  }
+
+  textarea {
+    resize:vertical;
+  }
+
+  .readonly {
+    background:#f3f4f6;
+  }
+
+  .section-title {
+    margin:24px 0 12px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+    font-weight:700;
+    font-size:18px;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h1>
+    Príprava – Rozhodnutie o začatí disciplinárneho konania
+  </h1>
+
+  <div class="info">
+    Procesný dokument disciplinárneho konania podľa § 16
+    Disciplinárneho poriadku SRZ.
+  </div>
+
+  <div class="section-title">
+    Identifikácia disciplinárne stíhanej osoby
+  </div>
+
+  <div class="field">
+    <label>Meno a priezvisko</label>
+    <input
+      id="docMeno"
+      class="readonly"
+      value="${escapeHtml(meno)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum narodenia</label>
+    <input
+      id="docDatumNarodenia"
+      type="date"
+    >
+  </div>
+
+  <div class="field">
+    <label>Trvalé bydlisko</label>
+    <input
+      id="docBydlisko"
+      type="text"
+    >
+  </div>
+
+ <div class="section-title">
+  Údaje rozhodnutia
+</div>
+
+<div class="field">
+  <label>§ 16 – odsek</label>
+  <input
+    id="docParagraf16Odsek"
+    type="number"
+    min="1"
+    step="1"
+    value="3"
+  >
+</div>
+
+<div class="field">
+  <label>Spisová značka</label>
+    <input
+      id="docSpisovaZnacka"
+      type="text"
+    >
+  </div>
+
+  <div class="field">
+    <label>Názov disciplinárneho orgánu</label>
+    <input
+      id="docDisciplinarnyOrgan"
+      type="text"
+      value="Disciplinárna komisia pri výbore MsO SRZ Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto vydania rozhodnutia</label>
+    <input
+      id="docMiestoRozhodnutia"
+      type="text"
+      value="Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum vydania rozhodnutia</label>
+    <input
+      id="docDatumRozhodnutia"
+      type="date"
+      value="${document.getElementById('dkDatumPrerokovania')?.value || ''}"
+    >
+  </div>
+
+<div class="field">
+  <label>Predseda disciplinárneho orgánu / poverená osoba</label>
+  <input
+    id="docPredseda"
+    type="text"
+    placeholder="Meno a priezvisko"
+  >
+</div>
+
+<div class="field">
+  <label>Funkcia podpisujúcej osoby</label>
+  <input
+    id="docPredsedaFunkcia"
+    type="text"
+    value="Predseda disciplinárneho orgánu"
+    placeholder="Napr. Predseda disciplinárneho orgánu"
+  >
+</div>
+
+  <div class="section-title">
+    Skutok a právne posúdenie
+  </div>
+
+  <div class="field">
+    <label>Dátum kontroly / skutku</label>
+    <input
+      id="docDatumSkutku"
+      class="readonly"
+      value="${escapeHtml(datumSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto / revír</label>
+    <input
+      id="docMiestoSkutku"
+      class="readonly"
+      value="${escapeHtml(miestoSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Disciplinárne previnenie</label>
+    <input
+      id="docDisciplinarnePrevinenie"
+      class="readonly"
+      value="${escapeHtml(disciplinarnePrevinenie)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Porušený predpis</label>
+    <input
+      id="docPorusenyPredpis"
+      class="readonly"
+      value="${escapeHtml(porusenyPredpis)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Konkrétne ustanovenie</label>
+    <input
+      id="docUstanovenie"
+      class="readonly"
+      value="${escapeHtml(ustanovenie)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Stručný opis skutku</label>
+    <textarea
+      id="docOpisSkutku"
+      class="readonly"
+      rows="5"
+      readonly
+    >${escapeHtml(opisSkutku)}</textarea>
+  </div>
+
+  <div class="field">
+    <label>Odôvodnenie</label>
+    <textarea
+      id="docOdovodnenie"
+      rows="5"
+      placeholder="Doplň odôvodnenie rozhodnutia..."
+    >${escapeHtml(pravnePosudenie)}</textarea>
+  </div>
+
+  <div style="
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+  ">
+
+    <button
+      type="button"
+      onclick="window.opener.generateDkZacatieKonania(this.ownerDocument)"
+      style="
+        width:100%;
+        padding:12px 16px;
+        border:0;
+        border-radius:8px;
+        background:#166534;
+        color:white;
+        font-size:16px;
+        font-weight:700;
+        cursor:pointer;
+      "
+    >
+      📄 Vytvoriť rozhodnutie o začatí disciplinárneho konania
+    </button>
+
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  preparationWindow.document.close();
+}
+
+function generateDkZacatieKonania(sourceDocument) {
+  if (!sourceDocument) {
+    alert('Nepodarilo sa načítať údaje dokumentu.');
+    return;
+  }
+
+  const getValue = id =>
+    sourceDocument.getElementById(id)?.value?.trim() || '';
+
+  const getReadonlyValue = id =>
+    sourceDocument.getElementById(id)?.value || '';
+
+  const paragraf16Odsek =
+    getValue('docParagraf16Odsek');
+
+  const organ =
+    getValue('docDisciplinarnyOrgan');
+
+  const spisovaZnacka =
+    getValue('docSpisovaZnacka');
+
+  const datumNarodenia =
+    getValue('docDatumNarodenia');
+
+  const bydlisko =
+    getValue('docBydlisko');
+
+  const miestoRozhodnutia =
+    getValue('docMiestoRozhodnutia');
+
+  const datumRozhodnutia =
+    getValue('docDatumRozhodnutia');
+
+const predseda =
+  getValue('docPredseda');
+
+const predsedaFunkcia =
+  getValue('docPredsedaFunkcia');
+
+const odovodnenie =
+  getValue('docOdovodnenie');
+
+  const meno =
+    getReadonlyValue('docMeno');
+
+  const porusenyPredpis =
+    getReadonlyValue('docPorusenyPredpis');
+
+  const ustanovenie =
+    getReadonlyValue('docUstanovenie');
+
+  const opisSkutku =
+    getReadonlyValue('docOpisSkutku');
+
+  if (!paragraf16Odsek) {
+    alert('Doplň odsek podľa § 16 Disciplinárneho poriadku SRZ.');
+    return;
+  }
+
+  if (!organ) {
+    alert('Doplň názov disciplinárneho orgánu.');
+    return;
+  }
+
+  if (!spisovaZnacka) {
+    alert('Doplň spisovú značku.');
+    return;
+  }
+
+  if (!datumNarodenia) {
+    alert('Doplň dátum narodenia.');
+    return;
+  }
+
+  if (!bydlisko) {
+    alert('Doplň trvalé bydlisko.');
+    return;
+  }
+
+  if (!miestoRozhodnutia) {
+    alert('Doplň miesto rozhodnutia.');
+    return;
+  }
+
+  if (!datumRozhodnutia) {
+    alert('Doplň dátum rozhodnutia.');
+    return;
+  }
+
+  if (!predseda) {
+    alert('Doplň predsedu disciplinárneho orgánu.');
+    return;
+  }
+
+if (!predsedaFunkcia) {
+  alert('Doplň funkciu podpisujúcej osoby.');
+  return;
+}
+
+if (!porusenyPredpis) {
+  alert('Chýba označenie porušeného predpisu.');
+  return;
+}
+
+  if (!ustanovenie) {
+    alert('Chýba konkrétne porušené ustanovenie.');
+    return;
+  }
+
+  if (!opisSkutku) {
+    alert('Chýba stručný opis skutku.');
+    return;
+  }
+
+  if (!odovodnenie) {
+    alert('Doplň odôvodnenie rozhodnutia.');
+    return;
+  }
+
+  const formatDocDate = value => {
+    if (!value) return '';
+
+    const parts = value.split('-');
+
+    if (parts.length !== 3) {
+      return value;
+    }
+
+    return (
+      parts[2] + '.' +
+      parts[1] + '.' +
+      parts[0]
+    );
+  };
+
+  const datumNarodeniaText =
+    formatDocDate(datumNarodenia);
+
+  const datumRozhodnutiaText =
+    formatDocDate(datumRozhodnutia);
+
+  const rozhodnutieWindow =
+    sourceDocument.defaultView;
+
+  if (!rozhodnutieWindow) {
+    alert('Nepodarilo sa otvoriť náhľad dokumentu.');
+    return;
+  }
+
+  rozhodnutieWindow.document.open();
+
+  rozhodnutieWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>
+  Rozhodnutie o začatí disciplinárneho konania
+</title>
+
+<style>
+
+  @page {
+    size: A4;
+    margin: 18mm 20mm 18mm 20mm;
+  }
+
+  * {
+    box-sizing:border-box;
+  }
+
+  body {
+    margin:0;
+    background:#e5e7eb;
+    font-family:"Times New Roman", Times, serif;
+    font-size:12pt;
+    line-height:1.35;
+    color:#000;
+  }
+
+  .print-toolbar {
+    max-width:210mm;
+    margin:14px auto;
+    text-align:right;
+  }
+
+  .print-button {
+    border:0;
+    border-radius:7px;
+    padding:10px 16px;
+    font:600 14px Arial, sans-serif;
+    cursor:pointer;
+  }
+
+  .page {
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 20px;
+    background:#fff;
+    padding:18mm 20mm;
+  }
+
+  .organ {
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:18px;
+  }
+
+  .spis {
+    text-align:right;
+    margin-bottom:24px;
+  }
+
+  h1 {
+    text-align:center;
+    font-size:15pt;
+    margin:20px 0 24px;
+  }
+
+  p {
+    margin:0 0 12px;
+    text-align:justify;
+  }
+
+  .section-title {
+    font-weight:bold;
+    margin:22px 0 12px;
+  }
+
+  .signature {
+    width:45%;
+    margin-left:auto;
+    margin-top:45px;
+    text-align:center;
+  }
+
+  .signature-line {
+    margin-top:42px;
+    border-top:1px solid #000;
+    padding-top:4px;
+  }
+
+  .stamp {
+    margin-top:25px;
+    min-height:35px;
+  }
+
+  .delivery {
+    margin-top:30px;
+    font-size:10.5pt;
+  }
+
+  @media print {
+
+    body {
+      background:#fff;
+    }
+
+    .print-toolbar {
+      display:none;
+    }
+
+    .page {
+      margin:0;
+      padding:0;
+      width:auto;
+      min-height:auto;
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="print-toolbar">
+
+  <button
+    type="button"
+    class="print-button"
+    onclick="window.print()"
+  >
+    🖨️ Vytlačiť / Uložiť PDF
+  </button>
+
+</div>
+
+<div class="page">
+
+  <div class="organ">
+    ${escapeHtml(organ)}
+  </div>
+
+  <div class="spis">
+    Spisová značka:
+    ${escapeHtml(spisovaZnacka)}
+  </div>
+
+  <h1>
+    ROZHODNUTIE<br>
+    o začatí disciplinárneho konania
+  </h1>
+
+  <p>
+    ${escapeHtml(organ)}
+    ako disciplinárny orgán prvého stupňa
+    v ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+    rozhodla v zmysle § 16 ods.
+    <strong>${escapeHtml(paragraf16Odsek)}</strong>
+    Disciplinárneho poriadku SRZ
+    o začatí disciplinárneho konania
+    a súčasne oznamuje obvinenie zo spáchania
+    disciplinárneho previnenia členovi SRZ:
+  </p>
+
+  <p>
+    <strong>${escapeHtml(meno)}</strong>,
+    nar. <strong>${escapeHtml(datumNarodeniaText)}</strong>,
+    trvale bytom
+    <strong>${escapeHtml(bydlisko)}</strong>
+  </p>
+
+  <p>
+    Zistené skutočnosti dostatočne odôvodňujú
+    podozrenie zo spáchania disciplinárneho previnenia
+    a porušenia
+    <strong>
+      ${escapeHtml(
+        [porusenyPredpis, ustanovenie]
+          .filter(Boolean)
+          .join(' – ')
+      )}
+    </strong>.
+  </p>
+
+  <p>
+    ${escapeHtml(opisSkutku)}
+  </p>
+
+  <div class="section-title">
+    Odôvodnenie:
+  </div>
+
+  <p>
+    ${escapeHtml(odovodnenie)}
+  </p>
+
+  <p style="margin-top:22px;">
+    <strong>Poučenie:</strong>
+    Proti tomuto rozhodnutiu nie je prípustný žiadny opravný prostriedok.
+  </p>
+
+  <p style="margin-top:30px;">
+    V ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+  </p>
+
+  <div class="signature">
+
+ <div>
+  <strong>
+    ${escapeHtml(predsedaFunkcia)}
+  </strong>
+</div>
+
+<div style="margin-top:8px;">
+  ${escapeHtml(predseda)}
+</div>
+
+    <div class="signature-line">
+      podpis
+    </div>
+
+    <div class="stamp">
+      pečiatka
+    </div>
+
+  </div>
+
+  <div class="delivery">
+    (Doporučene do vlastných rúk)
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  rozhodnutieWindow.document.close();
+}
+
+function generateDkZacatiePredvolanie(sourceDocument) {
+  if (!sourceDocument) {
+    alert('Nepodarilo sa načítať údaje dokumentu.');
+    return;
+  }
+
+  const getValue = id =>
+    sourceDocument.getElementById(id)?.value?.trim() || '';
+
+  const getReadonlyValue = id =>
+    sourceDocument.getElementById(id)?.value?.trim() || '';
+
+  const meno =
+    getReadonlyValue('docPredvolanieMeno');
+
+const paragraf16Odsek1 =
+  getValue('docPredvolanieParagraf16Odsek1');
+
+const paragraf16Odsek2 =
+  getValue('docPredvolanieParagraf16Odsek2');
+
+  const datumNarodenia =
+    getValue('docPredvolanieDatumNarodenia');
+
+  const bydlisko =
+    getValue('docPredvolanieBydlisko');
+
+  const spisovaZnacka =
+    getValue('docPredvolanieSpisovaZnacka');
+
+  const organ =
+    getValue('docPredvolanieOrgan');
+
+  const miestoRozhodnutia =
+    getValue('docPredvolanieMiestoRozhodnutia');
+
+  const datumRozhodnutia =
+    getValue('docPredvolanieDatumRozhodnutia');
+
+ const sposobDorucenia =
+  getValue('docPredvolanieSposobDorucenia');
+
+const datumRokovania =
+  getValue('docPredvolanieDatumRokovania');
+
+const casRokovania =
+  getValue('docPredvolanieCasRokovania');
+
+  const adresaRokovania =
+    getValue('docPredvolanieAdresaRokovania');
+
+  const porusenyPredpis =
+    getReadonlyValue('docPredvolaniePorusenyPredpis');
+
+  const ustanovenie =
+    getReadonlyValue('docPredvolanieUstanovenie');
+
+  const opisSkutku =
+    getReadonlyValue('docPredvolanieOpisSkutku');
+
+  const odovodnenie =
+    getValue('docPredvolanieOdovodnenie');
+
+  const predseda =
+    getValue('docPredvolaniePredseda');
+
+  const predsedaFunkcia =
+    getValue('docPredvolaniePredsedaFunkcia');
+
+
+  // POVINNÉ ÚDAJE
+
+if (!paragraf16Odsek1) {
+  alert('Doplň prvý odsek podľa § 16 Disciplinárneho poriadku SRZ.');
+  return;
+}
+
+if (!paragraf16Odsek2) {
+  alert('Doplň druhý odsek podľa § 16 Disciplinárneho poriadku SRZ.');
+  return;
+}
+
+  if (!meno) {
+    alert('Chýba meno disciplinárne stíhanej osoby.');
+    return;
+  }
+
+  if (!datumNarodenia) {
+    alert('Doplň dátum narodenia.');
+    return;
+  }
+
+  if (!bydlisko) {
+    alert('Doplň trvalé bydlisko.');
+    return;
+  }
+
+  if (!spisovaZnacka) {
+    alert('Doplň spisovú značku.');
+    return;
+  }
+
+  if (!organ) {
+    alert('Doplň názov disciplinárneho orgánu.');
+    return;
+  }
+
+  if (!miestoRozhodnutia) {
+    alert('Doplň miesto vydania rozhodnutia.');
+    return;
+  }
+
+  if (!datumRozhodnutia) {
+    alert('Doplň dátum vydania rozhodnutia.');
+    return;
+  }
+
+if (!sposobDorucenia) {
+  alert('Vyber spôsob doručenia predvolania.');
+  return;
+}
+
+  if (!datumRokovania) {
+    alert('Doplň dátum disciplinárneho rokovania.');
+    return;
+  }
+
+const datumVydaniaCheck =
+  new Date(datumRozhodnutia + 'T00:00:00');
+
+const datumRokovaniaCheck =
+  new Date(datumRokovania + 'T00:00:00');
+
+const rozdielDni =
+  Math.round(
+    (datumRokovaniaCheck - datumVydaniaCheck) /
+    (1000 * 60 * 60 * 24)
+  );
+
+const minimalnaLehota =
+  sposobDorucenia === 'email' ? 15 : 7;
+
+if (rozdielDni < minimalnaLehota) {
+  alert(
+    'Termín disciplinárneho rokovania nespĺňa minimálnu lehotu ' +
+    minimalnaLehota +
+    ' dní pre zvolený spôsob doručenia predvolania.'
+  );
+  return;
+}
+
+  if (!casRokovania) {
+    alert('Doplň čas disciplinárneho rokovania.');
+    return;
+  }
+
+  if (!adresaRokovania) {
+    alert('Doplň presné miesto / adresu disciplinárneho rokovania.');
+    return;
+  }
+
+  if (!porusenyPredpis) {
+    alert('Chýba označenie porušeného predpisu.');
+    return;
+  }
+
+  if (!ustanovenie) {
+    alert('Chýba konkrétne porušené ustanovenie.');
+    return;
+  }
+
+  if (!opisSkutku) {
+    alert('Chýba stručný opis skutku.');
+    return;
+  }
+
+  if (!odovodnenie) {
+    alert('Doplň odôvodnenie.');
+    return;
+  }
+
+  if (!predseda) {
+    alert('Doplň meno a priezvisko podpisujúcej osoby.');
+    return;
+  }
+
+  if (!predsedaFunkcia) {
+    alert('Doplň funkciu podpisujúcej osoby.');
+    return;
+  }
+
+
+  // FORMÁT DÁTUMOV
+
+  const formatDocDate = value => {
+    if (!value) return '';
+
+    const parts = value.split('-');
+
+    if (parts.length !== 3) {
+      return value;
+    }
+
+    return (
+      parts[2] + '.' +
+      parts[1] + '.' +
+      parts[0]
+    );
+  };
+
+  const datumNarodeniaText =
+    formatDocDate(datumNarodenia);
+
+  const datumRozhodnutiaText =
+    formatDocDate(datumRozhodnutia);
+
+  const datumRokovaniaText =
+    formatDocDate(datumRokovania);
+
+
+  // POUŽIJEME TO ISTÉ OKNO AKO PRÍPRAVNÝ FORMULÁR
+
+  const dokumentWindow =
+    sourceDocument.defaultView;
+
+  if (!dokumentWindow) {
+    alert('Nepodarilo sa otvoriť náhľad dokumentu.');
+    return;
+  }
+
+  dokumentWindow.document.open();
+
+  dokumentWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>
+  Rozhodnutie o začatí disciplinárneho konania a predvolanie
+</title>
+
+<style>
+
+  @page {
+    size:A4;
+    margin:18mm 20mm 18mm 20mm;
+  }
+
+  * {
+    box-sizing:border-box;
+  }
+
+  body {
+    margin:0;
+    background:#e5e7eb;
+    font-family:"Times New Roman", Times, serif;
+    font-size:12pt;
+    line-height:1.35;
+    color:#000;
+  }
+
+  .print-toolbar {
+    max-width:210mm;
+    margin:14px auto;
+    text-align:right;
+  }
+
+  .print-button {
+    border:0;
+    border-radius:7px;
+    padding:10px 16px;
+    font:600 14px Arial, sans-serif;
+    cursor:pointer;
+  }
+
+  .page {
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 20px;
+    background:#fff;
+    padding:18mm 20mm;
+  }
+
+  .organ {
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:18px;
+  }
+
+  .spis {
+    text-align:right;
+    margin-bottom:20px;
+  }
+
+  h1 {
+    text-align:center;
+    font-size:15pt;
+    line-height:1.3;
+    margin:18px 0 22px;
+  }
+
+  p {
+    margin:0 0 11px;
+    text-align:justify;
+  }
+
+  .predvolava {
+    text-align:center;
+    font-weight:bold;
+    font-size:14pt;
+    margin:15px 0;
+  }
+
+  .section-title {
+    font-weight:bold;
+    margin:20px 0 10px;
+  }
+
+  .signature {
+    width:45%;
+    margin-left:auto;
+    margin-top:38px;
+    text-align:center;
+  }
+
+  .signature-line {
+    margin-top:38px;
+    border-top:1px solid #000;
+    padding-top:4px;
+  }
+
+  .stamp {
+    margin-top:22px;
+    min-height:35px;
+  }
+
+  .delivery {
+    margin-top:25px;
+    font-size:10.5pt;
+  }
+
+  @media print {
+
+    body {
+      background:#fff;
+    }
+
+    .print-toolbar {
+      display:none;
+    }
+
+    .page {
+      margin:0;
+      padding:0;
+      width:auto;
+      min-height:auto;
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="print-toolbar">
+
+  <button
+    type="button"
+    class="print-button"
+    onclick="window.print()"
+  >
+    🖨️ Vytlačiť / Uložiť PDF
+  </button>
+
+</div>
+
+<div class="page">
+
+  <div class="organ">
+    ${escapeHtml(organ)}
+  </div>
+
+  <div class="spis">
+    Spisová značka:
+    ${escapeHtml(spisovaZnacka)}
+  </div>
+
+  <h1>
+    Rozhodnutie o začatí disciplinárneho konania<br>
+    a<br>
+    predvolanie disciplinárne stíhaného
+  </h1>
+
+  <p>
+    ${escapeHtml(organ)}
+    ako disciplinárny orgán prvého stupňa
+    v ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+    rozhodla v zmysle § 16 ods.
+<strong>${escapeHtml(paragraf16Odsek1)}</strong>
+a ods.
+<strong>${escapeHtml(paragraf16Odsek2)}</strong>
+Disciplinárneho poriadku SRZ
+    o začatí disciplinárneho konania
+    a súčasne oznamuje obvinenie zo spáchania
+    disciplinárneho previnenia členovi SRZ:
+  </p>
+
+  <p>
+    <strong>${escapeHtml(meno)}</strong>,
+    nar. <strong>${escapeHtml(datumNarodeniaText)}</strong>,
+    trvale bytom
+    <strong>${escapeHtml(bydlisko)}</strong>
+  </p>
+
+  <p>
+    Zistené skutočnosti dostatočne odôvodňujú
+    podozrenie zo spáchania disciplinárneho previnenia
+    a porušenia
+    <strong>
+      ${escapeHtml(
+        [porusenyPredpis, ustanovenie]
+          .filter(Boolean)
+          .join(' – ')
+      )}
+    </strong>.
+  </p>
+
+  <p>
+    ${escapeHtml(opisSkutku)}
+  </p>
+
+  <p style="margin-top:18px;">
+    Súčasne
+    <strong>${escapeHtml(organ)}</strong>
+    ako disciplinárny orgán prvého stupňa
+    v ${escapeHtml(miestoRozhodnutia)}
+  </p>
+
+  <div class="predvolava">
+    Vás predvoláva
+  </div>
+
+  <p style="text-align:center;">
+    na disciplinárne rokovanie, ktoré sa bude konať
+    dňa
+    <strong>${escapeHtml(datumRokovaniaText)}</strong>
+    o
+    <strong>${escapeHtml(casRokovania)}</strong>
+    hod. v
+    <strong>${escapeHtml(adresaRokovania)}</strong>
+  </p>
+
+  <div class="section-title">
+    Odôvodnenie:
+  </div>
+
+  <p>
+    ${escapeHtml(odovodnenie)}
+  </p>
+
+  <p style="margin-top:20px;">
+    <strong>Poučenie k predvolaniu:</strong>
+    V zmysle § 19 Disciplinárneho poriadku SRZ
+    má disciplinárne stíhaný právo, aby sa k obvineniu
+    z previnenia osobne vyjadril a uviedol na svoju
+    obhajobu okolnosti, prípadne, aby navrhol na svoju
+    obranu vierohodné dôkazy.
+  </p>
+
+  <p>
+    V prípade, že sa na určený termín disciplinárneho
+    rokovania odmietnete dostaviť, alebo bez dostatočného
+    ospravedlnenia sa ho nezúčastnite, disciplinárny orgán
+    môže predmetnú vec prerokovať a rozhodnúť o nej aj
+    vo Vašej neprítomnosti.
+  </p>
+
+  <p style="margin-top:18px;">
+    <strong>Poučenie:</strong>
+    Proti tomuto rozhodnutiu nie je prípustný žiadny
+    opravný prostriedok.
+  </p>
+
+  <p style="margin-top:26px;">
+    V ${escapeHtml(miestoRozhodnutia)},
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+  </p>
+
+  <div class="signature">
+
+    <div>
+      <strong>
+        ${escapeHtml(predsedaFunkcia)}
+      </strong>
+    </div>
+
+    <div style="margin-top:8px;">
+      ${escapeHtml(predseda)}
+    </div>
+
+    <div class="signature-line">
+      podpis
+    </div>
+
+    <div class="stamp">
+      pečiatka
+    </div>
+
+  </div>
+
+  <div class="delivery">
+    (Doporučene do vlastných rúk)
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  dokumentWindow.document.close();
+}
+
 function openDkOfficialDocument() {
   const checkId =
     document.getElementById('dkCheckId')?.value || '';
@@ -19854,6 +25903,14 @@ if (
   'ROZHODNUTIE O UPUSTENÍ OD ULOŽENIA DISCIPLINÁRNEHO OPATRENIA'
 ) {
   openDkUpusteniePreparation(checkId);
+  return;
+}
+
+if (
+  typDokumentu ===
+  'ROZHODNUTIE O ZASTAVENÍ DISCIPLINÁRNEHO KONANIA'
+) {
+  openDkZastaveniePreparation(checkId);
   return;
 }
 
@@ -21503,6 +27560,373 @@ function openDkUpusteniePreparation(checkId) {
   preparationWindow.document.close();
 }
 
+function openDkZastaveniePreparation(checkId) {
+  const item = (appState.data.disciplinarnePripady || [])
+    .find(check => String(check.id) === String(checkId));
+
+  if (!item) {
+    alert('Disciplinárny prípad sa nenašiel.');
+    return;
+  }
+
+  const meno =
+    item.fisher_name ||
+    item.fisherName ||
+    item.fisher_id_no ||
+    '';
+
+  const datumSkutku =
+    formatDateTime(
+      item.created_at ||
+      item.date ||
+      ''
+    );
+
+  const miestoSkutku =
+    item.location ||
+    item.place ||
+    '';
+
+  const typPriestupku =
+    item.typ_priestupku ||
+    '';
+
+  const poznamkaRs =
+    item.poznamka ||
+    item.note ||
+    '';
+
+  const dk = item.dk || {};
+
+  const disciplinarnePrevinenie =
+    document.getElementById('dkDisciplinarnePrevinenie')?.value ||
+    dk.disciplinarne_previnenie ||
+    '';
+
+  const dovodZastavenia =
+    document.getElementById('dkDovodZastavenia')?.value ||
+    dk.dovod_zastavenia ||
+    '';
+
+  const pravnePosudenie =
+    document.getElementById('dkPravnePosudenie')?.value ||
+    dk.pravne_posudenie ||
+    '';
+
+  const poznamkaDk =
+    document.getElementById('dkPoznamka')?.value ||
+    dk.poznamka_dk ||
+    '';
+
+  if (!dovodZastavenia) {
+    alert(
+      'Najskôr vyber dôvod zastavenia podľa § 18 ods. 1 Disciplinárneho poriadku SRZ.'
+    );
+    return;
+  }
+
+  const preparationWindow =
+    window.open('', '_blank', 'width=1000,height=850');
+
+  if (!preparationWindow) {
+    alert('Prehliadač zablokoval otvorenie okna dokumentu.');
+    return;
+  }
+
+  preparationWindow.document.open();
+
+  preparationWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>Príprava rozhodnutia o zastavení disciplinárneho konania</title>
+
+<style>
+
+  body {
+    font-family: Arial, sans-serif;
+    background:#f3f4f6;
+    margin:0;
+    padding:24px;
+    color:#111827;
+  }
+
+  .card {
+    max-width:850px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:14px;
+    padding:24px;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+
+  h1 {
+    margin-top:0;
+    font-size:24px;
+  }
+
+  .info {
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:20px;
+  }
+
+  .field {
+    margin-bottom:14px;
+  }
+
+  label {
+    display:block;
+    font-weight:700;
+    margin-bottom:5px;
+  }
+
+  input,
+  textarea {
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font:inherit;
+  }
+
+  textarea {
+    resize:vertical;
+  }
+
+  .readonly {
+    background:#f3f4f6;
+  }
+
+  .section-title {
+    margin:24px 0 12px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+    font-weight:700;
+    font-size:18px;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h1>
+    Príprava – Rozhodnutie o zastavení disciplinárneho konania
+  </h1>
+
+  <div class="info">
+    Výsledok prípadu:
+    <strong>Zastavenie disciplinárneho konania</strong><br>
+    Dôvod:
+    <strong>§ 18 ods. 1 písm. ${escapeHtml(dovodZastavenia)})</strong>
+    Disciplinárneho poriadku SRZ.
+  </div>
+
+  <div class="section-title">
+    Identifikácia disciplinárne stíhanej osoby
+  </div>
+
+  <div class="field">
+    <label>Meno a priezvisko</label>
+    <input
+      id="docMeno"
+      class="readonly"
+      value="${escapeHtml(meno)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum narodenia</label>
+    <input
+      id="docDatumNarodenia"
+      type="date"
+    >
+  </div>
+
+  <div class="field">
+    <label>Trvalé bydlisko</label>
+    <input
+      id="docBydlisko"
+      type="text"
+    >
+  </div>
+
+  <div class="field">
+    <label>Spisová značka</label>
+    <input
+      id="docSpisovaZnacka"
+      type="text"
+    >
+  </div>
+
+  <div class="field">
+    <label>Názov disciplinárneho orgánu</label>
+    <input
+      id="docDisciplinarnyOrgan"
+      type="text"
+      value="Disciplinárna komisia pri výbore MsO SRZ Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto zasadnutia / vydania rozhodnutia</label>
+    <input
+      id="docMiestoRozhodnutia"
+      type="text"
+      value="Sereď"
+    >
+  </div>
+
+  <div class="field">
+    <label>Dátum zasadnutia / rozhodnutia</label>
+    <input
+      id="docDatumRozhodnutia"
+      type="date"
+      value="${document.getElementById('dkDatumPrerokovania')?.value || ''}"
+    >
+  </div>
+
+  <div class="field">
+    <label>Predseda disciplinárneho orgánu / poverená osoba</label>
+    <input
+      id="docPredseda"
+      type="text"
+      placeholder="Meno a priezvisko"
+    >
+  </div>
+
+  <div class="section-title">
+    Skutok a podklady RS APP
+  </div>
+
+  <div class="field">
+    <label>Dátum kontroly</label>
+    <input
+      id="docDatumSkutku"
+      class="readonly"
+      value="${escapeHtml(datumSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Miesto / revír</label>
+    <input
+      id="docMiestoSkutku"
+      class="readonly"
+      value="${escapeHtml(miestoSkutku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Typ priestupku</label>
+    <input
+      id="docTypPriestupku"
+      class="readonly"
+      value="${escapeHtml(typPriestupku)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Opis skutku / poznámka RS</label>
+    <textarea
+      id="docPoznamkaRs"
+      class="readonly"
+      rows="5"
+      readonly
+    >${escapeHtml(poznamkaRs)}</textarea>
+  </div>
+
+  <div class="section-title">
+    Zastavenie disciplinárneho konania
+  </div>
+
+  <div class="field">
+    <label>Disciplinárne previnenie</label>
+    <input
+      id="docDisciplinarnePrevinenie"
+      class="readonly"
+      value="${escapeHtml(disciplinarnePrevinenie)}"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Dôvod zastavenia podľa § 18 ods. 1</label>
+    <input
+      id="docDovodZastavenia"
+      class="readonly"
+      value="§ 18 ods. 1 písm. ${escapeHtml(dovodZastavenia)})"
+      readonly
+    >
+  </div>
+
+  <div class="field">
+    <label>Právne posúdenie</label>
+    <textarea
+      id="docPravnePosudenie"
+      class="readonly"
+      rows="4"
+      readonly
+    >${escapeHtml(pravnePosudenie)}</textarea>
+  </div>
+
+  <div class="field">
+    <label>Odôvodnenie DK</label>
+    <textarea
+      id="docPoznamkaDk"
+      class="readonly"
+      rows="5"
+      readonly
+    >${escapeHtml(poznamkaDk)}</textarea>
+  </div>
+
+  <div style="
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+  ">
+
+    <button
+      type="button"
+      onclick="window.opener.generateDkZastavenie(this.ownerDocument)"
+      style="
+        width:100%;
+        padding:12px 16px;
+        border:0;
+        border-radius:8px;
+        background:#166534;
+        color:white;
+        font-size:16px;
+        font-weight:700;
+        cursor:pointer;
+      "
+    >
+      📄 Vytvoriť oficiálne rozhodnutie o zastavení konania
+    </button>
+
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  preparationWindow.document.close();
+}
+
 function generateDkUpustenie(sourceDocument) {
   if (!sourceDocument) {
     alert('Nepodarilo sa načítať údaje dokumentu.');
@@ -21850,6 +28274,379 @@ function generateDkUpustenie(sourceDocument) {
 
   <p style="margin-top:30px;">
     V ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+  </p>
+
+  <div class="signature">
+
+    <div>
+      <strong>Predseda disciplinárneho orgánu</strong>
+    </div>
+
+    <div style="margin-top:8px;">
+      ${escapeHtml(predseda)}
+    </div>
+
+    <div class="signature-line">
+      podpis
+    </div>
+
+    <div class="stamp">
+      pečiatka
+    </div>
+
+  </div>
+
+  <div class="delivery">
+    (Doporučene, na doručenku, do vlastných rúk)
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+
+  rozhodnutieWindow.document.close();
+}
+
+function generateDkZastavenie(sourceDocument) {
+  if (!sourceDocument) {
+    alert('Nepodarilo sa načítať údaje dokumentu.');
+    return;
+  }
+
+  const getValue = id =>
+    sourceDocument.getElementById(id)?.value?.trim() || '';
+
+  const getReadonlyValue = id =>
+    sourceDocument.getElementById(id)?.value || '';
+
+  const organ =
+    getValue('docDisciplinarnyOrgan');
+
+  const spisovaZnacka =
+    getValue('docSpisovaZnacka');
+
+  const datumNarodenia =
+    getValue('docDatumNarodenia');
+
+  const bydlisko =
+    getValue('docBydlisko');
+
+  const miestoRozhodnutia =
+    getValue('docMiestoRozhodnutia');
+
+  const datumRozhodnutia =
+    getValue('docDatumRozhodnutia');
+
+  const predseda =
+    getValue('docPredseda');
+
+  const meno =
+    getReadonlyValue('docMeno');
+
+const disciplinarnePrevinenie =
+  getReadonlyValue('docDisciplinarnePrevinenie');
+
+const opisSkutku =
+  getReadonlyValue('docPoznamkaRs');
+
+const dovodZastavenia =
+  getReadonlyValue('docDovodZastavenia');
+
+  const odovodnenie =
+    getReadonlyValue('docPoznamkaDk');
+
+  const pravnePosudenie =
+    getReadonlyValue('docPravnePosudenie');
+
+  if (!organ) {
+    alert('Doplň názov disciplinárneho orgánu.');
+    return;
+  }
+
+  if (!spisovaZnacka) {
+    alert('Doplň spisovú značku.');
+    return;
+  }
+
+  if (!datumNarodenia) {
+    alert('Doplň dátum narodenia.');
+    return;
+  }
+
+  if (!bydlisko) {
+    alert('Doplň trvalé bydlisko.');
+    return;
+  }
+
+  if (!miestoRozhodnutia) {
+    alert('Doplň miesto rozhodnutia.');
+    return;
+  }
+
+  if (!datumRozhodnutia) {
+    alert('Doplň dátum rozhodnutia.');
+    return;
+  }
+
+  if (!predseda) {
+    alert('Doplň predsedu disciplinárneho orgánu.');
+    return;
+  }
+
+  if (!dovodZastavenia) {
+    alert(
+      'Chýba dôvod zastavenia podľa § 18 ods. 1 Disciplinárneho poriadku SRZ.'
+    );
+    return;
+  }
+
+  const formatDocDate = value => {
+    if (!value) return '';
+
+    const parts = value.split('-');
+
+    if (parts.length !== 3) {
+      return value;
+    }
+
+    return (
+      parts[2] + '.' +
+      parts[1] + '.' +
+      parts[0]
+    );
+  };
+
+  const datumNarodeniaText =
+    formatDocDate(datumNarodenia);
+
+  const datumRozhodnutiaText =
+    formatDocDate(datumRozhodnutia);
+
+  const rozhodnutieWindow =
+    sourceDocument.defaultView;
+
+  if (!rozhodnutieWindow) {
+    alert('Nepodarilo sa otvoriť náhľad dokumentu.');
+    return;
+  }
+
+  rozhodnutieWindow.document.open();
+
+  rozhodnutieWindow.document.write(`
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+
+<title>
+  Rozhodnutie o zastavení disciplinárneho konania
+</title>
+
+<style>
+
+  @page {
+    size: A4;
+    margin: 18mm 20mm 18mm 20mm;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #e5e7eb;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.35;
+    color: #000;
+  }
+
+  .print-toolbar {
+    max-width: 210mm;
+    margin: 14px auto;
+    text-align: right;
+  }
+
+  .print-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font: 600 14px Arial, sans-serif;
+    cursor: pointer;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 20px;
+    background: #fff;
+    padding: 18mm 20mm;
+  }
+
+  .organ {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 18px;
+  }
+
+  .spis {
+    text-align: right;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 15pt;
+    margin: 20px 0 24px;
+  }
+
+  p {
+    margin: 0 0 12px;
+    text-align: justify;
+  }
+
+  .decision {
+    margin: 18px 0;
+  }
+
+  .section-title {
+    font-weight: bold;
+    margin: 22px 0 12px;
+  }
+
+  .signature {
+    width: 45%;
+    margin-left: auto;
+    margin-top: 45px;
+    text-align: center;
+  }
+
+  .signature-line {
+    margin-top: 42px;
+    border-top: 1px solid #000;
+    padding-top: 4px;
+  }
+
+  .stamp {
+    margin-top: 25px;
+    min-height: 35px;
+  }
+
+  .delivery {
+    margin-top: 30px;
+    font-size: 10.5pt;
+  }
+
+  @media print {
+
+    body {
+      background: #fff;
+    }
+
+    .print-toolbar {
+      display: none;
+    }
+
+    .page {
+      margin: 0;
+      padding: 0;
+      width: auto;
+      min-height: auto;
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="print-toolbar">
+  <button
+    type="button"
+    class="print-button"
+    onclick="window.print()"
+  >
+    🖨️ Vytlačiť / Uložiť PDF
+  </button>
+</div>
+
+<div class="page">
+
+  <div class="organ">
+    ${escapeHtml(organ)}
+  </div>
+
+  <div class="spis">
+    Spisová značka:
+    ${escapeHtml(spisovaZnacka)}
+  </div>
+
+  <h1>
+    ROZHODNUTIE<br>
+    o zastavení disciplinárneho konania
+  </h1>
+
+  <p>
+    ${escapeHtml(organ)}
+    ako disciplinárny orgán prvého stupňa
+    v ${escapeHtml(miestoRozhodnutia)}
+    dňa ${escapeHtml(datumRozhodnutiaText)}
+  </p>
+
+  <p>
+    v disciplinárnej veci proti
+    <strong>${escapeHtml(meno)}</strong>,
+    nar. <strong>${escapeHtml(datumNarodeniaText)}</strong>,
+    trvale bytom
+    <strong>${escapeHtml(bydlisko)}</strong>
+  </p>
+
+  <p>
+    pre disciplinárne previnenie
+    <strong>${escapeHtml(disciplinarnePrevinenie)}</strong>
+    na svojom zasadnutí vyniesla toto rozhodnutie:
+  </p>
+
+  <div class="decision">
+
+    <p>
+      V zmysle
+      <strong>${escapeHtml(dovodZastavenia)}</strong>
+      Disciplinárneho poriadku SRZ disciplinárne konanie proti
+      <strong>${escapeHtml(meno)}</strong>,
+      nar. <strong>${escapeHtml(datumNarodeniaText)}</strong>,
+      trvale bytom
+      <strong>${escapeHtml(bydlisko)}</strong>,
+      členovi zväzu pre disciplinárne previnenie
+      <strong>${escapeHtml(opisSkutku || disciplinarnePrevinenie)}</strong>
+      sa zastavuje.
+    </p>
+
+  </div>
+
+  <div class="section-title">
+    Odôvodnenie
+  </div>
+
+  <p>
+    ${escapeHtml(
+      odovodnenie ||
+      pravnePosudenie ||
+      ''
+    )}
+  </p>
+
+  <p style="margin-top:22px;">
+    <strong>Poučenie:</strong>
+    Proti tomuto rozhodnutiu nie je prípustný žiadny opravný prostriedok.
+  </p>
+
+  <p style="margin-top:30px;">
+    V ${escapeHtml(miestoRozhodnutia)},
     dňa ${escapeHtml(datumRozhodnutiaText)}
   </p>
 
@@ -23357,11 +30154,18 @@ function toggleDkDoplnkovePolia() {
   const dobaBox =
     document.getElementById('dkDobaOpatreniaBox');
 
+  const dovodZastaveniaBox =
+    document.getElementById('dkDovodZastaveniaBox');
+
   if (!pokutaBox || !dobaBox) return;
 
-  // Najskôr obe doplnkové polia skryjeme
+  // Najskôr doplnkové polia skryjeme
   pokutaBox.classList.add('hidden');
   dobaBox.classList.add('hidden');
+
+  if (dovodZastaveniaBox) {
+    dovodZastaveniaBox.classList.add('hidden');
+  }
 
   // Peňažná pokuta
   if (vysledok === 'Peňažná pokuta') {
@@ -23369,13 +30173,21 @@ function toggleDkDoplnkovePolia() {
   }
 
   // Opatrenia súvisiace s povolením na rybolov
-if (
-  vysledok === 'Nevydanie povolenia na rybolov' ||
-  vysledok === 'Odňatie a nevydanie povolenia na rybolov' ||
-  vysledok === 'Dočasné vylúčenie z členstva SRZ'
-) {
-  dobaBox.classList.remove('hidden');
-}
+  if (
+    vysledok === 'Nevydanie povolenia na rybolov' ||
+    vysledok === 'Odňatie a nevydanie povolenia na rybolov' ||
+    vysledok === 'Dočasné vylúčenie z členstva SRZ'
+  ) {
+    dobaBox.classList.remove('hidden');
+  }
+
+  // Zastavenie disciplinárneho konania
+  if (
+    vysledok === 'Zastavenie disciplinárneho konania' &&
+    dovodZastaveniaBox
+  ) {
+    dovodZastaveniaBox.classList.remove('hidden');
+  }
 }
 
 async function uploadDisciplinarneDokumenty(checkId, files) {
@@ -23482,6 +30294,11 @@ async function saveDisciplinarneRiesenie() {
 const disciplinarnePrevinenie =
   document.getElementById('dkDisciplinarnePrevinenie')?.value.trim() || null;
 
+const dovodZastavenia =
+  vysledokRiesenia === 'Zastavenie disciplinárneho konania'
+    ? document.getElementById('dkDovodZastavenia')?.value || null
+    : null;
+
   const porusenyPredpis =
     document.getElementById('dkPorusenyPredpis')?.value.trim() || null;
 
@@ -23559,12 +30376,22 @@ const dokumentFiles =
     document.getElementById('dkDokumenty')?.files || []
   );
 
-  if (!checkId) {
-    alert('Chýba prepojenie na pôvodnú kontrolu.');
-    return;
-  }
+ if (!checkId) {
+  alert('Chýba prepojenie na pôvodnú kontrolu.');
+  return;
+}
 
-  const vyskaPokuty =
+if (
+  vysledokRiesenia === 'Zastavenie disciplinárneho konania' &&
+  !dovodZastavenia
+) {
+  alert(
+    'Pri zastavení disciplinárneho konania vyber dôvod podľa § 18 ods. 1 Disciplinárneho poriadku SRZ.'
+  );
+  return;
+}
+
+const vyskaPokuty =
     vyskaPokutyRaw !== ''
       ? Number(vyskaPokutyRaw)
       : null;
@@ -23743,6 +30570,7 @@ if (dokumentFiles.length > 0) {
     doba_opatrenia: dobaOpatrenia,
     stupen_previnenia: stupenPrevinenia,
     disciplinarne_previnenie: disciplinarnePrevinenie,
+    dovod_zastavenia: dovodZastavenia,
     zavinenie: zavinenie,
     vznikla_skoda: vzniklaSkoda,
     predchadzajuce_opatrenie: predchadzajuceOpatrenie,
@@ -24071,6 +30899,15 @@ ${item.note ? `
     }
 
 async function openRybariModule() {
+
+  const fishersAccess =
+    getCachedPermissionLevel('module.fishers');
+
+  if (fishersAccess !== 'ALLOW' && fishersAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Evidencii rybára.');
+    return;
+  }
+
   document.getElementById('mainMenuSection').classList.add('hidden');
   document.getElementById('backToMenuSection').classList.remove('hidden');
 
@@ -24102,9 +30939,18 @@ async function openRybariModule() {
 }
 
 function openKontrolyModule() {
-if (!appState.kontrolyLoaded) {
-  refreshKontrolyData();
-}
+
+  const checksAccess =
+    getCachedPermissionLevel('module.checks');
+
+  if (checksAccess !== 'ALLOW' && checksAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Evidencii kontroly.');
+    return;
+  }
+
+  if (!appState.kontrolyLoaded) {
+    refreshKontrolyData();
+  }
 
   document.getElementById('mainMenuSection').classList.add('hidden');
   document.getElementById('backToMenuSection').classList.remove('hidden');
@@ -24135,6 +30981,15 @@ if (!appState.kontrolyLoaded) {
 }
 
 async function openStatistikyModule() {
+
+  const statisticsAccess =
+    getCachedPermissionLevel('module.statistics');
+
+  if (statisticsAccess !== 'ALLOW' && statisticsAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Štatistikám.');
+    return;
+  }
+
   const loading = document.getElementById('statsLoading');
 
   document.getElementById('mainMenuSection').classList.add('hidden');
@@ -24182,13 +31037,30 @@ updateDashboard();
     loading.classList.add('hidden');
   }
 
-  document.getElementById('dashboardCardsSection').classList.add('hidden');
-  document.getElementById('graphsOnlySection').classList.remove('hidden');
+document.getElementById('dashboardCardsSection').classList.add('hidden');
+document.getElementById('graphsOnlySection').classList.remove('hidden');
 
-  document.getElementById('graphsOnlySection').scrollIntoView({ behavior: 'smooth' });
+document
+  .querySelectorAll('#graphsOnlySection .graph-card')
+  .forEach(card => {
+    card.classList.remove('mobile-active');
+  });
+
+document.getElementById('mobileGraphSelect').value = '';
+
+document.getElementById('graphsOnlySection').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function openReportyModule() {
+
+  const reportsAccess =
+    getCachedPermissionLevel('module.reports');
+
+  if (reportsAccess !== 'ALLOW' && reportsAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Reportom.');
+    return;
+  }
+
   const loading = document.getElementById('statsLoading');
 
   document.getElementById('mainMenuSection').classList.add('hidden');
@@ -24548,6 +31420,15 @@ async function refreshEvidenciaUlovkov() {
 }
 
 async function openEvidenciaUlovkovModule() {
+
+  const catchesAccess =
+    getCachedPermissionLevel('module.catches');
+
+  if (catchesAccess !== 'ALLOW' && catchesAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Evidencii úlovkov.');
+    return;
+  }
+
   const section =
     document.getElementById('evidenciaUlovkovSection');
 
@@ -24637,6 +31518,15 @@ await refreshEvidenciaUlovkov();
 }
 
 async function openRevirZisteniaModule() {
+
+  const findingsAccess =
+    getCachedPermissionLevel('module.findings');
+
+  if (findingsAccess !== 'ALLOW' && findingsAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Zisteniam na revíroch.');
+    return;
+  }
+
   const section =
     document.getElementById('revirZisteniaSection');
 
@@ -28292,11 +35182,29 @@ function renderGrafUcastniciSluzieb(sluzby) {
     });
   });
 
-  const rows = Object.entries(stats)
-    .sort((a, b) =>
-      b[1].count - a[1].count ||
-      b[1].minutes - a[1].minutes
+  const selectedMemberId =
+  document.getElementById('filterClenRS')?.value || '';
+
+const selectedMemberName =
+  selectedMemberId
+    ? safeText(getMemberName(selectedMemberId))
+    : '';
+
+const rows = Object.entries(stats)
+  .filter(([memberName]) => {
+    if (!selectedMemberName) {
+      return true;
+    }
+
+    return (
+      normalize(memberName) ===
+      normalize(selectedMemberName)
     );
+  })
+  .sort((a, b) =>
+    b[1].count - a[1].count ||
+    b[1].minutes - a[1].minutes
+  );
 
   if (rows.length === 0) {
     box.innerHTML =
@@ -29116,10 +36024,28 @@ function renderGrafAktivitaClenov(kontroly, sluzby) {
   const box = document.getElementById("grafAktivitaClenov");
   if (!box) return;
 
-  const counts = getMemberActivityStats(kontroly, sluzby);
+const counts = getMemberActivityStats(kontroly, sluzby);
 
-  const rows = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1]);
+const selectedMemberId =
+  document.getElementById('filterClenRS')?.value || '';
+
+const selectedMemberName =
+  selectedMemberId
+    ? safeText(getMemberName(selectedMemberId))
+    : '';
+
+const rows = Object.entries(counts)
+  .filter(([memberName]) => {
+    if (!selectedMemberName) {
+      return true;
+    }
+
+    return (
+      normalize(memberName) ===
+      normalize(selectedMemberName)
+    );
+  })
+  .sort((a, b) => b[1] - a[1]);
 
   if (rows.length === 0) {
     box.innerHTML = '<p>Žiadne dáta pre graf.</p>';
@@ -29570,9 +36496,33 @@ sessions.forEach(session => {
     session.minutes;
 });
 
-  const rows = Object.entries(counts)
-    .map(([clen, minuty]) => [clen, (minuty / 60).toFixed(1)])
-    .sort((a, b) => Number(b[1]) - Number(a[1]));
+  const selectedMemberId =
+  document.getElementById('filterClenRS')?.value || '';
+
+const selectedMemberName =
+  selectedMemberId
+    ? safeText(getMemberName(selectedMemberId))
+    : '';
+
+const rows = Object.entries(counts)
+  .filter(([memberName]) => {
+    if (!selectedMemberName) {
+      return true;
+    }
+
+    return (
+      normalize(memberName) ===
+      normalize(selectedMemberName)
+    );
+  })
+  .map(([clen, minuty]) => [
+    clen,
+    (minuty / 60).toFixed(1)
+  ])
+  .sort(
+    (a, b) =>
+      Number(b[1]) - Number(a[1])
+  );
 
   if (rows.length === 0) {
     box.innerHTML = '<p>Žiadne ukončené služby revírov.</p>';
@@ -31434,10 +38384,51 @@ ${renderVehiclePurposes('ford')}
   }
 }
 
+function toggleStatisticsFilter() {
+    const content =
+        document.getElementById('statisticsFilterContent');
+
+    const button =
+        document.getElementById('statisticsFilterToggle');
+
+    if (!content || !button) {
+        return;
+    }
+
+    const isHidden =
+        content.style.display === 'none';
+
+    if (isHidden) {
+        content.style.display = 'flex';
+
+        button.querySelector('span:first-child').textContent =
+            'Skryť filter';
+
+        button.querySelector(
+            '.statistics-filter-toggle-icon'
+        ).textContent = '▲';
+
+        button.setAttribute('aria-expanded', 'true');
+
+    } else {
+        content.style.display = 'none';
+
+        button.querySelector('span:first-child').textContent =
+            'Zobraziť filter';
+
+        button.querySelector(
+            '.statistics-filter-toggle-icon'
+        ).textContent = '▼';
+
+        button.setAttribute('aria-expanded', 'false');
+    }
+}
+
     function updateDashboard() {
       const selectClen = document.getElementById("filterClenRS");
       if (selectClen) {
         const selectedClen = selectClen.value;
+
         const members = (appState.data.members || []).filter(m =>
   normalize(m.role || '').includes(normalize('Clen RS'))
 );
@@ -31451,7 +38442,7 @@ ${renderVehiclePurposes('ford')}
           selectClen.appendChild(option);
         });
 
-        if ([...members.map(m => m.id), ''].includes(selectedClen)) {
+        if ([...members.map(m => String(m.id)), ''].includes(String(selectedClen))) {
           selectClen.value = selectedClen;
         }
       }
@@ -31990,9 +38981,12 @@ async function init() {
 
 await loadMembersForLogin();
 
-prepareRememberedLogin();
+const authSessionRestored =
+  await restoreAuthSession();
 
-await restoreAuthSession();
+if (!authSessionRestored) {
+  prepareRememberedLogin();
+}
 
   // =================================================
   // STARTUP SYNC
@@ -36218,9 +43212,17 @@ modal.classList.remove('hidden');
 }
 
 function showReviryInfo() {
+
+  const reviryAccess =
+    getCachedPermissionLevel('module.reviry');
+
+  if (reviryAccess !== 'ALLOW' && reviryAccess !== 'MANAGE') {
+    alert('Nemáte oprávnenie na prístup k Revírom.');
+    return;
+  }
+
   const modal = document.getElementById('reviryInfoModal');
   const list = document.getElementById('reviryInfoList');
-
   if (!modal || !list) {
     alert('Chýba: modal informácií o revíroch.');
     return;
