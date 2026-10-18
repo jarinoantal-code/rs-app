@@ -9553,6 +9553,28 @@ async function getCurrentPermissionLevel(permissionCode) {
   }
 }
 
+// WORK: Jednorazové online obnovenie práv pri zamietnutom vstupe.
+// Žiadny zásah do offline vetvy, IndexedDB, synchronizácie ani uložených kontrol.
+async function ensureLiveModulePermission(permissionCode, acceptedLevels) {
+  const localLevel = getCachedPermissionLevel(permissionCode);
+  if (acceptedLevels.includes(localLevel)) return true;
+  if (!navigator.onLine || !appState.currentUserId) return false;
+  try {
+    const { data: authData, error: authError } = await db.auth.getUser();
+    const member = (appState.data.members || []).find(m =>
+      String(m.id) === String(appState.currentUserId));
+    if (authError || !authData?.user || !member ||
+        String(authData.user.id) !== String(member.auth_user_id)) return false;
+    const ok = await loadCurrentPermissions();
+    if (!ok) return false;
+    savePermissionsToOfflineCache(member.id);
+    return acceptedLevels.includes(getCachedPermissionLevel(permissionCode));
+  } catch (error) {
+    console.warn('MODULE ACCESS – online overenie zlyhalo:', error);
+    return false;
+  }
+}
+
 async function loadCurrentPermissions() {
   try {
     const { data, error } = await db.rpc(
@@ -30794,7 +30816,7 @@ async function openStatistikyModule() {
   const statisticsAccess =
     getCachedPermissionLevel('module.statistics');
 
-  if (statisticsAccess !== 'ALLOW' && statisticsAccess !== 'MANAGE') {
+  if (!(await ensureLiveModulePermission('module.statistics', ['ALLOW', 'MANAGE']))) {
     alert('Nemáte oprávnenie na prístup k Štatistikám.');
     return;
   }
@@ -30865,7 +30887,7 @@ async function openReportyModule() {
   const reportsAccess =
     getCachedPermissionLevel('module.reports');
 
-  if (reportsAccess !== 'ALLOW' && reportsAccess !== 'MANAGE') {
+  if (!(await ensureLiveModulePermission('module.reports', ['ALLOW', 'MANAGE']))) {
     alert('Nemáte oprávnenie na prístup k Reportom.');
     return;
   }
@@ -31331,7 +31353,7 @@ async function openRevirZisteniaModule() {
   const findingsAccess =
     getCachedPermissionLevel('module.findings');
 
-  if (findingsAccess !== 'ALLOW' && findingsAccess !== 'MANAGE') {
+  if (!(await ensureLiveModulePermission('module.findings', ['ALLOW', 'MANAGE']))) {
     alert('Nemáte oprávnenie na prístup k Zisteniam na revíroch.');
     return;
   }
@@ -31420,7 +31442,7 @@ renderRevirZistenia();
 async function openInfoVelitelaModule() {
 
   // Bezpečnostná kontrola aj pri ručnom zavolaní funkcie.
-  if (!canAccessInfoVelitela()) {
+  if (!(await ensureLiveModulePermission('module.commander_info', ['ALLOW']))) {
     alert('K tejto časti nemáte oprávnený prístup.');
     return;
   }
