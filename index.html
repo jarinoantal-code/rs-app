@@ -17616,46 +17616,59 @@ const RS_RECOVERY_246_CHECKS = [
   ['check_27c19ed4-7d6c-474d-baf9-b2733a80da88', 698]
 ];
 
+// KROK 28 – bezpečná obnova podľa SKUTOČNÝCH dvoch lokálnych kontrol.
+// Najprv záloha, až potom online overenie oboch centrálnych ID.
+let rsRecovery246BackupSignature = null;
 async function rsRecovery246Inspect() {
   const service = await rsLocalGet(RS_LOCAL_STORES.services, RS_RECOVERY_246_SERVICE);
-  if (!service || service.sync_status !== 'SYNC_RUNNING') throw new Error('Lokálna služba nemá očakávaný stav SYNC_RUNNING.');
+  if (!service || service.sync_status !== 'SYNC_RUNNING') throw new Error('Služba 246 nie je v očakávanom stave SYNC_RUNNING.');
   const allChecks = await rsLocalGetAll(RS_LOCAL_STORES.checks);
   const allPhotos = await rsLocalGetAll(RS_LOCAL_STORES.photos);
-  // KROK 25: presné lokálne ID, pretože historická väzba service_local_id môže chýbať.
-  const expected = new Set(RS_RECOVERY_246_CHECKS.map(x => x[0]));
-  const serviceChecks = allChecks.filter(c => expected.has(c.local_id));
-  if (serviceChecks.length !== 2 || new Set(serviceChecks.map(c => c.local_id)).size !== 2) throw new Error('V telefóne sa nenašli obe presné lokálne ID kontrol.');
-  // KROK 26: kontrola zhody s tým, čo skutočne počíta oranžový indikátor.
-  // Obnovu nepovoľujeme, ak dve čakajúce kontroly pri službe nie sú presne 697/698.
-  const linkedChecks = allChecks.filter(c => c.service_local_id === RS_RECOVERY_246_SERVICE && !String(c.local_id || '').startsWith('legacy_check_'));
-  if (linkedChecks.length !== 2 || linkedChecks.some(c => !expected.has(c.local_id)) || new Set(linkedChecks.map(c => c.local_id)).size !== 2) {
-    // Iba diagnostika: presné ID vysvetlia, prečo sa pôvodná obnova zastavila.
-    // Žiadne mazanie, zmena stavov ani serverový zápis.
-    const linkedIds = linkedChecks.map(c => String(c.local_id || '(bez ID)'));
-    const expectedIds = RS_RECOVERY_246_CHECKS.map(x => x[0]);
-    throw new Error('NEZHODA LOKÁLNYCH KONTROL.\n' +
-      'Oranžový indikátor počíta (' + linkedChecks.length + '):\n' + linkedIds.join('\n') +
-      '\nOčakávané pre 697/698:\n' + expectedIds.join('\n') +
-      '\nObnova sa nevykonala.');
+  const checks = allChecks.filter(c => c.service_local_id === RS_RECOVERY_246_SERVICE && !String(c.local_id || '').startsWith('legacy_check_'));
+  if (checks.length !== 2 || checks.some(c => !c.local_id) || new Set(checks.map(c => c.local_id)).size !== 2) {
+    throw new Error('Očakávali sme presne dve lokálne kontroly pri službe 246; našli sme ' + checks.length + '. Bez zápisu.');
   }
-  if (serviceChecks.some(c => c.sync_status !== 'SYNC_RUNNING' || c.pending_sync !== true)) throw new Error('Stav lokálnych kontrol je iný, než sa očakáva.');
-  const relatedPhotos = allPhotos.filter(p => expected.has(p.check_local_id) || p.service_local_id === RS_RECOVERY_246_SERVICE);
-  if (relatedPhotos.length) throw new Error('Našli sa lokálne fotografie; oprava je zablokovaná.');
+  if (checks.some(c => c.sync_status !== 'SYNC_RUNNING' || c.pending_sync !== true)) {
+    throw new Error('Lokálne kontroly nemajú očakávaný stav SYNC_RUNNING/pending_sync. Bez zápisu.');
+  }
+  const linkedIds = new Set(checks.map(c => c.local_id));
+  const expectedIds = new Set(RS_RECOVERY_246_CHECKS.map(x => x[0]));
+  const unrelatedExpected = allChecks.filter(c => expectedIds.has(c.local_id) && !linkedIds.has(c.local_id) && c.pending_sync === true);
+  if (unrelatedExpected.length) throw new Error('Existujú ďalšie čakajúce kontroly 697/698 mimo služby 246. Bez zápisu.');
+  const photos = allPhotos.filter(p => linkedIds.has(p.check_local_id) || p.service_local_id === RS_RECOVERY_246_SERVICE);
+  if (photos.length) throw new Error('Našli sa lokálne fotografie pri službe 246. Bez zápisu.');
+  const signature = JSON.stringify({service, checks, photos});
+  return {service, checks, photos, signature};
+}
+
+async function rsRecovery246VerifyCentral(data) {
+  if (!navigator.onLine) throw new Error('Pre overenie Supabase je potrebné pripojenie.');
   const remoteService = await findCentralServiceByLocalId(RS_RECOVERY_246_SERVICE);
-  if (remoteService.status !== 'FOUND' || Number(remoteService.data?.id) !== 246) throw new Error('Centrálna služba 246 sa nepotvrdila.');
-  for (const [id, centralId] of RS_RECOVERY_246_CHECKS) {
-    const remote = await findCentralCheckByLocalId(id);
-    if (remote.status !== 'FOUND' || Number(remote.data?.id) !== centralId) throw new Error('Centrálna kontrola ' + centralId + ' sa nepotvrdila.');
-    const photos = remote.data?.photos;
-    if (Array.isArray(photos) ? photos.length !== 0 : (photos != null && photos !== '[]' && photos !== '')) throw new Error('Centrálna kontrola má neočakávané fotografie.');
+  if (remoteService.status !== 'FOUND' || Number(remoteService.data?.id) !== 246) {
+    throw new Error('Centrálna služba 246 sa nepotvrdila. Bez zápisu.');
   }
-  return { service, checks: serviceChecks, photos: relatedPhotos };
+  const matched = [];
+  for (const check of data.checks) {
+    const remote = await findCentralCheckByLocalId(check.local_id);
+    if (remote.status !== 'FOUND') throw new Error('Kontrola ' + check.local_id + ' neexistuje centrálne. Bez zápisu.');
+    const centralId = Number(remote.data?.id);
+    if (![697, 698].includes(centralId)) throw new Error('Neočakávané centrálne ID kontroly ' + centralId + '. Bez zápisu.');
+    const photos = remote.data?.photos;
+    if (Array.isArray(photos) ? photos.length !== 0 : (photos != null && photos !== '[]' && photos !== '')) {
+      throw new Error('Centrálna kontrola ' + centralId + ' obsahuje fotografie. Bez zápisu.');
+    }
+    matched.push({localId: check.local_id, centralId});
+  }
+  if (new Set(matched.map(c => c.centralId)).size !== 2) throw new Error('Kontroly nemajú dve rôzne centrálne ID 697/698. Bez zápisu.');
+  return matched;
 }
 
 async function rsRecovery246Manual() {
   try {
     const data = await rsRecovery246Inspect();
-    if (!rsRecovery246BackupReady) {
+    if (!rsRecovery246BackupReady || rsRecovery246BackupSignature !== data.signature) {
+      rsRecovery246BackupReady = false;
+      rsRecovery246BackupSignature = null;
       const backup = {created_at: new Date().toISOString(), purpose: 'RS APP 246 local recovery backup', service: data.service, checks: data.checks, photos: data.photos};
       const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
       const url = URL.createObjectURL(blob);
@@ -17663,22 +17676,28 @@ async function rsRecovery246Manual() {
       a.href = url; a.download = 'RS_APP_BACKUP_LOCAL_246_697_698.json';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
+      rsRecovery246BackupSignature = data.signature;
       rsRecovery246BackupReady = true;
-      alert('Záloha bola ponúknutá na stiahnutie. Over, že súbor JSON je skutočne uložený v telefóne. Potom znova ťukni na indikátor synchronizácie a zvoľ obnovu. Ak súbor nemáš, nepokračuj.');
+      alert('Záloha bola ponúknutá na stiahnutie. Najprv OVER, že JSON súbor je uložený v telefóne. Potom otvor obnovu znova.');
       return;
     }
-    if (!confirm('Máš SKUTOČNE uložený súbor RS_APP_BACKUP_LOCAL_246_697_698.json v telefóne? Ak nie, stlač Zrušiť.')) return;
-    if (!confirm('Potvrdiť jednorazové LOKÁLNE označenie kontrol 697, 698 a služby 246 ako SYNCED? Supabase sa nemení.')) return;
-    // Opätovné overenie tesne pred prvým lokálnym zápisom.
-    await rsRecovery246Inspect();
-    for (const [id, centralId] of RS_RECOVERY_246_CHECKS) await markLocalCheckAsSynced(id, centralId);
+    if (!confirm('Máš SKUTOČNE uložený JSON súbor RS_APP_BACKUP_LOCAL_246_697_698.json?')) return;
+    const matched = await rsRecovery246VerifyCentral(data);
+    if (!confirm('Supabase potvrdil obe kontroly 697 a 698 a službu 246. Označiť tieto DVE presne overené lokálne kontroly a službu ako SYNCED?')) return;
+    // Revalidácia pred zápisom; žiadne zmeny počas overovania.
+    const fresh = await rsRecovery246Inspect();
+    if (fresh.signature !== data.signature) throw new Error('Lokálne dáta sa medzitým zmenili. Bez zápisu.');
+    const again = await rsRecovery246VerifyCentral(fresh);
+    if (JSON.stringify(again) !== JSON.stringify(matched)) throw new Error('Centrálne záznamy sa medzitým zmenili. Bez zápisu.');
+    for (const item of matched) await markLocalCheckAsSynced(item.localId, item.centralId);
     const result = await finalizeLocalServiceSync(RS_RECOVERY_246_SERVICE, 246);
-    if (!result.ok) throw new Error('Službu sa nepodarilo uzavrieť: ' + result.reason);
+    if (!result.ok) throw new Error('Kontroly boli lokálne označené ako SYNCED, ale službu sa nepodarilo uzavrieť: ' + result.reason);
     rsRecovery246BackupReady = false;
+    rsRecovery246BackupSignature = null;
     await updateSyncStatusIndicator();
-    alert('Lokálne zotavenie dokončené. Skontroluj stav hlavičky.');
+    alert('Lokálne zotavenie dokončené. Skontroluj oranžový indikátor.');
   } catch (error) {
-    alert('Zotavenie sa zastavilo: ' + String(error?.message || error) + '\nŽiadne záznamy v Supabase sa nemenili.');
+    alert('Obnova sa zastavila: ' + String(error?.message || error) + '\nŽiadne záznamy v Supabase sa nemenili.');
   }
 }
 
