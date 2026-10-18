@@ -17621,11 +17621,25 @@ async function rsRecovery246Inspect() {
   if (!service || service.sync_status !== 'SYNC_RUNNING') throw new Error('Lokálna služba nemá očakávaný stav SYNC_RUNNING.');
   const allChecks = await rsLocalGetAll(RS_LOCAL_STORES.checks);
   const allPhotos = await rsLocalGetAll(RS_LOCAL_STORES.photos);
-  const serviceChecks = allChecks.filter(c => c.service_local_id === RS_RECOVERY_246_SERVICE && !String(c.local_id || '').startsWith('legacy_check_'));
+  // KROK 25: presné lokálne ID, pretože historická väzba service_local_id môže chýbať.
   const expected = new Set(RS_RECOVERY_246_CHECKS.map(x => x[0]));
-  if (serviceChecks.length !== 2 || serviceChecks.some(c => !expected.has(c.local_id))) throw new Error('Lokálne kontroly nesedia presne na očakávané 2 ID.');
+  const serviceChecks = allChecks.filter(c => expected.has(c.local_id));
+  if (serviceChecks.length !== 2 || new Set(serviceChecks.map(c => c.local_id)).size !== 2) throw new Error('V telefóne sa nenašli obe presné lokálne ID kontrol.');
+  // KROK 26: kontrola zhody s tým, čo skutočne počíta oranžový indikátor.
+  // Obnovu nepovoľujeme, ak dve čakajúce kontroly pri službe nie sú presne 697/698.
+  const linkedChecks = allChecks.filter(c => c.service_local_id === RS_RECOVERY_246_SERVICE && !String(c.local_id || '').startsWith('legacy_check_'));
+  if (linkedChecks.length !== 2 || linkedChecks.some(c => !expected.has(c.local_id)) || new Set(linkedChecks.map(c => c.local_id)).size !== 2) {
+    // Iba diagnostika: presné ID vysvetlia, prečo sa pôvodná obnova zastavila.
+    // Žiadne mazanie, zmena stavov ani serverový zápis.
+    const linkedIds = linkedChecks.map(c => String(c.local_id || '(bez ID)'));
+    const expectedIds = RS_RECOVERY_246_CHECKS.map(x => x[0]);
+    throw new Error('NEZHODA LOKÁLNYCH KONTROL.\n' +
+      'Oranžový indikátor počíta (' + linkedChecks.length + '):\n' + linkedIds.join('\n') +
+      '\nOčakávané pre 697/698:\n' + expectedIds.join('\n') +
+      '\nObnova sa nevykonala.');
+  }
   if (serviceChecks.some(c => c.sync_status !== 'SYNC_RUNNING' || c.pending_sync !== true)) throw new Error('Stav lokálnych kontrol je iný, než sa očakáva.');
-  const relatedPhotos = allPhotos.filter(p => expected.has(p.check_local_id));
+  const relatedPhotos = allPhotos.filter(p => expected.has(p.check_local_id) || p.service_local_id === RS_RECOVERY_246_SERVICE);
   if (relatedPhotos.length) throw new Error('Našli sa lokálne fotografie; oprava je zablokovaná.');
   const remoteService = await findCentralServiceByLocalId(RS_RECOVERY_246_SERVICE);
   if (remoteService.status !== 'FOUND' || Number(remoteService.data?.id) !== 246) throw new Error('Centrálna služba 246 sa nepotvrdila.');
