@@ -39913,9 +39913,7 @@ function openRevirZistenieDetail(id) {
       ? item.photos
       : [];
 
-const canEdit =
-  Number(item.created_by_member_id) ===
-  Number(appState.currentUserId);
+const canEdit = canEditRevirZistenieAsRS();
 
   const overlay = document.createElement('div');
 
@@ -40147,15 +40145,22 @@ document
   );
 }
 
+function canEditRevirZistenieAsRS() {
+  const memberId = Number(appState.currentUserId);
+  return Number.isFinite(memberId) && memberId > 0 &&
+    (appState.data.memberAppRoles || []).some(row =>
+      Number(row.member_id) === memberId &&
+      ['CLEN_RS', 'VELITEL_RS'].includes(String(row.role_code || '').trim().toUpperCase())
+    );
+}
+
 function openRevirZistenieEdit(item, detailOverlay) {
   if (!item) {
     alert('Záznam zistenia sa nepodarilo načítať.');
     return;
   }
 
-  const canEdit =
-    Number(item.created_by_member_id) ===
-    Number(appState.currentUserId);
+  const canEdit = canEditRevirZistenieAsRS();
 
   if (!canEdit) {
     alert('Tento záznam nemôžete upravovať.');
@@ -40414,10 +40419,7 @@ const stav =
         ? Array.from(photoInput.files)
         : [];
 
-    if (
-      Number(item.created_by_member_id) !==
-      Number(appState.currentUserId)
-    ) {
+    if (!canEditRevirZistenieAsRS()) {
       alert('Tento záznam nemôžete upravovať.');
       return;
     }
@@ -40460,31 +40462,18 @@ const stav =
         saveButton.textContent = 'Ukladám...';
       }
 
-      const { data, error } = await db
-        .from('revir_zistenia')
-        .update({
-  popis: popis,
-  poznamka_riesenia:
-    poznamkaRiesenia || null,
-  photos: photos,
-  stav: stav,
-  datum_vyriesenia:
-    stav === 'Vyriešené'
-      ? (
-          item.stav === 'Vyriešené' &&
-          item.datum_vyriesenia
-            ? item.datum_vyriesenia
-            : new Date().toISOString()
-        )
-      : null
-})
-        .eq('id', item.id)
-        .eq(
-          'created_by_member_id',
-          appState.currentUserId
-        )
-        .select()
-        .single();
+      const { data, error } = await db.rpc('rs_update_revir_zistenie', {
+        p_id: Number(item.id),
+        p_popis: popis,
+        p_poznamka_riesenia: poznamkaRiesenia || null,
+        p_photos: photos,
+        p_stav: stav,
+        p_datum_vyriesenia:
+          stav === 'Vyriešené'
+            ? (item.stav === 'Vyriešené' && item.datum_vyriesenia
+                ? item.datum_vyriesenia : new Date().toISOString())
+            : null
+      });
 
       if (error) {
         throw error;
