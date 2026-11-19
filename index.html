@@ -3762,12 +3762,454 @@ button:disabled,
   filter: grayscale(0.35);
 }
 
+
+/* DESIGN 01 — KROK 10: DK, Legislatíva, Admin Centrum.
+   Iba farebná a typografická vrstva. Bez zmeny logiky, HTML a layoutu. */
+#disciplinarnaKomisiaSection .toolbar h2,
+#legislativaSection .toolbar h2,
+#adminLegislativaSection .toolbar h2,
+#adminCentrumSection .toolbar h2,
+#adminRolesSection h2,
+#adminUsersSection h2,
+#adminCreateUserSection h2,
+#adminUserDetailSection h2 { color:#102a3d; }
+#disciplinarnaKomisiaSection .note,
+#disciplinarnaKomisiaSection .stat,
+#disciplinarnaKomisiaSection .card,
+#disciplinarnaKomisiaSection .item,
+#legislativaSection .legislation-category,
+#legislativaSection .legislation-card,
+#legislativaSection .item,
+#adminLegislativaSection > .card,
+#adminCentrumSection .card,
+#adminRolesSection .card,
+#adminUsersSection .card,
+#adminCreateUserSection .card,
+#adminUserDetailSection .card {
+  background:#fff; color:#183247; border-color:#d2e2e5;
+  box-shadow:0 8px 26px rgba(7,21,34,.06);
+}
+#disciplinarnaKomisiaSection .stat .label,
+#disciplinarnaKomisiaSection .muted,
+#legislativaSection .muted,
+#adminLegislativaSection .muted,
+#adminCentrumSection .muted,
+#adminRolesSection .muted,
+#adminUsersSection .muted,
+#adminCreateUserSection .muted,
+#adminUserDetailSection .muted { color:#536a77; }
+#disciplinarnaKomisiaSection .stat .value { color:#102a3d; }
+#disciplinarnaKomisiaSection input:not([type="checkbox"]),
+#disciplinarnaKomisiaSection select,
+#disciplinarnaKomisiaSection textarea,
+#adminRolesSection input:not([type="checkbox"]),
+#adminRolesSection select,
+#adminUsersSection input:not([type="checkbox"]),
+#adminUsersSection select,
+#adminCreateUserSection input:not([type="checkbox"]),
+#adminCreateUserSection select,
+#adminUserDetailSection input:not([type="checkbox"]),
+#adminUserDetailSection select {
+  background:#f9fcfc; color:#183247; border-color:#c9dcdf;
+}
+#adminCentrumSection .card h3,
+#adminLegislativaSection .card h3,
+#adminRolesSection .card h3,
+#adminUsersSection .card h3 { color:#102a3d; }
 </style>
+<!-- RS APP DESIGN 01: isolated visual-only override, no JS or DOM changes -->
+<style id="rs-app-design01-visual-only">
+/* RS APP — DESIGN 01 / KROK 01 — LEN VIZUALNA VRSTVA
+   Zdroj: existujuce selektory RS APP; inspiracia JA Painting PRO DESIGN 01.
+   Bez zmeny DOM, rozlozenia, rozmery, udalosti, JS, databazy a fotografie.
+   Navrhnute na pridanie ZA existujuce CSS; NIE JE produkcne otestovane.
+*/
+:root {
+  --rs01-bg: #071522;
+  --rs01-panel: #0d2134;
+  --rs01-panel-hover: #123047;
+  --rs01-line: #25465d;
+  --rs01-accent: #48dfc5;
+  --rs01-text: #f1f7ff;
+  --rs01-muted: #a9c1d4;
+}
+/* Pôvodné pozadie rs-app-background.jpg sa NEMENÍ. */
+header {
+  background: linear-gradient(135deg,#0d2134,#071522);
+  border-color: var(--rs01-line);
+  color: var(--rs01-text);
+}
+header .header-menu-btn {
+  background: #153247;
+  color: var(--rs01-accent);
+  border-color: #31566a;
+}
+header .header-menu-btn:hover { background: #1b3c51; }
+/* KROK 02 – plávajúca vnútorná hlavička bola samostatne zelená.
+   Meníme VÝLUČNE jej farebnú výplň, rámik a tieň. */
+header .header-inner {
+  background: linear-gradient(135deg, rgba(13,33,52,.97), rgba(7,21,34,.95));
+  border-color: #25465d;
+  box-shadow: 0 10px 28px rgba(0,12,24,.25);
+}
+/* Vysúvacie menu: pozícia, šírka a členenie bez zmeny. */
+.app-side-menu { background: linear-gradient(180deg,#0d2134,#071522); color:var(--rs01-text); }
+.app-side-menu-header { background:rgba(72,223,197,.055); border-bottom-color:var(--rs01-line); }
+.app-side-menu-header-text strong { color:var(--rs01-text); }
+.app-side-menu-header-text span { color:var(--rs01-muted); }
+.app-side-menu-section { border-bottom-color:var(--rs01-line); }
+.app-side-menu-section-title { color:#82b8c8; }
+.app-side-menu-item { color:var(--rs01-text); }
+.app-side-menu-item-icon { color:var(--rs01-accent); }
+.app-side-menu-item:hover { background:rgba(72,223,197,.10); color:#fff; }
+.app-side-menu-close { background:#153247; border-color:var(--rs01-line); color:var(--rs01-accent); }
+/* Pôvodný pozdrav, dátum, 3 karty a ich grid sa nemenia. */
+#mainMenuSection > h2 {
+  background:rgba(13,33,52,.94);
+  border-color:var(--rs01-line);
+  color:var(--rs01-text);
+  box-shadow:0 8px 24px rgba(0,0,0,.16);
+}
+#mainMenuSection > h2::after {
+  background:linear-gradient(90deg,var(--rs01-accent) 0 42%,transparent 42% 58%,var(--rs01-accent) 58%),linear-gradient(0deg,var(--rs01-accent) 0 42%,transparent 42% 58%,var(--rs01-accent) 58%);
+}
+#mainMenuSection .card-kontroly,
+#mainMenuSection .card-reviry,
+#mainMenuSection .card-asistent {
+  background:linear-gradient(145deg,#0d2134,#123047);
+  border-color:var(--rs01-line);
+  box-shadow:0 12px 30px rgba(0,0,0,.20);
+}
+#mainMenuSection .card-kontroly::before,
+#mainMenuSection .card-reviry::before,
+#mainMenuSection .card-asistent::before { background:rgba(72,223,197,.055); }
+#mainMenuSection .card-kontroly h3,
+#mainMenuSection .card-reviry h3,
+#mainMenuSection .card-asistent h3 { color:var(--rs01-text); }
+#mainMenuSection .card-kontroly .muted,
+#mainMenuSection .card-reviry .muted,
+#mainMenuSection .card-asistent .muted { color:var(--rs01-muted); }
+#mainMenuSection .card-kontroly .card-icon,
+#mainMenuSection .card-reviry .card-icon,
+#mainMenuSection .card-asistent .card-icon { background:linear-gradient(145deg,#166e73,#0c505d); color:var(--rs01-accent); }
+#mainMenuSection .card-kontroly::after,
+#mainMenuSection .card-reviry::after,
+#mainMenuSection .card-asistent::after { background:#1a3a4b; color:var(--rs01-accent); }
+#mainMenuSection .card-kontroly:hover,
+#mainMenuSection .card-reviry:hover,
+#mainMenuSection .card-asistent:hover { box-shadow:0 18px 38px rgba(0,0,0,.28); }
+/* Dole: len farby; navigacne tlacidla, breakpointy a polohy ostavaju. */
+.mobile-bottom-nav { background:#0d2134; border-color:var(--rs01-line); }
+.mobile-bottom-nav-item { color:var(--rs01-muted); }
+.mobile-bottom-nav-item:hover { color:var(--rs01-accent); }
+
+
+/* KROK 03 – SCHVÁLENÉ JEMNÉ FAREBNÉ DOLADENIE.
+   Iba farby existujúcich prvkov; bez zmeny rozmerov, pozícií,
+   rozloženia, HTML, JS, oprávnení alebo obrázka na pozadí. */
+.mobile-bottom-nav-item { color:#d1e6ed; }
+.mobile-bottom-nav-icon { color:#b9d9e3; }
+.mobile-bottom-nav-item:hover,
+.mobile-bottom-nav-item:focus-visible { color:#48dfc5; }
+.mobile-bottom-nav-item:hover .mobile-bottom-nav-icon,
+.mobile-bottom-nav-item:focus-visible .mobile-bottom-nav-icon { color:#48dfc5; }
+/* Tlačidlá v hornej hlavičke – rovnaká farebná paleta DESIGN 01. */
+header #logoutBtn {
+  background:#153247;
+  border-color:#31566a;
+  color:#f1f7ff;
+}
+header #logoutBtn:hover { background:#1b3c51; }
+header .header-notification-btn {
+  background:#153247;
+  border-color:#31566a;
+  color:#48dfc5;
+}
+header .header-notification-btn:hover { background:#1b3c51; }
+header #loggedUserText {
+  background:#153247;
+  border-color:#31566a;
+  color:#f1f7ff;
+}
+
+
+/* DESIGN 01 — KROK 05: HYBRIDNÉ SVETLÉ PRACOVNÉ OBRAZOVKY.
+   Nadväzuje na schválený KROK 03, NIE na neúspešný tmavý KROK 04.
+   Len farba a kontrast, bez rozmerov, layoutu, DOM, JS a databázových zmien. */
+/* Evidencia kontroly: svetlá pracovná plocha, diskrétny moderný rámik. */
+#tab-kontroly #newCheckCard,
+#tab-kontroly #historiaKontrolCard {
+  background:#ffffff;
+  border-color:#d2e2e5;
+  color:#183247;
+  box-shadow:0 8px 26px rgba(7,21,34,.07);
+}
+#tab-kontroly #newCheckCard h3,
+#tab-kontroly #historiaKontrolCard h3 { color:#102a3d; }
+#tab-kontroly #newCheckCard label { color:#183247; }
+#tab-kontroly #newCheckCard input:not([type=checkbox]):not([type=radio]),
+#tab-kontroly #newCheckCard select,
+#tab-kontroly #newCheckCard textarea {
+  background:#f9fcfc;
+  border-color:#c9dcdf;
+  color:#183247;
+}
+#tab-kontroly #newCheckCard input::placeholder,
+#tab-kontroly #newCheckCard textarea::placeholder { color:#637987; }
+#tab-kontroly #newCheckCard .btn-primary { background:#087e70; color:#fff; }
+/* Revíry: kontrast názvov a poznámok; svetlé karty ostávajú svetlé. */
+#reviryInfoModal .modal-content,
+#revirDetailModal .modal-content {
+  background:#fff;
+  color:#183247;
+  border-color:#d2e2e5;
+}
+#reviryInfoModal .item,
+#revirDetailModal .item { background:#f9fcfc; color:#183247; border-color:#d2e2e5; }
+#reviryInfoModal h3,
+#revirDetailModal h3,
+#reviryInfoModal .item strong,
+#revirDetailModal .item strong { color:#102a3d; }
+#reviryInfoModal .muted,
+#revirDetailModal .muted { color:#536a77; }
+/* Asistent: pôvodné farebné rozlíšenie kategórií sa zachová.
+   Iba hlavný titulok získa kontrast na bielom pozadí. */
+#asistentRSSection > h2 { color:#102a3d; }
+
+/* DESIGN 01 — KROK 06: iba vizuálne zjednotenie nadpisových pásov
+   vnútorných sekcií Asistenta RS. Zachované všetky karty, farby kategórií,
+   rozmery, poradie, udalosti a obsah. */
+#asistentRSSection .asistent-method-section > h4 {
+  background:#102a3d;
+  color:#f4faff;
+  border-color:#24485b;
+}
+
+/* DESIGN 01 — KROK 07: Reporty a Statistiky, iba farebne a typograficke
+   zjednotenie EXISTUJUCICH prvkov. Ziadna zmena rozlozenia, JS ani dat. */
+#filterSection,
+#dashboardSection #dashboardCardsSection > .card,
+#dashboardSection #graphsOnlySection > .graph-card,
+#dashboardSection #mobileGraphSelector {
+  background: #ffffff;
+  color: #183247;
+  border-color: #d2e2e5;
+  box-shadow: 0 8px 26px rgba(7,21,34,.07);
+}
+#filterSection .statistics-filter-header h3,
+#dashboardSection > .toolbar h2,
+#dashboardSection #dashboardCardsSection > .card h3,
+#dashboardSection #graphsOnlySection > .graph-card h3 {
+  color: #102a3d;
+}
+#filterSection label,
+#dashboardSection #dashboardCardsSection > .card p { color: #183247; }
+#filterSection input,
+#filterSection select,
+#dashboardSection #mobileGraphSelector select {
+  background: #f9fcfc;
+  color: #183247;
+  border-color: #c9dcdf;
+}
+#filterSection .statistics-filter-toggle,
+#filterSection button:not(.btn-primary),
+#dashboardSection .toolbar .btn-info {
+  background: #e9f4f3;
+  color: #103a47;
+  border-color: #c9dcdf;
+}
+#dashboardSection .toolbar .btn-info:hover,
+#filterSection button:not(.btn-primary):hover { background: #d8eeeb; }
+#dashboardSection #dashboardCardsSection > .card:hover {
+  border-color: #83c9c1;
+}
+#dashboardSection .stats-period-label,
+#dashboardSection .muted { color: #536a77; }
+#statsExportModal .modal-content {
+  background: #ffffff;
+  color: #183247;
+  border-color: #d2e2e5;
+}
+#statsExportModal .modal-content h2 { color: #102a3d; }
+#statsExportModal .modal-content select {
+  background: #f9fcfc;
+  color: #183247;
+  border-color: #c9dcdf;
+}
+
+/* DESIGN 01 — KROK 08: light workspace styling for findings, catches and vehicles.
+   Pure CSS: no DOM, JS, navigation, data, permissions or workflows changed. */
+#revirZisteniaSection > .toolbar h2,
+#evidenciaUlovkovSection > .toolbar h2,
+#sluzobneVozidlaSection > .toolbar h2 { color:#102a3d; }
+#revirZisteniaSection > .card,
+#evidenciaUlovkovSection > .card,
+#sluzobneVozidlaSection > .card {
+  background:#fff; color:#183247; border-color:#d2e2e5;
+  box-shadow:0 8px 26px rgba(7,21,34,.07);
+}
+#revirZisteniaSection > .card h3,
+#evidenciaUlovkovSection > .card h3,
+#sluzobneVozidlaSection > .card h3 { color:#102a3d; }
+#revirZisteniaSection > .card .muted,
+#evidenciaUlovkovSection > .card .muted,
+#sluzobneVozidlaSection > .card .muted { color:#536a77; }
+#evidenciaUlovkovSection > .card input,
+#sluzobneVozidlaSection > .card input,
+#sluzobneVozidlaSection > .card select,
+#sluzobneVozidlaSection > .card textarea {
+  background:#f9fcfc; color:#183247; border-color:#c9dcdf;
+}
+#revirZisteniaSection > .card .item,
+#evidenciaUlovkovSection > .card .item,
+#sluzobneVozidlaSection > .card .item {
+  background:#fff; color:#183247; border-color:#d2e2e5;
+}
+
+/* DESIGN 01 — KROK 09: Evidencia rybára a Info veliteľa RS.
+   Len vizuálna vrstva; bez zásahu do HTML, JS, dát a rozloženia. */
+#tab-rybari > .grid > .card,
+#infoVelitelaSection > .card {
+  background: #ffffff;
+  color: #183247;
+  border-color: #d2e2e5;
+  box-shadow: 0 8px 26px rgba(7,21,34,.07);
+}
+#tab-rybari > .grid > .card h3,
+#infoVelitelaSection > .toolbar h2,
+#infoVelitelaSection > .card h3 {
+  color: #102a3d;
+}
+#tab-rybari > .grid > .card .muted,
+#infoVelitelaSection > .card .muted {
+  color: #536a77;
+}
+#tab-rybari > .grid > .card input:not([type="checkbox"]),
+#tab-rybari > .grid > .card select,
+#tab-rybari > .grid > .card textarea,
+#infoVelitelaSection > .card input,
+#infoVelitelaSection > .card select,
+#infoVelitelaSection > .card textarea {
+  background: #f9fcfc;
+  color: #183247;
+  border-color: #c9dcdf;
+}
+#tab-rybari > .grid > .card .item,
+#tab-rybari > .grid > .card .list .item,
+#infoVelitelaSection > .card .item {
+  background: #ffffff;
+  color: #183247;
+  border-color: #d2e2e5;
+}
+#infoVelitelaSection > .card .item h3 { color: #102a3d; }
+</style>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="xlsx.full.min.js"></script>
 
+
+<!-- RS APP DESIGN 01 / KROK 11 — ONLY homepage brand signature; original logo not recreated -->
+<style id="rs-app-design01-krok11-brand">
+#mainMenuSection .ja-solutions-signature {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  padding: 18px 10px 12px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: .015em;
+  line-height: 1.5;
+}
+#mainMenuSection .ja-solutions-signature-prefix { color: #607988; }
+#mainMenuSection .ja-solutions-signature-name {
+  color: #0b5660;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+@media (max-width: 600px) {
+  #mainMenuSection .ja-solutions-signature {
+    padding-bottom: 76px; /* reserve space above existing fixed mobile navigation */
+  }
+}
+</style>
+<style id="rs-app-design01-krok12-ja-brand">
+
+/* KROK 12 – iba vizuálna značka, bez zásahu do funkcií */
+#mainMenuSection .ja-solutions-signature {
+  display:flex; align-items:center; justify-content:center; gap:22px;
+  margin:0 auto; padding:18px 10px 16px;
+}
+#mainMenuSection .ja-brand-line {
+  width: min(25%, 190px); height:1px;
+  background:linear-gradient(90deg, transparent 0%, rgba(74,119,145,.18) 18%, rgba(74,119,145,.65) 100%);
+}
+#mainMenuSection .ja-brand-line:last-child {
+  transform:rotate(180deg);
+}
+#mainMenuSection .ja-brand-desktop {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:0; border-radius:0; background:transparent;
+}
+#mainMenuSection .ja-brand-desktop img {width:86px;height:auto;display:block}
+#mainMenuSection .ja-brand-desktop > span {
+  color:#09233a; font-size:9px; font-weight:700; letter-spacing:.18em;
+}
+#mainMenuSection .ja-brand-mobile {display:none}
+@media (max-width:760px) {
+  #mainMenuSection > h2 {position:relative; padding-right:126px}
+  #mainMenuSection .ja-brand-mobile {
+    display:flex; position:absolute; right:8px; top:50%;
+    transform:translateY(-50%); align-items:center; gap:5px;
+    height:36px; max-width:119px; overflow:hidden;
+  }
+  #mainMenuSection .ja-brand-mobile img {
+    display:block; width:38px; height:35px; object-fit:contain; flex:none;
+  }
+  #mainMenuSection .ja-brand-mobile span {
+    display:block; font-size:8px; line-height:1.2;
+    font-weight:700; letter-spacing:.035em; color:#e1f7f6;
+    max-width:68px;
+  }
+  #mainMenuSection .ja-solutions-signature {display:none}
+}
+</style>
+
+<style id="rs-app-design01-krok13-minimal-brand">
+/* KROK 13: clean transparent signature, no container, no lines */
+#mainMenuSection .ja-brand-line {display:none !important}
+#mainMenuSection .ja-solutions-signature {gap:0; padding:14px 10px 12px}
+#mainMenuSection .ja-brand-desktop {background:transparent; padding:0; border:0; border-radius:0; box-shadow:none; gap:0}
+#mainMenuSection .ja-brand-desktop img {width:83px; height:auto}
+#mainMenuSection .ja-brand-desktop > span {color:#31566a; font-size:9px; letter-spacing:.12em; margin-top:2px}
+@media(max-width:760px) {
+ #mainMenuSection .ja-solutions-signature {display:none}
+}
+</style>
+
+<!-- KROK 17: JA Solutions fading lines only; retain approved UI and functional modules -->
+<style id="rs-app-design01-krok17-brand-lines">
+@media (min-width:761px) {
+#mainMenuSection .ja-solutions-signature {display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:22px;padding:14px 10px 12px;width:100%;max-width:560px;box-sizing:border-box}
+#mainMenuSection .ja-brand-line {display:block !important;flex:1 1 0;min-width:0;width:auto;height:2px;align-self:center;opacity:1;background:linear-gradient(90deg,transparent 0%,rgba(74,119,145,.30) 28%,rgba(74,119,145,.72) 100%)}
+#mainMenuSection .ja-brand-desktop {flex:0 0 auto}
+#mainMenuSection .ja-brand-line:last-child {transform:none;background:linear-gradient(90deg,rgba(74,119,145,.72) 0%,rgba(74,119,145,.30) 72%,transparent 100%)}
+}
+</style>
+
+<style id="rs-app-design01-krok24-mobile-logo-contrast">
+/* KROK 24: izolovana uprava citatelnosti existujucej znacky na mobile */
+@media (max-width:760px) {
+ #mainMenuSection > h2 {padding-right:130px}
+ #mainMenuSection .ja-brand-mobile {display:flex;align-items:center;gap:5px;right:7px;top:50%;transform:translateY(-50%);height:34px;max-width:123px;overflow:visible}
+ #mainMenuSection .ja-brand-mobile img {display:block;width:43px;height:32px;object-fit:contain;flex:0 0 43px;background:#fff;border-radius:5px;padding:2px;box-sizing:border-box}
+ #mainMenuSection .ja-brand-mobile span {display:block;color:#eaffff;font-size:8px;line-height:1.2;font-weight:800;letter-spacing:0;max-width:75px;text-shadow:none}
+}
+</style>
 </head>
 <body>
 
@@ -4472,7 +4914,7 @@ button:disabled,
     </div>
   </div>
 
-  <h2>Hlavné menu</h2>
+  <h2>Hlavné menu<span class="ja-brand-mobile" aria-label="JA Solutions – Digitálne riešenia"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGwAAABhCAYAAAAz+EQTAAAHMklEQVR42u2daYwURRTHf8uhoIi6oiLsuiAIIochxAMRDF4gRGBxY8IHcDmCJERQFA0kGsIHjWgIxyeJrrIaEkK4r7hGUWGFKFE5VNbIgnKYjRGUCFER1w9VE5rJTE9VH9M1s++fTHpm+k3Vm/r3q3qvuup1Sfse9yIoHLSSJhDCBDGiTQv5n0OASUBnoFwfbzL87W/ASeCYPtYBa5L6IyVFOIZNAFZZ/uYnoAE4DPyje56rgY7ANcC1ae+92KDrWyMWlhv3A5/4nD8CfAp8BuwEfoxBhwHAQ8BWYBSwC3gSaBQLg8XAs2nfnQXeAj7U5PzpSBe8VF8wE4G/WgphU4HlQPu072uAV2OymKjRBXgdWKEvqKIj7HY9Ltzq+W4TsAioL/Au/BVgfrG49e8AzcC3mqwNeuAvAcYWAVl4yHq+UAmboUlqBqqBr4E+mqRK4EyRhhlvAEMLxUvsAOwFeuvPJ4DJ2mloSdjpGeNOukhYG+0kVOjPT+mBuKXjpIsWdkhb1AVgJPCB8ORm4HwQ6KvfPwDskCYPh7icjm+0I9ETGKadCCHLQcI2a6J6AfcB7TyDq8CxLvGcnpGoRc2lCRy1sJe1VbUHLhey3LawRqA7auporDSnu4QNRd2yAOhBTLcSBNF0iSs1WV9o70/IctjCdgP3AOuAx6X53LawRk3WciHLfcJSzsWLwCxpNre7xB80WVXAWmkytwn7CnUzsSuWs8qC/HeJi4CBwJgEyNrBxRubJq8ZhuV2siw3/eUsYf2AucAe1PxgvjHIUr7OUG5rsVrYAX0cnJBeV1nKm8SCg4G7Quo1xEXCUkuxeiekk+1ahwZDue0R6NbfNcK6oe5fbdHeYRIYYSn/sYHMC6gVWGHR0TXC9urjYwnqVGUpb2I5r0Wk292uEXYd8H7COtl2xbmcojcj1K2vS4Qt0ceJCepj2+WcN5CZHqF+pS4RNhu1RjBJ2N5T+y7H+Y8i1s8pwkCt/U4Soyzlt/ic64VaqWWCbYZyrV0hbIBBA+QDtnGOn8OxybCMP4D/CsVTTBGW2sLyc8KElVvK1/t0rabOy3OoXZcF4Xi0SnhGw4tbLOV/9Tm30qKcty3rvdMFwkodIOwRS/ndEQTJNfpos9HuBhcIm+sAYY9GNH7ZBMlTA+jZxwXCDjlAmG23XBcySK4LqOdAl9z6JIPm6y3lG0MGyRM87/dZ/K6TS4RNKxDrOhYySN4HnPJ8tvESr3CFsCOomfokYDvZXB8iSAaYmePCdTZ49iraL0E9RlrKrwoYJIOafksn/EDMIUgshJ1LsI+2vVg2BwySAeZl+M5283u5C4QlOY61tZA9HyJIPgu8F4G+d7hE2PQ862A7fh0MGCQDLIxI59tcIawGtWg0n6i2lN8WMEhOyUexhK2rK4RNTUAH23tgNQGC5KjR3xXCUhiQp/onWrrJF3TA3C6BrtuLMtcIy5fjsdxSfqM+7iJZtE2q4kzZ3Jq1N9Uh5rrXYL9Cqg8qI+jnJI8SVyzsCeDKgOUdNfTEgpB1AjVJvR43MMgVwsLkrq0AXtJWuhGVI9eLBfpcVYCyZ+ox70ZHCOuSRKV+241GY7d5IH2J9RjgdER6NukL4F/cQXdXLCyFKZZljYhRz2GoFV2tHSJssEuE/Q2MtyxrVEw6rkCt858XYMwrsXhNsiy/s0uEBZmNjuNO7PeovIpBtupOtpS3Tfhc4RJhqR2XlxmWE8davSZUwubSANZ+AvsMp02W8je7NoaB+Txf1GmLDnu6nO15sC6wTxDT2kXCTOcWqyLUqRaVZxHUSmDbXZMNFHH+YD/CNlg0VhTjV5Me/L3Z4NbmybpSuOC6p+hHWKWOpUwQ5g7sHk1UutcVJEhuIPsCUxOcs5TvmW/ConwyRDvUs1HG4f+op1+09c4HfkeQGGECB5wOgRAmEMKEMIEQJhDChDCBECYQwoQwgRAmEMIEQpgQJhDCBEKYEHbpTsbRPnLr02T9tssezVFnGRezqHoxy6Bev/qXWPzXUzn0y7azs96w/LFxEHaKS1fQPuxDQE2a7BSDBooClZ46T3ve2zxEoSzDfy0l93bb+hBtOTwOwt5N+/xMlqt+ZoYGqkStASkE7Cdz1rtyn4tuHLAa83WbtbnaMgrCxpM7E8Acsu+EWUyyaddNras2y7nj+K/LXwYsNaxnXC5yoyCsm+7aco1f2bCuQCzML5fVGYM2qjdsy+ps41eUTkdqjJgWYEwaTzIP5LHFgz7nTLKRm3aNqbasztSWUbv12cakxT7WNydgXcfJnM51eAxk+XV7ZcCXBmWkusaFYdoy7HOcy/Sf8aJjFmWbUSuJN6d5jk+HqL9rBn3iSvG6QHtxpWn1ZXNGsnV5zWTeVG/Ulq0iuPKOpsUl2ZQvQaV58MYZ3XJ0h17Zep8GSL32E98jo5ah8pd461uNfb7k2WHaUlb+ttCZDoEQJhDCigD/AxgQdS1ufP+dAAAAAElFTkSuQmCC" alt="JA Solutions"><span>DIGITÁLNE RIEŠENIA</span></span></h2>
 
 <div class="main-menu-cards">
 
@@ -4775,6 +5217,7 @@ button:disabled,
 </div> <!-- /secondaryMainMenuCards -->
 
 </div>
+  <div class="ja-solutions-signature" aria-label="JA Solutions – Digitálne riešenia"><span class="ja-brand-line" aria-hidden="true"></span><div class="ja-brand-desktop"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGwAAABhCAYAAAAz+EQTAAAHMklEQVR42u2daYwURRTHf8uhoIi6oiLsuiAIIochxAMRDF4gRGBxY8IHcDmCJERQFA0kGsIHjWgIxyeJrrIaEkK4r7hGUWGFKFE5VNbIgnKYjRGUCFER1w9VE5rJTE9VH9M1s++fTHpm+k3Vm/r3q3qvuup1Sfse9yIoHLSSJhDCBDGiTQv5n0OASUBnoFwfbzL87W/ASeCYPtYBa5L6IyVFOIZNAFZZ/uYnoAE4DPyje56rgY7ANcC1ae+92KDrWyMWlhv3A5/4nD8CfAp8BuwEfoxBhwHAQ8BWYBSwC3gSaBQLg8XAs2nfnQXeAj7U5PzpSBe8VF8wE4G/WgphU4HlQPu072uAV2OymKjRBXgdWKEvqKIj7HY9Ltzq+W4TsAioL/Au/BVgfrG49e8AzcC3mqwNeuAvAcYWAVl4yHq+UAmboUlqBqqBr4E+mqRK4EyRhhlvAEMLxUvsAOwFeuvPJ4DJ2mloSdjpGeNOukhYG+0kVOjPT+mBuKXjpIsWdkhb1AVgJPCB8ORm4HwQ6KvfPwDskCYPh7icjm+0I9ETGKadCCHLQcI2a6J6AfcB7TyDq8CxLvGcnpGoRc2lCRy1sJe1VbUHLhey3LawRqA7auporDSnu4QNRd2yAOhBTLcSBNF0iSs1WV9o70/IctjCdgP3AOuAx6X53LawRk3WciHLfcJSzsWLwCxpNre7xB80WVXAWmkytwn7CnUzsSuWs8qC/HeJi4CBwJgEyNrBxRubJq8ZhuV2siw3/eUsYf2AucAe1PxgvjHIUr7OUG5rsVrYAX0cnJBeV1nKm8SCg4G7Quo1xEXCUkuxeiekk+1ahwZDue0R6NbfNcK6oe5fbdHeYRIYYSn/sYHMC6gVWGHR0TXC9urjYwnqVGUpb2I5r0Wk292uEXYd8H7COtl2xbmcojcj1K2vS4Qt0ceJCepj2+WcN5CZHqF+pS4RNhu1RjBJ2N5T+y7H+Y8i1s8pwkCt/U4Soyzlt/ic64VaqWWCbYZyrV0hbIBBA+QDtnGOn8OxybCMP4D/CsVTTBGW2sLyc8KElVvK1/t0rabOy3OoXZcF4Xi0SnhGw4tbLOV/9Tm30qKcty3rvdMFwkodIOwRS/ndEQTJNfpos9HuBhcIm+sAYY9GNH7ZBMlTA+jZxwXCDjlAmG23XBcySK4LqOdAl9z6JIPm6y3lG0MGyRM87/dZ/K6TS4RNKxDrOhYySN4HnPJ8tvESr3CFsCOomfokYDvZXB8iSAaYmePCdTZ49iraL0E9RlrKrwoYJIOafksn/EDMIUgshJ1LsI+2vVg2BwySAeZl+M5283u5C4QlOY61tZA9HyJIPgu8F4G+d7hE2PQ862A7fh0MGCQDLIxI59tcIawGtWg0n6i2lN8WMEhOyUexhK2rK4RNTUAH23tgNQGC5KjR3xXCUhiQp/onWrrJF3TA3C6BrtuLMtcIy5fjsdxSfqM+7iJZtE2q4kzZ3Jq1N9Uh5rrXYL9Cqg8qI+jnJI8SVyzsCeDKgOUdNfTEgpB1AjVJvR43MMgVwsLkrq0AXtJWuhGVI9eLBfpcVYCyZ+ox70ZHCOuSRKV+241GY7d5IH2J9RjgdER6NukL4F/cQXdXLCyFKZZljYhRz2GoFV2tHSJssEuE/Q2MtyxrVEw6rkCt858XYMwrsXhNsiy/s0uEBZmNjuNO7PeovIpBtupOtpS3Tfhc4RJhqR2XlxmWE8davSZUwubSANZ+AvsMp02W8je7NoaB+Txf1GmLDnu6nO15sC6wTxDT2kXCTOcWqyLUqRaVZxHUSmDbXZMNFHH+YD/CNlg0VhTjV5Me/L3Z4NbmybpSuOC6p+hHWKWOpUwQ5g7sHk1UutcVJEhuIPsCUxOcs5TvmW/ConwyRDvUs1HG4f+op1+09c4HfkeQGGECB5wOgRAmEMKEMIEQJhDChDCBECYQwoQwgRAmEMIEQpgQJhDCBEKYEHbpTsbRPnLr02T9tssezVFnGRezqHoxy6Bev/qXWPzXUzn0y7azs96w/LFxEHaKS1fQPuxDQE2a7BSDBooClZ46T3ve2zxEoSzDfy0l93bb+hBtOTwOwt5N+/xMlqt+ZoYGqkStASkE7Cdz1rtyn4tuHLAa83WbtbnaMgrCxpM7E8Acsu+EWUyyaddNras2y7nj+K/LXwYsNaxnXC5yoyCsm+7aco1f2bCuQCzML5fVGYM2qjdsy+ps41eUTkdqjJgWYEwaTzIP5LHFgz7nTLKRm3aNqbasztSWUbv12cakxT7WNydgXcfJnM51eAxk+XV7ZcCXBmWkusaFYdoy7HOcy/Sf8aJjFmWbUSuJN6d5jk+HqL9rBn3iSvG6QHtxpWn1ZXNGsnV5zWTeVG/Ulq0iuPKOpsUl2ZQvQaV58MYZ3XJ0h17Zep8GSL32E98jo5ah8pd461uNfb7k2WHaUlb+ttCZDoEQJhDCigD/AxgQdS1ufP+dAAAAAElFTkSuQmCC" alt="JA Solutions"><span>DIGITÁLNE RIEŠENIA</span></div><span class="ja-brand-line" aria-hidden="true"></span></div>
   </div>
 
 <div id="backToMenuSection" class="hidden" style="margin-bottom:15px;">
